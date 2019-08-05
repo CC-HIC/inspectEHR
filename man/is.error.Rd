@@ -6,9 +6,6 @@
 \usage{
 is.error(x)
 }
-\arguments{
-\item{x}{}
-}
 \description{
 Custom Error Capturing
 }

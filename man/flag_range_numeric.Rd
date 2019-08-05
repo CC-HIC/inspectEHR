@@ -14,3 +14,6 @@ The generic function for numeric type range flags
 Retuns 103 if value too low, 104 if value too high, and NA if
 there is no reference for ranges
 }
+\examples{
+flag_range_numeric(df)
+}

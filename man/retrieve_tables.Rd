@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{retrieve_tables}
 \alias{retrieve_tables}
-\title{Retrieves db tables}
+\title{Retrieve Database Tables}
 \usage{
 retrieve_tables(connection)
 }
@@ -10,11 +10,15 @@ retrieve_tables(connection)
 \item{connection}{an sql connection}
 }
 \value{
-a list containing pointers to tables within the sql connection
+a list containing pointers to tables within the sql connection.
 }
 \description{
-These tables come as a list and must be unlisted or accessed directly
+Places all tables from the database connection in a list. This makes use of the tables
+in dplyr extremely easy.
 }
 \examples{
-retrieve_tables(ctn)
+\dontrun{
+tbls <- retrieve_tables(ctn)
+tbls[["events"]] # the events table
+}
 }

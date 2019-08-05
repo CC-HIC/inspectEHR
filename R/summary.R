@@ -1,8 +1,9 @@
 #' Summary for flagged data item
 #'
-#' @param x
+#' Writes out summary codes following the flagging proceedure
 #'
-#' @return
+#' @param x a flagged dataframe
+#'
 #' @export
 #'
 #' @importFrom magrittr %>% %<>%

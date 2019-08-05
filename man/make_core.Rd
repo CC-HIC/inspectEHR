@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{make_core}
 \alias{make_core}
-\title{Make core table}
+\title{Core table}
 \usage{
 make_core(connection)
 }
@@ -10,10 +10,12 @@ make_core(connection)
 \item{connection}{a database connection}
 }
 \value{
-a tibble with all hic events
+a database object
 }
 \description{
-Produces the core table structure necessary for the data quality report
+Writes a remote SQL query to make a core table with all the necessary column
+names for most data extraction tasks. No work is done till the function is
+explicitly called.
 }
 \examples{
 make_core(ctn)

@@ -10,5 +10,6 @@ ks_plot(x)
 \item{x}{an object from \code{ks_test}}
 }
 \description{
-Produces a plot of the KS distances between sites
+Produces a plot of the KS distances between sites.
+This is quite hard coded at the moment, and so could be improved in a future version
 }

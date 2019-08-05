@@ -4,17 +4,17 @@
 \alias{connect}
 \title{Establishes a connection to the database}
 \usage{
-connect(host = "localhost", username = NULL, password = NULL,
-  database = "cchic", system = "postgres", file = NULL)
+connect(database = NULL, host = "localhost", port = 5432,
+  username = NULL, password = NULL, sqlite_file = NULL)
 }
 \arguments{
+\item{database}{target db}
+
 \item{host}{db host: typically "localhost"}
 
 \item{username}{db username}
 
 \item{password}{db password}
-
-\item{database}{target db}
 
 \item{system}{choice of either "postgres" or "sqlite" depending upon your backend}
 
@@ -27,8 +27,6 @@ a database object connection
 Establishes a connection to the database
 }
 \examples{
-# connect to postgres with default settings
-ctn <- connect()
-# connect to sqlite
-ctn <- connect(system = "sqlite", file = "path/to/file.sqlite3")
+ctn <- connect(sqlite_file = "path/to/file.sqlite3")
+ctn <- connect(database = "hic", username = "abdce", password = "qwerty")
 }

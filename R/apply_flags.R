@@ -140,7 +140,7 @@ flag_range.default <- function(...) {
 #'
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data !!
-#' @example
+#' @examples
 #' flag_range_numeric(df)
 flag_range_numeric <- function(x = NULL) {
 

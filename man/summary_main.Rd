@@ -7,10 +7,10 @@
 summary_main(x, reference)
 }
 \arguments{
-\item{x}{}
+\item{x}{a flagged dataframe}
 }
 \description{
-Summary for flagged data item
+Writes out summary codes following the flagging proceedure
 }
 \examples{
 summary(x)

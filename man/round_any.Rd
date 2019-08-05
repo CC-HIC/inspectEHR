@@ -7,9 +7,17 @@
 round_any(x, accuracy = 1)
 }
 \arguments{
-\item{accuracy}{}
+\item{x}{a numeric vector}
+
+\item{accuracy}{a numeric value specifying the base for rounding}
+}
+\value{
+a vector of the same length as \code{x} rounded to the defined accuracy
 }
 \description{
 rounds a numeric value to any arbitrary degree of precision.
 defaults to nearest whole integer
+}
+\examples{
+round_any(c(1, 1.25, 1.5, 1.75, 2), accuracy = 0.5)
 }

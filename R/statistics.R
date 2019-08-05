@@ -71,7 +71,6 @@ ks_test <- function(x) {
 #'
 #' @param x an object from \code{ks_test}
 #'
-#' @return
 #' @export
 #'
 #' @importFrom rlang .data
@@ -79,8 +78,6 @@ ks_test <- function(x) {
 #' @importFrom dplyr tibble mutate select bind_rows mutate_at vars funs
 #' @importFrom ggplot2 aes geom_tile scale_fill_viridis_c theme_minimal coord_equal ylab xlab
 #' @importFrom scales viridis_pal
-#'
-#' @examples
 ks_plot <- function(x) {
 
   df <- x %>%
