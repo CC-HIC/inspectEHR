@@ -11,31 +11,35 @@
 #' @export
 #'
 #' @examples
-#' # connect to postgres with default settings
-#' ctn <- connect()
-#' # connect to sqlite
-#' ctn <- connect(system = "sqlite", file = "path/to/file.sqlite3")
-connect <- function(host = 'localhost',
+#' ctn <- connect(sqlite_file = "path/to/file.sqlite3")
+#' ctn <- connect(database = "hic", username = "abdce", password = "qwerty")
+connect <- function(database = NULL,
+                    host = "localhost",
+                    port = 5432,
                     username = NULL,
                     password = NULL,
-                    database = 'cchic',
-                    system = "postgres",
-                    file = NULL) {
+                    sqlite_file = NULL) {
 
-  if (system == "postgres") {
+  stopifnot(
+    exprs = {
+      all(!is.null(database), !is.null(username), !is.null(password)) ||
+      is.null(!sqlite_file)
+    }
+  )
 
-    connection <- DBI::dbConnect(RPostgres::Postgres(),
-                   host=host,
-                   port=5432,
-                   user=username,
-                   password=password,
-                   dbname=database)
+  if (!is.null(sqlite_file)) {
 
-  }
+    connection <- DBI::dbConnect(
+      RPostgres::Postgres(),
+      host = host,
+      port = port,
+      user = username,
+      password = password,
+      dbname = database)
 
-  if (system == "sqlite") {
+  } else {
 
-    connection <- DBI::dbConnect(RSQLite::SQLite(), file)
+    connection <- DBI::dbConnect(RSQLite::SQLite(), sqlite_file)
 
   }
 
@@ -44,20 +48,23 @@ connect <- function(host = 'localhost',
 }
 
 
-#' Retrieves db tables
+#' Retrieve Database Tables
 #'
-#' These tables come as a list and must be unlisted or accessed directly
+#' Places all tables from the database connection in a list. This makes use of the tables
+#' in dplyr extremely easy.
 #'
 #' @param connection an sql connection
 #'
 #' @importFrom dplyr db_list_tables
-#' @import dbplyr
 #'
-#' @return a list containing pointers to tables within the sql connection
+#' @return a list containing pointers to tables within the sql connection.
 #' @export
 #'
 #' @examples
-#' retrieve_tables(ctn)
+#' \dontrun{
+#' tbls <- retrieve_tables(ctn)
+#' tbls[["events"]] # the events table
+#' }
 retrieve_tables <- function(connection) {
 
   if(missing(connection)) {
@@ -114,13 +121,15 @@ make_reference <- function(connection) {
 }
 
 
-#' Make core table
+#' Core table
 #'
-#' Produces the core table structure necessary for the data quality report
+#' Writes a remote SQL query to make a core table with all the necessary column
+#' names for most data extraction tasks. No work is done till the function is
+#' explicitly called.
 #'
 #' @param connection a database connection
 #'
-#' @return a tibble with all hic events
+#' @return a database object
 #' @export
 #'
 #' @examples
@@ -135,31 +144,9 @@ make_core <- function(connection) {
     left_join(provenance, by = c("provenance" = "file_id")) %>%
     inner_join(events, by = "episode_id")
 
-  # if (attributes(attributes(connection)$class)$package == "RSQLite") {
-  #
-  #   core <- core %>%
-  #     mutate(start_date = datetime(start_date, 'unixepoch'),
-  #            date_created = datetime(date_created, 'unixepoch'),
-  #            datetime = datetime(datetime, 'unixepoch')
-  #            #date = datetime(date, 'unixepoch')
-  #            )
-  #
-  # }
-
   return(core)
 
 }
-
-
-parse_sqlite_datetime <- function(object) {
-
-  if (attributes(class(object$src$con))$package == "RSQLite") {
-
-
-  }
-
-}
-
 
 find_max_time <- function(events, time_col) {
 
@@ -175,30 +162,7 @@ find_max_time <- function(events, time_col) {
 
 }
 
-# admission_dttm <- function(core_table = NULL) {
-#
-#   if (is.null(core_table)) stop("You must include the tables")
-#
-#   admission_dttm <- core_table %>%
-#     filter(code_name == "NIHR_HIC_ICU_0411") %>%
-#     select(episode_id, datetime) %>%
-#     collect()
-#
-#   names(admission_dttm) <- c("episode_id", "addm_dttm")
-#
-#   return(admission_dttm)
-#
-# }
-
-
 #' Custom Error Capturing
-#'
-#' @param x
-#'
-#' @return
-#' @export
-#'
-#' @examples
 is.error <- function(x) {
   inherits(x, "try-error")
 }
@@ -209,31 +173,19 @@ is.error <- function(x) {
 #' rounds a numeric value to any arbitrary degree of precision.
 #' defaults to nearest whole integer
 #'
-#' @param x
-#' @param accuracy
+#' @param x a numeric vector
+#' @param accuracy a numeric value specifying the base for rounding
 #'
-#' @return
+#' @return a vector of the same length as \code{x} rounded to the defined accuracy
 #' @export
 #'
 #' @examples
+#' round_any(c(1, 1.25, 1.5, 1.75, 2), accuracy = 0.5)
 round_any <- function(x, accuracy = 1){
   round(x/accuracy)*accuracy
 }
 
-
-# rename_hic <- function(df, names) {
-#
-#   replacement_names <- names$short_name[match(names(df), names$hic_codes)]
-#   names(df) <- if_else(is.na(replacement_names), names(df), replacement_names)
-#
-#
-#
-#   return(df)
-#
-# }
-
 # ===== CLASS CHECKING
-
 
 is.string_2d <- function(x) inherits(x, "string_2d")
 is.string_1d <- function(x) inherits(x, "string_1d")
