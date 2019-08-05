@@ -1,0 +1,92 @@
+---
+title: "How to extract data using inspectEHR"
+author: "Edward Palmer"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+inspectEHR contains a number of helper functions for wrangling data. These will be ported over to cleanEHR to keep the roles of the two packages clear.
+
+```r
+# If you need inspectEHR
+# library(devtools)
+# install_github("CC-HIC/inspectEHR", ref = "sql")
+
+library(tidyverse)
+library(inspectEHR) # note extract is masked by tidyverse
+```
+
+I strongly advise running tidyverse. Whilst you don't need it, inspectEHR has been written with tidyeval in mind, and as such works best in the tidyverse ecosystem.
+
+Establish a database connection. You will most likely be working with sqlite as the postgres instance is confined to the UCL IDHS.
+
+```r
+# Establish a DB connection and retrive tables
+ctn <- connect(system = "sqlite", file = "~/path/public_release_yyyymmdd.sqlite3")
+tbls <- retrieve_tables(ctn)
+```
+
+the tbls object is now a list of all tables within the database and can be accessed via the `tbls[["table"]]` syntax.
+
+Enter the fields you want to extract using HIC codes. See the cleanEHR repo for more information on these codes. I write this here as a tribble to keep everything in the same document. If you want to rename column names then it is important to keep names and code names together and in the same order.
+
+It's best to separate out 1d and 2d data.
+
+```r
+# Grab non-longitudinal (1d) data ----------------
+
+demo_codes <- tribble(
+  ~hic_codes, ~short_name,
+  "NIHR_HIC_ICU_0399", "primary_admission_reason",
+  "NIHR_HIC_ICU_0097", "unit_mortality",
+)
+
+# Extract 1d data
+
+dtb <- extract_demographics(events = tbls[["events"]],
+                            metadata = tbls[["variables"]],
+                            code_names = demo_codes$hic_codes,
+                            rename = demo_codes$short_name)
+
+# Grab longitudinal (2d) data ---------------------
+
+long_codes <- tribble(
+  ~hic_codes, ~short_name,
+  "NIHR_HIC_ICU_0411", "start_dttm", # ALWAYS
+  "NIHR_HIC_ICU_0150", "fio2",
+  "NIHR_HIC_ICU_0470", "norad",
+  "NIHR_HIC_ICU_0132", "pxo2")
+```
+
+We can now extact 2d data. This will return a table with 1 row per patient per time unit specified in the cadance option. For example, a cadance of 1 will return a table with 1 row per patient per hour. This will be a complete (non-sparse) table, so if nothing was recorded for a partiular hour, that hour will not appear as a row.
+
+```r
+ltb <- extract_timevarying(
+  events = tbls[["events"]],
+  code_names = long_codes$hic_codes,
+  metadata = collect(tbls[["variables"]]),
+  chunk_size = 1000,
+  cadance = 1,
+  rename = long_codes$short_name)
+
+# I recomend saving here... depending on how much data you are trying to wrangle, that step can take a long time.
+# save(dtb, ltb, demo_codes, long_codes, file = "./backup.RData")
+
+# Expand this dense tb (i.e. add NAs where appropraite)
+ltb <- expand_missing(ltb)
+```
+
+expand_missing serves to fill in the gaps with NAs so the table haas a regular cadance.
+
+You can also run extract_timevarying with the option of cadance = "exact", but I advise against this if you are taking a large amount of data out of the database.

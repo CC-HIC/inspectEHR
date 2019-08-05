@@ -1,0 +1,39 @@
+Package: inspectEHR
+Type: Package
+Title: Data Quality Reporting and Validation for CC-HIC
+Version: 0.5
+Author: Edward Palmer
+Maintainer: Edward Palmer <edward.palmer@ucl.ac.uk>
+Description: This package helps to produce data quality reports for CC-HIC.
+    It is designed to be run inside the data safe-haven at UCL and as such
+    might not function correctly outside this environment. There are a lot
+    of helper functions that have been written to facilitate data wrangling
+    as part of my PhD. These need to be separated and ported to cleanEHR
+    in due course.
+Depends: R (>= 3.4.3)
+License: GNU General Public License v3.0
+Encoding: UTF-8
+LazyData: true
+Imports:
+    DBI,
+    dplyr (>= 0.8.0),
+    ggplot2,
+    lubridate,
+    magrittr,
+    rlang (>= 0.4.0),
+    RPostgres,
+    purrr,
+    scales,
+    stringr,
+    tibble,
+    tidyr
+RoxygenNote: 6.1.1
+Suggests:
+    knitr,
+    rmarkdown,
+    testthat,
+    broom,
+    xml2
+VignetteBuilder: knitr
+URL: https://github.com/CC-HIC/inspectEHR
+BugReports: https://github.com/CC-HIC/inspectEHR

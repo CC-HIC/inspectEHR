@@ -1,0 +1,30 @@
+# Episode Validation Codes
+Code | Description                                            | Error Type
+000  | Episode Validates                                      |
+001  | No administrative episode end time                     | Warning
+002  | Episode end before start                               | Critical
+003  | No discernable episode end time                        | Critical
+004  | Episode occurs during time of particularly poor data contribution | Warning
+
+# Event Validation Codes
+Code | Descritpion                                               | Error Type
+  0  | Event validates                                           |
+001  | Event associated with an invalid episode (code 002)       | Critical
+002  | Event associated with an invalid episode (code 003)       | Critical
+003  | Event occurs within episode during poor data contribution | Warning
+101  | Event occurs prior to episode window                      | Warning
+102  | Event ocrrus after episode window                         | Warning
+103  | Event is below a plausible range (numerical)              | Critical
+104  | Event is above a plausible range (numerical)              | Critical
+105  | Event falls outside a schema specification                | Critical
+106  | Event is probably a duplicate                             | Critical
+107  | Event has too low a periodicity                           | Warning
+108  | Event probably comes from an unexpected distribution      | Warning
+109  | Event does not conform to an expected regex               | Warning
+
+# Special Tests
+201  | Event is implausible when taken in clinical context       | Warning *NB not deployed
+202  | Event occurs more than its max allowance (i.e 2 deaths)   | Critical
+
+
+

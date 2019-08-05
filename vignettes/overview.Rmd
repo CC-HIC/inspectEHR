@@ -1,0 +1,24 @@
+---
+title: "An overview of inspectEHR"
+author: "Edward Palmer"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+inspectEHR is a quality assurance tool for the CC-HIC project. The goal of this package is to provide a core set of functions to flag erroneous or otherwise questionable data within CC-HIC, so the end researcher can handle this information explicitly.
+
+This information is subseqently written out to the database for future use.
+A report is also generated and compiled with bookdown.
+
+Helper functions for wrangling data have been developed and can be viewed in the other vignette. These will be ported over to cleanEHR shortly.

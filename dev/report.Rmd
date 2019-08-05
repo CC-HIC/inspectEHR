@@ -1,0 +1,121 @@
+---
+title: "Data Quality Report"
+author: "Edward Palmer"
+date: "15/03/2018"
+output: html_document
+---
+
+```{r setup}
+library(tidyverse)
+library(dbplyr)
+library(lubridate)
+library(magrittr)
+library(knitr)
+
+path_name <- "~/Synology/academic/CC-HIC/validator/"
+
+# load in pre-prosessed data
+load(paste0(path_name, "working_data/hic_event_summary.RData"))
+```
+
+# Data Quality Report
+
+This report provides a comprehensive overview of the state of the CC-HIC database. The purpose of this report is to:
+  1. provide diagnostic information on XML parsing failures so as to faciliate improvements in the use of XML as our chosen interchange format.
+  2. provide a description of the distribution, outliers and erronous patterns for events provided to CC-HIC
+  3. provide a flagged up dataset within the CC-HIC database of high quality records that can be used in a research capacity.
+  
+The flow chart in figure 1 provides an overview of this process, with example figures for exclusion at various stages. This is the approach we take.
+
+As a general rule, this document is not about what we can do to shoe horn the xml to maximise valid episode and event numbers. We prefer instead to flag validity, so the xml can be modified at source if possible. This means that we are not trying to centrally anticipate or coerse data, but rather help those that have written the extracts, modify them.
+
+## Nomencleature
+
+A brief description of specific terms used in the report are outlined:
+
+- Event: The base unit of infromation in the CC-HIC database. Any individual piece of information that is recorded in CC-HIC, this often (but not always) includes a value, datetime metadata and a reference to the patient it came from.
+- Episode: An ICU "Episode" defined by a patient with a start point (admission date time) and and end point, that could be one of:
+  - Discharge
+  - Death
+  - Declaration that episode is not yet closed
+- Spell: a continuous period of patient care under one intensive care provider; spells are the aggregation of one or more episodes. Spells are a derrived field that are calculated based upon a patient being discharged from one unit within a providor, and being admitted to a different unit within the same providor within 3 hours. Any discharge and re-admission to the same unit cound as a re-admission and so are not part of the overall spell.
+
+## CC-HIC Database Overview
+
+### Overview
+
+Version 1.0 for CC-HIC contains 255 data fields. These fields have been lebelled as follows:
+
+*Mandatory*
+
+Mandatory fields that are essential for characterising the ICU episode and include:
+  1. A unique patient identifier - 'NIHR_HIC_ICU_0073'; "NHS Number"
+  2. An episode start datetime - 'NIHR_HIC_ICU_0411'; "Date & Time of admission to your unit"
+  3. An episode end datetime, which could be any from (in order of preference):
+      - 'NIHR_HIC_ICU_0412': "Date & Time of discharge from your unit"
+      - 'NIHR_HIC_ICU_0042' AND 'NIHR_HIC_ICU_0043': Date and Time of death on ICU
+      - 'NIHR_HIC_ICU_0044' AND 'NIHR_HIC_ICU_0045': Date and Time of brain stem death on ICU
+      - 'NIHR_HIC_ICU_0038' AND 'NIHR_HIC_ICU_0039': Date and Time body removed from ICU
+      
+*Core Validation*
+
+These fields are particularly useful as rules can be developed to ensure that they are logically consistent.
+  - Systolic and Diastolic BP (integer)
+    - Systolic is always greater than diastolic BP
+
+*Other*
+
+All other fields can be interrogated with regards to their distribution where approrpiate.
+
+### Admissions
+
+Table 3. details the total number of patients, episodes and spells for each site.
+
+```{r spells}
+kable(spells)
+```
+
+### Admissions
+
+The following plots show the admission profiles for each site. They are based upon admission timings only (a mandatory field for episode creation within the database), and so they create a visual representation of all episodes within the database over time. Missing data is visible as grey cells representing a day with "no patients admitted"
+
+![](plots/GSTT_admissions.png)
+![](plots/site_b.png)
+![](plots/site_c.png)
+![](plots/site_d.png)
+![](plots/site_e.png)
+
+### Event Level Dataitems
+
+Test
+```{r trial, echo=FALSE, message=FALSE, results="asis"}
+
+for(i in seq_along(hic_dbls_warnings)) {
+  cat("\n")
+  cat("##", names(hic_dbls_warnings[i]), "Something....", "\n")
+  cat("![](", paste0(path_name, "plots/", names(hic_ints_warnings[i]), ".png"), ")")
+  cat("\n")
+}
+
+```
+
+# Conclusion
+
+The following pages are reserved for plots for each event contributed. Several plots are shown, each designed to help identify discrepancies amongst the data. They include:
+- calendar heat maps: to identify where data was not contributed
+- density plots: to show the distribution of the variable
+  - where approrpaite these are substituted for histograms or barplots
+  - these plots are faceted to show the pattern of outliers (horizontal)
+- duplicate values
+
+
+## Terminology
+
+The following terminology is used in the document
+
+- Spell: A series of coherent episodes descibing a single hospital admission
+- Episode: An ICU admission defined with a beggining and end date time.
+- Event: A single data item associated with a particular patient and episode
+  - Mandatory Event: Unique patient identifier, admission date time, end of admission date time
+  - Core Event: 0108
+
