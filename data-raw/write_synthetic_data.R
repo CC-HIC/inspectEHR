@@ -117,23 +117,24 @@ dfs <- dfs %>% group_by(episode_id)
 
 ## I'm sure there is a better way to do this bit
 str_var <- select_if(dfs, is.character) %>%
-  na.omit() %>%
-  gather(key = "code_name", value = "string", -episode_id)
+  gather(key = "code_name", value = "string", -episode_id) %>%
+  na.omit()
 int_var <- select_if(dfs, is.integer) %>%
-  na.omit() %>%
-  gather(key = "code_name", value = "integer", -episode_id)
-dbl_var <- select_if(dfs, is.numeric) %>%
-  na.omit() %>%
-  gather(key = "code_name", value = "real", -episode_id)
+  gather(key = "code_name", value = "integer", -episode_id) %>%
+  na.omit()
+dbl_var <- select_if(dfs, function(x) {
+  is.double(x) && !is.POSIXct(x) && !hms::is.hms(x) && !lubridate::is.Date(x)}) %>%
+  gather(key = "code_name", value = "real", -episode_id) %>%
+  na.omit()
 date_var <- select_if(dfs, is.Date) %>%
-  na.omit() %>%
-  gather(key = "code_name", value = "date", -episode_id)
+  gather(key = "code_name", value = "date", -episode_id) %>%
+  na.omit()
 dttm_var <- select_if(dfs, is.POSIXct) %>%
-  na.omit() %>%
-  gather(key = "code_name", value = "datetime", -episode_id)
+  gather(key = "code_name", value = "datetime", -episode_id) %>%
+  na.omit()
 time_var <- select_if(dfs, hms::is.hms) %>%
-  na.omit() %>%
-  gather(key = "code_name", value = "time", -episode_id)
+  gather(key = "code_name", value = "time", -episode_id) %>%
+  na.omit()
 
 dbs <- bind_rows(str_var, int_var, dbl_var, date_var, dttm_var, time_var)
 
@@ -141,14 +142,15 @@ dfl <- dfl %>% group_by(episode_id, datetime)
 ## Group so episode_id and datetime are brought along for the ride
 
 str_var <- select_if(dfl, is.character) %>%
-  na.omit() %>%
-  gather(key = "code_name", value = "string", -episode_id, -datetime)
+  gather(key = "code_name", value = "string", -episode_id, -datetime) %>%
+  na.omit()
 int_var <- select_if(dfl, is.integer) %>%
-  na.omit() %>%
-  gather(key = "code_name", value = "integer", -episode_id, -datetime)
-dbl_var <- select_if(dfl, is.numeric) %>%
-  na.omit() %>%
-  gather(key = "code_name", value = "real", -episode_id, -datetime)
+  gather(key = "code_name", value = "integer", -episode_id, -datetime) %>%
+  na.omit()
+dbl_var <- select_if(dfl, function(x) {
+  is.double(x) && !is.POSIXct(x) && !hms::is.hms(x) && !lubridate::is.Date(x)}) %>%
+  gather(key = "code_name", value = "real", -episode_id, -datetime) %>%
+  na.omit()
 
 dbl <- bind_rows(str_var, int_var, dbl_var)
 dbf <- bind_rows(dbs, dbl)
@@ -174,7 +176,6 @@ cchic <- DBI::dbConnect(RSQLite::SQLite(), "./data-raw/synthetic_db.sqlite3")
 
 # Change dates, datetimes and times into a string as sqlite3 doesn't have these as
 # native types.
-
 episodes <- episodes %>% mutate_if(is.POSIXct, format)
 events <- events %>%
   mutate_if(lubridate::is.Date, format) %>%
@@ -189,3 +190,4 @@ copy_to(cchic, variables, temporary = FALSE)
 
 db_list_tables(cchic)
 DBI::dbDisconnect(cchic)
+rm(cchic)
