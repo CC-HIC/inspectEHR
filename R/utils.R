@@ -21,13 +21,11 @@ connect <- function(database = NULL,
                     sqlite_file = NULL) {
 
   stopifnot(
-    exprs = {
       all(!is.null(database), !is.null(username), !is.null(password)) ||
-      is.null(!sqlite_file)
-    }
+      !is.null(sqlite_file)
   )
 
-  if (!is.null(sqlite_file)) {
+  if (is.null(sqlite_file)) {
 
     connection <- DBI::dbConnect(
       RPostgres::Postgres(),

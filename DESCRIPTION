@@ -17,6 +17,7 @@ LazyData: true
 Imports:
     DBI,
     dplyr (>= 0.8.0),
+    dbplyr,
     ggplot2,
     lubridate,
     magrittr,

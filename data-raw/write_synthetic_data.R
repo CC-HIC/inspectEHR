@@ -172,6 +172,16 @@ variables <- variables_tbl
 ## Write to DB ====
 cchic <- DBI::dbConnect(RSQLite::SQLite(), "./data-raw/synthetic_db.sqlite3")
 
+# Change dates, datetimes and times into a string as sqlite3 doesn't have these as
+# native types.
+
+episodes <- episodes %>% mutate_if(is.POSIXct, format)
+events <- events %>%
+  mutate_if(lubridate::is.Date, format) %>%
+  mutate_if(is.POSIXct, format) %>%
+  mutate_if(hms::is.hms, function(x) if_else(is.na(x), as.character(NA), format(x)))
+provenance <- provenance %>% mutate_if(is.POSIXct, format)
+
 copy_to(cchic, episodes, temporary = FALSE)
 copy_to(cchic, events, temporary = FALSE)
 copy_to(cchic, provenance, temporary = FALSE)

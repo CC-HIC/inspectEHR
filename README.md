@@ -25,3 +25,9 @@ inspectEHR is a data wrangling, cleaning and reporting tool for CC-HIC. It is de
 ### Event Level 3 (Statistical)
 - Events that are known to follow a particular distribution, conform to this distribution.
 - KS testing checks for significant deviation of a distribution applied as a pairwise testing between ICUs.
+
+## Synthetic Database
+
+There is a copy of the CC-HIC database located in `data-raw/synthetic_db.sqlite3`.
+This is a structurally sound copy of the real database, but entirely hand crafted (so there is no patient data here). It's quite sparese at present, but I will add more variables as time goes on.
+For now, it acts as a test database to make sure inspectEHR works as it should.
