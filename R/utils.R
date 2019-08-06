@@ -102,9 +102,8 @@ make_reference <- function(connection) {
       select(episode_id, nhs_number, start_date, site)
 
     # Accounts for lack of datetime type in SQLite
-    if (attributes(attributes(connection)$class)$package == "RSQLite") {
+    if (class(connection)[1] == "SQLiteConnection") {
       reference <- reference %>%
-        mutate(start_date = datetime(start_date, 'unixepoch')) %>%
         collect() %>%
         mutate(start_date = lubridate::ymd_hms(start_date))
 

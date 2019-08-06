@@ -27,21 +27,25 @@ extract <- function(core_table = NULL, input = "NIHR_HIC_ICU_0557") {
     dplyr::select(.data$class) %>%
     dplyr::pull()
 
+  primary_col <- qref %>%
+    dplyr::filter(.data$code_name == input) %>%
+    dplyr::select(.data$primary_column) %>%
+    dplyr::pull()
+
   # extract chosen input variable from the core table
   extracted_table <- dataitem %>%
     base::switch(
-      integer_1d = extract_1d(core_table, input, data_location = "integer"),
-      integer_2d = extract_2d(core_table, input, data_location = "integer"),
-      real_1d = extract_1d(core_table, input, data_location = "real"),
-      real_2d = extract_2d(core_table, input, data_location = "real"),
-      string_1d = extract_1d(core_table, input, data_location = "string"),
-      string_2d = extract_2d(core_table, input, data_location = "string"),
-      datetime_1d = extract_1d(core_table, input, data_location = "datetime"),
-      date_1d = extract_1d(core_table, input, data_location = "date"),
-      time_1d = extract_1d(core_table, input, data_location = "time"))
+      integer_1d = extract_1d(core_table, input, data_location = primary_col),
+      integer_2d = extract_2d(core_table, input, data_location = primary_col),
+      real_1d = extract_1d(core_table, input, data_location = primary_col),
+      real_2d = extract_2d(core_table, input, data_location = primary_col),
+      string_1d = extract_1d(core_table, input, data_location = primary_col),
+      string_2d = extract_2d(core_table, input, data_location = primary_col),
+      datetime_1d = extract_1d(core_table, input, data_location = primary_col),
+      date_1d = extract_1d(core_table, input, data_location = primary_col),
+      time_1d = extract_1d(core_table, input, data_location = primary_col))
 
   class(extracted_table) <- append(class(extracted_table), dataitem, after = 0)
-
   attr(extracted_table, "code_name") <- input
 
   return(extracted_table)
@@ -122,14 +126,13 @@ extract_2d <- function(core_table = NULL, input = NULL, data_location = NULL) {
                   .data$episode_id,
                   .data$datetime,
                   !! quo_column) %>%
-    dplyr::rename(value = !! quo_column,
-                  internal_id = .data$event_id) %>%
+    dplyr::rename(value = !! quo_column) %>%
     dplyr::arrange(.data$episode_id, .data$datetime)
 
-  if (attributes(core_table$src$con)$class[1] == "SQLiteConnection") {
+  if (any(stringr::str_detect(class(core_table), "SQLite"))) {
 
     extracted_table <- extracted_table %>%
-      mutate(datetime = lubridate::as_datetime(datetime))
+      mutate(datetime = lubridate::ymd_hms(datetime))
 
   }
 
