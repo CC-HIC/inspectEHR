@@ -1,8 +1,9 @@
 CREATE TABLE `provenance` (
   `filename` TEXT,
   `file_id` INTEGER PRIMARY KEY NOT NULL,
-  `date_created` REAL,
+  `date_created` TEXT,
   `version` TEXT,
+  `date_parsed` TEXT,
   `site` TEXT,
   `theme` TEXT,
   `notes` TEXT
@@ -26,26 +27,18 @@ CREATE TABLE `events` (
   `string` TEXT,
   `string2` TEXT,
   `string3` TEXT,
-  `datetime` REAL,
-  `date` REAL,
-  `time` REAL,
+  `datetime` TEXT,
+  `date` TEXT,
+  `time` TEXT,
   `real` REAL,
   `integer` INTEGER,
   `integer2` INTEGER,
-  `episode_id` TEXT,
+  `episode_id` INTEGER,
   `event_id` INTEGER PRIMARY KEY NOT NULL
 );
 CREATE TABLE `episodes` (
-  `episode_id` TEXT PRIMARY KEY NOT NULL,
+  `episode_id` INTEGER PRIMARY KEY NOT NULL,
   `nhs_number` TEXT,
-  `start_date` REAL,
+  `start_date` TEXT,
   `provenance` INTEGER
-);
-CREATE TABLE `event_validation` (
-  `event_id` INTEGER,
-  `rule_id` INTEGER
-);
-CREATE TABLE `episode_validation` (
-  `episode_id` TEXT,
-  `rule_id` INTEGER
 );
