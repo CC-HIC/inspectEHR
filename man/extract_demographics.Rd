@@ -4,28 +4,27 @@
 \alias{extract_demographics}
 \title{Extract 1d data from CC-HIC}
 \usage{
-extract_demographics(events = NULL, metadata = NULL,
-  code_names = "NIHR_HIC_ICU_0093", rename = NULL)
+extract_demographics(connection = NULL, code_names = NULL,
+  rename = NULL)
 }
 \arguments{
-\item{events}{a database events table}
+\item{connection}{a CC-HIC database connection}
 
-\item{metadata}{a database metadata table}
+\item{code_names}{a character vector of CC-HIC codes}
 
-\item{code_names}{a character vector of HIC codes you want to retrieve}
-
-\item{rename}{a character vector of names you want to relabel column names
-as, or NULL ( the default) if you want column names to be labelled with
-HIC codes}
+\item{rename}{a character vector of names you want to relabel CC-HIC codes
+as, or NULL (the default) if you do not want to relabel.}
 }
 \value{
 A tibble of 1d data
 }
 \description{
-This function takes remote database tables from the CC-HIC project and a
-vector of HIC codes and returns a table with 1 row per patient and 1 column
-per data item.
+Takes a remote database contection to CC-HIC, a vector of HIC codes
+(and optionally a vector of labels to rename the codes) and returns
+a table with 1 row per patient and 1 column per data item.
 }
 \examples{
-extract_demographics(tbls[["variables"]], tbls[["events"]])
+hic_codes <- c("NIHR_HIC_ICU_0409")
+new_labels <- c("apache_score")
+extract_demographics(ctn, hic_codes, new_labels)
 }

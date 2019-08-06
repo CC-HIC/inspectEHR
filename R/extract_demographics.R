@@ -1,30 +1,39 @@
 #' Extract 1d data from CC-HIC
 #'
-#' This function takes remote database tables from the CC-HIC project and a
-#' vector of HIC codes and returns a table with 1 row per patient and 1 column
-#' per data item.
+#' Takes a remote database contection to CC-HIC, a vector of HIC codes
+#' (and optionally a vector of labels to rename the codes) and returns
+#' a table with 1 row per patient and 1 column per data item.
 #'
-#'
-#' @param events a database events table
-#' @param metadata a database metadata table
-#' @param code_names a character vector of HIC codes you want to retrieve
-#' @param rename a character vector of names you want to relabel column names
-#' as, or NULL ( the default) if you want column names to be labelled with
-#' HIC codes
+#' @param connection a CC-HIC database connection
+#' @param code_names a character vector of CC-HIC codes
+#' @param rename a character vector of names you want to relabel CC-HIC codes
+#' as, or NULL (the default) if you do not want to relabel.
 #'
 #' @export
 #'
+#' @importFrom dplyr collect select mutate filter inner_join full_join if_else summarise_all
+#' @importFrom tidyr spread
+#' @importFrom tibble as_tibble
+#' @importFrom purrr reduce
+#' @importFrom rlang !!!
+#'
 #' @return A tibble of 1d data
 #' @examples
-#' extract_demographics(tbls[["variables"]], tbls[["events"]])
-extract_demographics <- function(events = NULL, metadata = NULL, code_names = "NIHR_HIC_ICU_0093", rename = NULL) {
+#' hic_codes <- c("NIHR_HIC_ICU_0409")
+#' new_labels <- c("apache_score")
+#' extract_demographics(ctn, hic_codes, new_labels)
+extract_demographics <- function(connection = NULL, code_names = NULL, rename = NULL) {
 
-  demographics <- metadata %>%
+  stopifnot(!any(is.null(connection), is.null(code_names)))
+
+  tbls <- retrieve_tables(connection)
+
+  demographics <- tbls[["variables"]] %>%
     collect() %>%
-    dplyr::mutate(nas = metadata %>%
+    dplyr::mutate(nas = tbls[["variables"]] %>%
                     dplyr::select(-code_name, -long_name, -primary_column) %>%
                     collect() %>%
-                    tibble::as.tibble() %>%
+                    tibble::as_tibble() %>%
                     apply(1, function(x) sum(!is.na(x)))) %>%
     dplyr::filter(nas == 1) %>%
     dplyr::select(code_name, primary_column)
@@ -32,63 +41,30 @@ extract_demographics <- function(events = NULL, metadata = NULL, code_names = "N
   all_demographic_codes <- demographics$code_name
   extract_codes <- all_demographic_codes[all_demographic_codes %in% code_names]
 
-  tb_base <- events %>%
+  if (length(extract_codes) != length(code_names)) {
+    warning("You are trying to extract non-1d data. Consider using `extract_timevarying()`")
+  }
+
+  tb_base <- tbls[["events"]] %>%
     select(episode_id, code_name, integer, string, real, date, time, datetime) %>%
     filter(code_name %in% extract_codes) %>%
     collect()
 
-  tb_1_strings <- tb_base %>%
-    select(code_name, string, episode_id) %>%
-    inner_join(demographics %>%
-                 filter(primary_column == "string"), by = "code_name") %>%
-    select(-primary_column) %>%
-    spread(key = code_name, value = string)
+  complete_fields <- tb_base %>%
+    select(-episode_id, -code_name) %>%
+    select_if(function(x) !(all(is.na(x)))) %>%
+    names()
 
-  tb_1_ints <- tb_base %>%
-    select(code_name, integer, episode_id) %>%
-    inner_join(demographics %>%
-                 filter(primary_column == "integer"), by = "code_name") %>%
-    select(-primary_column) %>%
-    spread(key = code_name, value = integer)
+  tb_segments <- vector(mode = "list", length = length(complete_fields))
 
-  tb_1_real <- tb_base %>%
-    select(code_name, real, episode_id) %>%
-    inner_join(demographics %>%
-                 filter(primary_column == "real"), by = "code_name") %>%
-    select(-primary_column) %>%
-    spread(key = code_name, value = real)
+  for (i in seq_along(complete_fields)) {
+    tb_segments[[i]] <- extract_demographics_helper(tb_base, complete_fields[i], demographics)
+  }
 
-  tb_1_dates <- tb_base %>%
-    select(code_name, date, episode_id) %>%
-    inner_join(demographics %>%
-                 filter(primary_column == "date"), by = "code_name") %>%
-    select(-primary_column) %>%
-    spread(key = code_name, value = date)
-
-  tb_1_time <- tb_base %>%
-    select(code_name, time, episode_id) %>%
-    inner_join(demographics %>%
-                 filter(primary_column == "time"), by = "code_name") %>%
-    select(-primary_column) %>%
-    spread(key = code_name, value = time)
-
-  tb_1_datetime <- tb_base %>%
-    select(code_name, datetime, episode_id) %>%
-    inner_join(demographics %>%
-                 filter(primary_column == "datetime"), by = "code_name") %>%
-    select(-primary_column) %>%
-    spread(key = code_name, value = datetime)
-
-  db_1 <- reduce(
-    list(tb_1_strings,
-         tb_1_ints,
-         tb_1_real,
-         tb_1_dates,
-         tb_1_datetime,
-         tb_1_time),
-    full_join, by = "episode_id")
-
-  db_1 <- select(db_1, episode_id, !!! extract_codes)
+    db_1 <- purrr::reduce(
+      tb_segments,
+      full_join,
+      by = "episode_id")
 
   if (!is.null(rename)) {
     replacement_names <- rename[match(names(db_1), code_names)]
@@ -96,5 +72,22 @@ extract_demographics <- function(events = NULL, metadata = NULL, code_names = "N
   }
 
   return(db_1)
+
+}
+
+
+extract_demographics_helper <- function(tb_base, col_name, demographics) {
+
+  quo_column <- enquo(col_name)
+
+  tb_section <- tb_base %>%
+    dplyr::select(.data$code_name, !! quo_column, .data$episode_id) %>%
+    dplyr::inner_join(
+      demographics %>%
+        dplyr::filter(.data$primary_column == !! quo_column), by = "code_name") %>%
+    select(-primary_column) %>%
+    spread(key = code_name, value = !! quo_column)
+
+  return(tb_section)
 
 }

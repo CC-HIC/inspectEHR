@@ -20,6 +20,7 @@ extract <- function(core_table = NULL, input = "NIHR_HIC_ICU_0557") {
 
   # ensure the core table is provided
   if (is.null(core_table)) stop("You must include the core table")
+  stopifnot(input %in% qref$code_name)
 
   # Identify the correct column type to pull out
   dataitem <- qref %>%
@@ -84,9 +85,8 @@ extract_1d <- function(core_table = NULL, input = NULL, data_location = NULL) {
                   .data$code_name,
                   .data$episode_id,
                   !! quo_column) %>%
-    dplyr::rename(value = !! quo_column,
-                  internal_id = .data$event_id) %>%
-    dplyr::arrange(episode_id)
+    dplyr::rename(value = !! quo_column) %>%
+    dplyr::arrange(.data$episode_id)
 
   return(extracted_table)
 
