@@ -1,6 +1,6 @@
-#' Lookup HIC Value
+#' Lookup CC-HIC Code
 #'
-#' Performs a quick search of the HIC data catalogue
+#' Perform a quick search for a CC-HIC Code
 #'
 #' @param search search term as either a code (numeric) or name (character)
 #'
