@@ -48,13 +48,11 @@ extract_timevarying <- function(connection, code_names, rename = NULL, chunk_siz
 
   starting <- lubridate::now()
 
-  tbls <- retrieve_tables(connection)
-
   if (!(any(code_names %in% "NIHR_HIC_ICU_0411"))) {
     append(code_names, "NIHR_HIC_ICU_0411")
   }
 
-  episode_groups <- tbls[["events"]] %>%
+  episode_groups <- dplyr::tbl(connection, "events") %>%
     select(episode_id) %>%
     distinct() %>%
     collect() %>%
@@ -62,7 +60,7 @@ extract_timevarying <- function(connection, code_names, rename = NULL, chunk_siz
     split(., .$group) %>%
     map(function(epi_ids) {
 
-      collect_events <- tbls[["events"]] %>%
+      collect_events <- dplyr::tbl(connection, "events") %>%
         filter(code_name %in% code_names) %>%
         filter(episode_id %in% epi_ids$episode_id) %>%
         collect()
@@ -72,7 +70,7 @@ extract_timevarying <- function(connection, code_names, rename = NULL, chunk_siz
             distinct() %>%
             pull(), process_all,
           events = collect_events,
-          metadata = collect(tbls[["variables"]]),
+          metadata = collect(dplyr::tbl(connection, "variables")),
           cadance = cadance) %>%
           bind_rows()
 
