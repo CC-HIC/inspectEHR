@@ -49,7 +49,9 @@ extract_timevarying <- function(connection, code_names, rename = NULL, chunk_siz
   starting <- lubridate::now()
 
   if (!(any(code_names %in% "NIHR_HIC_ICU_0411"))) {
-    append(code_names, "NIHR_HIC_ICU_0411")
+    exons <- append(code_names, "NIHR_HIC_ICU_0411")
+  } else {
+    exons <- code_names
   }
 
   episode_groups <- dplyr::tbl(connection, "events") %>%
@@ -61,8 +63,8 @@ extract_timevarying <- function(connection, code_names, rename = NULL, chunk_siz
     map(function(epi_ids) {
 
       collect_events <- dplyr::tbl(connection, "events") %>%
-        filter(code_name %in% code_names) %>%
-        filter(episode_id %in% epi_ids$episode_id) %>%
+        filter(code_name %in% exons) %>%
+        filter(episode_id %in% !! epi_ids$episode_id) %>%
         collect()
 
       map(collect_events %>%
@@ -99,9 +101,9 @@ process_all <- function(epi_id, events, metadata, cadance) {
 
   start_time <- pt %>%
     filter(code_name == "NIHR_HIC_ICU_0411") %>%
-    mutate(datetime = as.POSIXct(datetime, origin = "1970-01-01 00:00:00")) %>%
+    mutate(datetime = as.POSIXct(datetime)) %>%
     select(datetime) %>%
-    pull
+    pull()
 
   if (cadance == "exact") {
 
@@ -158,7 +160,7 @@ process_episode <- function(df, var_name, metadata, start_time, cadance) {
   meta_names <- find_2d_meta(metadata, var_name)
 
   tb_a <- df %>%
-    mutate(datetime = as.POSIXct(datetime, origin = "1970-01-01 00:00:00")) %>%
+    mutate(datetime = as.POSIXct(datetime)) %>%
     mutate(diff_time = difftime(datetime, start_time, units = "hours")) %>%
     mutate(r_diff_time = as.numeric(round_any(diff_time, cadance))) %>%
     distinct(r_diff_time, .keep_all = TRUE) %>%
