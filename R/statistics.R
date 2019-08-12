@@ -18,7 +18,6 @@
 #' @examples
 #' ks_test(heart_rates)
 ks_test <- function(x) {
-
   sites <- x %>%
     dplyr::distinct(.data$site) %>%
     dplyr::pull()
@@ -35,13 +34,14 @@ ks_test <- function(x) {
   for (i in 1:ncol(site_pairs)) {
     ks_list[[i]] <- ks.test(
       x = x %>%
-        filter(.data$site == site_pairs[,i][1]) %>%
+        filter(.data$site == site_pairs[, i][1]) %>%
         select(.data$value) %>%
         pull(),
       y = x %>%
-        filter(.data$site == site_pairs[,i][2]) %>%
+        filter(.data$site == site_pairs[, i][2]) %>%
         select(.data$value) %>%
-        pull())
+        pull()
+    )
   }
 
   site_pairs_t <- t(site_pairs) %>%
@@ -79,7 +79,6 @@ ks_test <- function(x) {
 #' @importFrom ggplot2 aes geom_tile scale_fill_viridis_c theme_minimal coord_equal ylab xlab
 #' @importFrom scales viridis_pal
 ks_plot <- function(x) {
-
   df <- x %>%
     select(Site_A, Site_B, statistic)
 
@@ -89,18 +88,26 @@ ks_plot <- function(x) {
 
   df <- bind_rows(df, df_copy)
 
-  df <- bind_rows(df,
-                  tibble(Site_A = c("UCL", "RYJ", "RGT", "OUH", "GSTT"),
-                         Site_B = c("UCL", "RYJ", "RGT", "OUH", "GSTT"),
-                         statistic = 0))
+  df <- bind_rows(
+    df,
+    tibble(
+      Site_A = c("UCL", "RYJ", "RGT", "OUH", "GSTT"),
+      Site_B = c("UCL", "RYJ", "RGT", "OUH", "GSTT"),
+      statistic = 0
+    )
+  )
 
   out <- df %>%
-    mutate_at(.vars = vars(Site_A, Site_B), .funs = factor,
-              levels = c("UCL", "RYJ", "RGT", "OUH", "GSTT"),
-              labels = c("UCL", "Imperial", "Cambridge", "Oxford", "GSTT")) %>%
+    mutate_at(
+      .vars = vars(Site_A, Site_B), .funs = factor,
+      levels = c("UCL", "RYJ", "RGT", "OUH", "GSTT"),
+      labels = c("UCL", "Imperial", "Cambridge", "Oxford", "GSTT")
+    ) %>%
     ggplot(
       aes(
-        x = .data$Site_A, y = .data$Site_B, fill = .data$statistic)) +
+        x = .data$Site_A, y = .data$Site_B, fill = .data$statistic
+      )
+    ) +
     lims(fill = c(0, 1)) +
     geom_tile() +
     scale_fill_gradientn(colours = scales::viridis_pal()(9), limits = c(0, 1), na.value = "grey50") +
@@ -110,6 +117,4 @@ ks_plot <- function(x) {
     guides(fill = guide_legend(title = "KS Distance"))
 
   return(out)
-
 }
-

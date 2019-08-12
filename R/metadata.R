@@ -11,7 +11,6 @@
 #' @examples
 #' makeDict(collect(tbls[["variables"]]))
 makeDict <- function(metadata = NULL) {
-
   if (is.null(metadata)) stop("You need to provide a metadata (variables) table")
 
   data_columns <- metadata %>%
@@ -37,5 +36,4 @@ makeDict <- function(metadata = NULL) {
   dict <- rbind(statics, dynamics)
 
   return(dict)
-
 }

@@ -19,30 +19,25 @@ connect <- function(database = NULL,
                     username = NULL,
                     password = NULL,
                     sqlite_file = NULL) {
-
   stopifnot(
-      all(!is.null(database), !is.null(username), !is.null(password)) ||
+    all(!is.null(database), !is.null(username), !is.null(password)) ||
       !is.null(sqlite_file)
   )
 
   if (is.null(sqlite_file)) {
-
     connection <- DBI::dbConnect(
       RPostgres::Postgres(),
       host = host,
       port = port,
       user = username,
       password = password,
-      dbname = database)
-
+      dbname = database
+    )
   } else {
-
     connection <- DBI::dbConnect(RSQLite::SQLite(), sqlite_file)
-
   }
 
   return(connection)
-
 }
 
 
@@ -64,8 +59,7 @@ connect <- function(database = NULL,
 #' tbls[["events"]] # the events table
 #' }
 retrieve_tables <- function(connection) {
-
-  if(missing(connection)) {
+  if (missing(connection)) {
     stop("a connection must be provided")
   }
 
@@ -77,7 +71,6 @@ retrieve_tables <- function(connection) {
   }
 
   return(tbl_list)
-
 }
 
 
@@ -94,27 +87,23 @@ retrieve_tables <- function(connection) {
 #' @examples
 #' make_reference(ctn)
 make_reference <- function(connection) {
+  episodes <- dplyr::tbl(connection, "episodes")
+  provenance <- dplyr::tbl(connection, "provenance")
 
-    episodes <- dplyr::tbl(connection, "episodes")
-    provenance <- dplyr::tbl(connection, "provenance")
+  reference <- left_join(episodes, provenance, by = c("provenance" = "file_id")) %>%
+    select(episode_id, nhs_number, start_date, site)
 
-    reference <- left_join(episodes, provenance, by = c("provenance" = "file_id")) %>%
-      select(episode_id, nhs_number, start_date, site)
+  # Accounts for lack of datetime type in SQLite
+  if (class(connection)[1] == "SQLiteConnection") {
+    reference <- reference %>%
+      collect() %>%
+      mutate(start_date = lubridate::ymd_hms(start_date))
 
-    # Accounts for lack of datetime type in SQLite
-    if (class(connection)[1] == "SQLiteConnection") {
-      reference <- reference %>%
-        collect() %>%
-        mutate(start_date = lubridate::ymd_hms(start_date))
-
-      return(reference)
-
-    } else {
-
-      reference <- collect(reference)
-      return(reference)
-
-    }
+    return(reference)
+  } else {
+    reference <- collect(reference)
+    return(reference)
+  }
 }
 
 
@@ -132,7 +121,6 @@ make_reference <- function(connection) {
 #' @examples
 #' make_core(ctn)
 make_core <- function(connection) {
-
   events <- dplyr::tbl(connection, "events")
   episodes <- dplyr::tbl(connection, "episodes")
   provenance <- dplyr::tbl(connection, "provenance")
@@ -142,21 +130,18 @@ make_core <- function(connection) {
     inner_join(events, by = "episode_id")
 
   return(core)
-
 }
 
 find_max_time <- function(events, time_col) {
-
   quo_timecol <- enquo(time_col)
 
   max_time <- events %>%
     group_by(episode_id) %>%
-    summarise(maxtime = max(!! quo_timecol, na.rm = TRUE)) %>%
+    summarise(maxtime = max(!!quo_timecol, na.rm = TRUE)) %>%
     collect() %>%
     mutate(maxtime = as.POSIXct(maxtime, origin = "1970-01-01 00:00:00"))
 
   return(max_time)
-
 }
 
 #' Custom Error Capturing
@@ -178,8 +163,8 @@ is.error <- function(x) {
 #'
 #' @examples
 #' round_any(c(1, 1.25, 1.5, 1.75, 2), accuracy = 0.5)
-round_any <- function(x, accuracy = 1){
-  round(x/accuracy)*accuracy
+round_any <- function(x, accuracy = 1) {
+  round(x / accuracy) * accuracy
 }
 
 # ===== CLASS CHECKING

@@ -8,7 +8,7 @@ qref <- read_csv(file = "./data/dq_ref.csv")
 preserved_classes <- makeDict(metadata) %>%
   mutate(class = paste(primary_column, type, sep = "_")) %>%
   distinct(class) %>%
-  pull
+  pull()
 
 devtools::use_data(qref, preserved_classes, internal = FALSE, overwrite = TRUE)
 

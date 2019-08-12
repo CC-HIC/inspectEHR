@@ -26,7 +26,6 @@ add_na.hic_dbl <- function(x = NULL, reference_table = NULL) {
     dplyr::filter(!(episode_id %in% havedata))
 
   return(nodata)
-
 }
 
 
@@ -42,5 +41,4 @@ add_na.hic_int <- function(x = NULL, reference_table = NULL) {
     dplyr::filter(!(episode_id %in% havedata))
 
   return(nodata)
-
 }

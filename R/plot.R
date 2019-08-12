@@ -12,7 +12,6 @@
 #' @return A tibble 1 row per event
 plot_hic <- function(x, path_name = NULL, all_sites.col,
                      start_date = "2014-01-01", end_date = "2019-01-01") {
-
   if (is.null(path_name)) stop("please supply a path name")
 
   this_event <- attr(x, "code_name")
@@ -27,7 +26,7 @@ plot_hic <- function(x, path_name = NULL, all_sites.col,
     dplyr::select(.data$primary_column) %>%
     dplyr::pull()
 
-  if (nrow(x) != 0)  {
+  if (nrow(x) != 0) {
 
     ## We should not be outputting these values as they
     ## are confidential - post codes etc.
@@ -35,41 +34,47 @@ plot_hic <- function(x, path_name = NULL, all_sites.col,
       "NIHR_HIC_ICU_0", c(
         "001", "002", "003", "004",
         "005", "073", "076", "399",
-        "088", "912")))) {
+        "088", "912"
+      )
+    ))) {
 
       # Picks out the correct main plot
       primary_plot <- plot_default(
         x,
         code_name = this_event,
-        all_sites.col = all_sites.col)
+        all_sites.col = all_sites.col
+      )
 
       cowplot::ggsave(
         plot = primary_plot,
         filename = paste0(path_name, "/", this_event, "_main.png"),
-        dpi = 300, width = 6, height = 4, units = "in")
+        dpi = 300, width = 6, height = 4, units = "in"
+      )
 
       # Picks out the correct full plot, warts and all.
       full_plot <- plot_full(
         x,
         code_name = this_event,
-        all_sites.col = all_sites.col)
+        all_sites.col = all_sites.col
+      )
 
       cowplot::ggsave(
         plot = full_plot,
         filename = paste0(path_name, "/", this_event, "_main_full.png"),
-        dpi = 300, width = 6, height = 4, units = "in")
+        dpi = 300, width = 6, height = 4, units = "in"
+      )
 
       # Check to see if there is a 2d component, and if so plot periodicity
       if (any(grepl("2d", class(x)))) {
-
         periodicity_plot <- plot_periodicity(x, this_event, all_sites.col)
 
         cowplot::ggsave(
           plot = periodicity_plot,
           filename = paste0(path_name, "/", this_event, "_periodicity.png"),
-          dpi = 300, width = 6, height = 4, units = "in")
+          dpi = 300, width = 6, height = 4, units = "in"
+        )
 
-      # plots out the event on a calendar heatmap
+        # plots out the event on a calendar heatmap
 
         # Capture so our axis are coordinated.
         max_daily_events <- x %>%
@@ -91,13 +96,14 @@ plot_hic <- function(x, path_name = NULL, all_sites.col,
           cal_plot <- ggHeatCal_events(
             cal_temp, cal_grid,
             Title = paste(this_event, "coverage for", names(all_sites.col)[i]),
-            max_limit = max_daily_events)
+            max_limit = max_daily_events
+          )
 
           ggplot2::ggsave(
             plot = cal_plot,
             filename = paste0(path_name, "/", this_event, "_covarage_", names(all_sites.col)[i], ".png"),
-            dpi = 300, width = 6, height = 4, units = "in")
-
+            dpi = 300, width = 6, height = 4, units = "in"
+          )
         }
       }
     }
@@ -105,20 +111,21 @@ plot_hic <- function(x, path_name = NULL, all_sites.col,
     if (data_type %in% c("integer", "real")) {
       ks_t <- ks_test(x)
       if (ks_t != "less than 2 groups") {
-      ks_out <- ks_plot(ks_t)
-      cowplot::ggsave(plot = ks_out,
-             filename = paste0(path_name, "/", this_event, "_ks.png"),
-             dpi = 300, units = "in", width = 6, height = 4)
+        ks_out <- ks_plot(ks_t)
+        cowplot::ggsave(
+          plot = ks_out,
+          filename = paste0(path_name, "/", this_event, "_ks.png"),
+          dpi = 300, units = "in", width = 6, height = 4
+        )
       }
     }
-
   } else {
-
-    cat("\n",
-        this_event,
-        "contains no data and will be skipped",
-        "\n")
-
+    cat(
+      "\n",
+      this_event,
+      "contains no data and will be skipped",
+      "\n"
+    )
   }
 }
 
@@ -139,30 +146,29 @@ plot_hic <- function(x, path_name = NULL, all_sites.col,
 #' @importFrom ggplot2 ggplot aes_string scale_fill_manual geom_density
 #' xlab ylab theme_minimal
 plot_default <- function(x, code_name, all_sites.col) {
-
   if (code_name %in% categorical_hic) {
-
     primary_plot <- plot_histogram_percent(x, code_name, all_sites.col)
-
   } else {
-
     primary_plot <- x %>%
-      dplyr::filter(.data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
-             .data$duplicate == 0 | is.na(.data$duplicate),
-             .data$range_error == 0 | is.na(.data$range_error)) %>%
+      dplyr::filter(
+        .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
+        .data$duplicate == 0 | is.na(.data$duplicate),
+        .data$range_error == 0 | is.na(.data$range_error)
+      ) %>%
       ggplot2::ggplot(
-        ggplot2::aes_string(x = "value",
-                   colour = "site")) +
+        ggplot2::aes_string(
+          x = "value",
+          colour = "site"
+        )
+      ) +
       ggplot2::stat_ecdf() +
       ggplot2::scale_colour_manual(values = all_sites.col) +
       ggplot2::xlab(code_name) +
       ggplot2::ylab("F(x)") +
       ggplot2::theme_minimal()
-
   }
 
   return(primary_plot)
-
 }
 
 
@@ -181,27 +187,24 @@ plot_default <- function(x, code_name, all_sites.col) {
 #' @importFrom ggplot2 ggplot aes_string scale_fill_manual geom_density
 #' xlab ylab theme_minimal
 plot_full <- function(x, code_name, all_sites.col) {
-
   if (code_name %in% categorical_hic) {
-
     primary_plot <- plot_histogram_percent(x, code_name, all_sites.col)
-
   } else {
-
     primary_plot <- x %>%
       ggplot2::ggplot(
-        ggplot2::aes_string(x = "value",
-                            colour = "site")) +
+        ggplot2::aes_string(
+          x = "value",
+          colour = "site"
+        )
+      ) +
       ggplot2::stat_ecdf() +
       ggplot2::scale_colour_manual(values = all_sites.col) +
       ggplot2::xlab(code_name) +
       ggplot2::ylab("F(x)") +
       ggplot2::theme_minimal()
-
   }
 
   return(primary_plot)
-
 }
 
 #' Plot Histogram
@@ -221,11 +224,12 @@ plot_full <- function(x, code_name, all_sites.col) {
 #' @importFrom ggplot2 ggplot aes_string geom_bar scale_fill_manual
 #' scale_y_continuous xlab ylab theme_minimal aes
 plot_histogram_percent <- function(x, code_name, all_sites.col) {
-
   perfect_plot <- x %>%
-    dplyr::filter(.data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
-           .data$duplicate == 0 | is.na(.data$duplicate),
-           .data$range_error == 0 | is.na(.data$range_error)) %>%
+    dplyr::filter(
+      .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
+      .data$duplicate == 0 | is.na(.data$duplicate),
+      .data$range_error == 0 | is.na(.data$range_error)
+    ) %>%
     dplyr::select(.data$site, .data$value) %>%
     dplyr::group_by(.data$site, .data$value) %>%
     dplyr::count() %>%
@@ -235,13 +239,17 @@ plot_histogram_percent <- function(x, code_name, all_sites.col) {
     dplyr::ungroup() %>%
     tidyr::complete(site, value) %>%
     ggplot2::ggplot(
-      ggplot2::aes_string(x = "value",
-                 fill = "site")) +
+      ggplot2::aes_string(
+        x = "value",
+        fill = "site"
+      )
+    ) +
     ggplot2::geom_bar(
-      ggplot2::aes(y = n/total),
+      ggplot2::aes(y = n / total),
       position = "dodge",
       stat = "identity",
-      width = 0.8) +
+      width = 0.8
+    ) +
     ggplot2::scale_fill_manual(values = all_sites.col) +
     ggplot2::scale_y_continuous(labels = scales::percent_format()) +
     ggplot2::xlab(code_name) +
@@ -249,7 +257,6 @@ plot_histogram_percent <- function(x, code_name, all_sites.col) {
     ggplot2::theme_minimal()
 
   return(perfect_plot)
-
 }
 
 
@@ -270,16 +277,20 @@ plot_histogram_percent <- function(x, code_name, all_sites.col) {
 #' @importFrom ggplot2 ggplot aes_string scale_fill_manual xlab ylab
 #' theme_minimal geom_histogram
 plot_periodicity <- function(x, code_name, all_sites.col) {
-
   periodicity_plot <- x %>%
-    dplyr::filter(.data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
-           .data$duplicate == 0 | is.na(.data$duplicate),
-           .data$range_error == 0 | is.na(.data$range_error)) %>%
+    dplyr::filter(
+      .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
+      .data$duplicate == 0 | is.na(.data$duplicate),
+      .data$range_error == 0 | is.na(.data$range_error)
+    ) %>%
     dplyr::distinct(.data$site, .data$periodicity) %>%
     dplyr::filter(.data$periodicity <= 48) %>%
     ggplot2::ggplot(
-      ggplot2::aes_string(x = "periodicity",
-           fill = "site")) +
+      ggplot2::aes_string(
+        x = "periodicity",
+        fill = "site"
+      )
+    ) +
     ggplot2::scale_fill_manual(values = all_sites.col) +
     ggplot2::geom_histogram() +
     ggplot2::xlab(code_name) +
@@ -287,7 +298,6 @@ plot_periodicity <- function(x, code_name, all_sites.col) {
     ggplot2::theme_minimal()
 
   return(periodicity_plot)
-
 }
 
 
@@ -304,15 +314,19 @@ plot_periodicity <- function(x, code_name, all_sites.col) {
 #' @importFrom rlang .data
 #' @importFrom magrittr %>%
 plot_date <- function(x, code_name, all_sites.col) {
-
   date_plot <- x %>%
-    filter(.data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
-           .data$duplicate == 0 | is.na(.data$duplicate),
-           .data$range_error == 0 | is.na(.data$range_error)) %>%
+    filter(
+      .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
+      .data$duplicate == 0 | is.na(.data$duplicate),
+      .data$range_error == 0 | is.na(.data$range_error)
+    ) %>%
     ggplot(
-      aes_string(x = "date",
-            fill = "site",
-                 y = "value")) +
+      aes_string(
+        x = "date",
+        fill = "site",
+        y = "value"
+      )
+    ) +
     scale_fill_manual(values = all_sites.col) +
     geom_line() +
     xlab("date") +
@@ -320,7 +334,6 @@ plot_date <- function(x, code_name, all_sites.col) {
     theme_minimal()
 
   return(date_plot)
-
 }
 
 
@@ -337,15 +350,19 @@ plot_date <- function(x, code_name, all_sites.col) {
 #' @importFrom rlang .data
 #' @importFrom magrittr %>%
 plot_datetime <- function(x, code_name, all_sites.col) {
-
   datetime_plot <- x %>%
-    filter(.data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
-           .data$duplicate == 0 | is.na(.data$duplicate),
-           .data$range_error == 0 | is.na(.data$range_error)) %>%
+    filter(
+      .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
+      .data$duplicate == 0 | is.na(.data$duplicate),
+      .data$range_error == 0 | is.na(.data$range_error)
+    ) %>%
     ggplot(
-      aes_string(x = "datetime",
-            fill = "site",
-                 y = "value")) +
+      aes_string(
+        x = "datetime",
+        fill = "site",
+        y = "value"
+      )
+    ) +
     scale_fill_manual(values = all_sites.col) +
     geom_line() +
     xlab("datetime") +
@@ -353,7 +370,6 @@ plot_datetime <- function(x, code_name, all_sites.col) {
     theme_minimal()
 
   return(date_plot)
-
 }
 
 
@@ -370,15 +386,19 @@ plot_datetime <- function(x, code_name, all_sites.col) {
 #' @importFrom rlang .data
 #' @importFrom magrittr %>%
 plot_time <- function(x, code_name, all_sites.col) {
-
   time_plot <- x %>%
-    filter(.data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
-           .data$duplicate == 0 | is.na(.data$duplicate),
-           .data$range_error == 0 | is.na(.data$range_error)) %>%
+    filter(
+      .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
+      .data$duplicate == 0 | is.na(.data$duplicate),
+      .data$range_error == 0 | is.na(.data$range_error)
+    ) %>%
     ggplot(
-      aes_string(x = "time",
-            fill = "site",
-                 y = "value")) +
+      aes_string(
+        x = "time",
+        fill = "site",
+        y = "value"
+      )
+    ) +
     scale_fill_manual(values = all_sites.col) +
     geom_line() +
     xlab("time") +
@@ -386,7 +406,6 @@ plot_time <- function(x, code_name, all_sites.col) {
     theme_minimal()
 
   return(date_plot)
-
 }
 
 
@@ -454,4 +473,3 @@ plot_time <- function(x, code_name, all_sites.col) {
 # }
 #
 # rm(i)
-

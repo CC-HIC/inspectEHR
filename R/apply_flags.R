@@ -84,16 +84,11 @@ flag_all <- function(x, los_table = NULL) {
 
   # Class tidying up
   if (any(class(x) %in% preserved_classes)) {
-
     return(x)
-
   } else {
-
     class(x) <- append(class(x), event_class, after = 0)
     return(x)
-
   }
-
 }
 
 
@@ -149,11 +144,12 @@ flag_range_numeric <- function(x = NULL) {
     dplyr::left_join(qref, by = "code_name") %>%
     dplyr::mutate(
       range_error = if_else(.data$value > .data$range_max, 104L,
-                    if_else(.data$value < .data$range_min, 103L, 0L))) %>%
+        if_else(.data$value < .data$range_min, 103L, 0L)
+      )
+    ) %>%
     dplyr::select(.data$internal_id, .data$range_error)
 
   return(x)
-
 }
 
 
@@ -161,11 +157,9 @@ flag_range_numeric <- function(x = NULL) {
 #' @importFrom magrittr %>% %<>%
 #' @importFrom rlang .data !!
 flag_range.real_2d <- function(x = NULL) {
-
   x %<>% flag_range_numeric()
   class(x) <- append(class(x), "real_2d", after = 0)
   return(x)
-
 }
 
 
@@ -173,11 +167,9 @@ flag_range.real_2d <- function(x = NULL) {
 #' @importFrom magrittr %>% %<>%
 #' @importFrom rlang .data !!
 flag_range.real_1d <- function(x = NULL) {
-
   x %<>% flag_range_numeric()
   class(x) <- append(class(x), "real_1d", after = 0)
   return(x)
-
 }
 
 
@@ -185,11 +177,9 @@ flag_range.real_1d <- function(x = NULL) {
 #' @importFrom magrittr %>% %<>%
 #' @importFrom rlang .data !!
 flag_range.integer_2d <- function(x = NULL) {
-
   x %<>% flag_range_numeric()
   class(x) <- append(class(x), "integer_2d", after = 0)
   return(x)
-
 }
 
 
@@ -197,11 +187,9 @@ flag_range.integer_2d <- function(x = NULL) {
 #' @importFrom magrittr %>% %<>%
 #' @importFrom rlang .data !!
 flag_range.integer_1d <- function(x = NULL) {
-
   x %<>% flag_range_numeric()
   class(x) <- append(class(x), "integer_1d", after = 0)
   return(x)
-
 }
 
 
@@ -219,24 +207,21 @@ flag_range.string_2d <- function(x = NULL) {
 
   # Checks to see if this is microdata, and if so aborts
   if (attr(x, "code_name") == "NIHR_HIC_ICU_0187") {
-
     x %<>%
       dplyr::select(.data$internal_id) %>%
       dplyr::mutate(range_error = 0L)
-
   } else {
 
-  # The only other possibility is airway data
+    # The only other possibility is airway data
     x %<>%
       dplyr::mutate(
-        range_error = ifelse(value %in% c("E", "N", "T"), 0L, 105L)) %>%
+        range_error = ifelse(value %in% c("E", "N", "T"), 0L, 105L)
+      ) %>%
       dplyr::select(.data$internal_id, .data$range_error)
-
   }
 
   class(x) <- append(class(x), "string_2d", after = 0)
   return(x)
-
 }
 
 
@@ -245,15 +230,16 @@ flag_range.string_2d <- function(x = NULL) {
 #' @importFrom rlang .data !!
 #' @importFrom tidyr unnest
 flag_range.string_1d <- function(x = NULL) {
-
   flags_applied <- FALSE
 
   code_name <- attr(x, "code_name")
   quo_codename <- enquo(code_name)
 
   row_count <- qref %>%
-    filter(.data$code_name == !! quo_codename,
-           .data$possible_values != "NULL") %>%
+    filter(
+      .data$code_name == !!quo_codename,
+      .data$possible_values != "NULL"
+    ) %>%
     nrow()
 
   if (row_count == 1) {
@@ -261,7 +247,7 @@ flag_range.string_1d <- function(x = NULL) {
     # This handles the majority of string enumerated cases
 
     possible_values <- qref %>%
-      filter(.data$code_name == !! quo_codename) %>%
+      filter(.data$code_name == !!quo_codename) %>%
       select(.data$possible_values) %>%
       unnest() %>%
       select(.data$possible_values) %>%
@@ -271,11 +257,12 @@ flag_range.string_1d <- function(x = NULL) {
       dplyr::mutate(
         range_error = if_else(
           is.na(.data$value), as.integer(NA),
-          if_else(.data$value %in% possible_values, 0L, 105L))) %>%
+          if_else(.data$value %in% possible_values, 0L, 105L)
+        )
+      ) %>%
       dplyr::select(.data$internal_id, .data$range_error)
 
     flags_applied <- TRUE
-
   } else {
 
     # We need to check a few special cases here
@@ -286,11 +273,11 @@ flag_range.string_1d <- function(x = NULL) {
 
       x <- x %>%
         dplyr::mutate(
-          range_error = if_else(validate_post_code(.data$value), 0L, 109L)) %>%
+          range_error = if_else(validate_post_code(.data$value), 0L, 109L)
+        ) %>%
         dplyr::select(.data$internal_id, .data$range_error)
 
       flags_applied <- TRUE
-
     }
 
     if (code_name == "NIHR_HIC_ICU_0073") {
@@ -299,11 +286,12 @@ flag_range.string_1d <- function(x = NULL) {
       x <- x %>%
         dplyr::mutate(
           range_error = if_else(is.na(.data$value), as.integer(NA),
-                                if_else(validate_nhs(.data$value), 0L, 109L))) %>%
+            if_else(validate_nhs(.data$value), 0L, 109L)
+          )
+        ) %>%
         dplyr::select(.data$internal_id, .data$range_error)
 
       flags_applied <- TRUE
-
     }
 
     if (code_name %in% c("NIHR_HIC_ICU_0399", "NIHR_HIC_ICU_0088", "NIHR_HIC_ICU_0912")) {
@@ -315,31 +303,29 @@ flag_range.string_1d <- function(x = NULL) {
       x <- x %>%
         dplyr::mutate(
           range_error = ifelse(is.na(.data$value), as.integer(NA),
-                               if_else(validate_icnarc(.data$value), 0L, 109L))) %>%
+            if_else(validate_icnarc(.data$value), 0L, 109L)
+          )
+        ) %>%
         dplyr::select(.data$internal_id, .data$range_error)
 
       flags_applied <- TRUE
-
     }
 
     # Others not yet covered
     # NIHR_HIC_ICU_0074 - Other Conditions in PMHx
-
   }
 
   if (!flags_applied) {
-
     x <- x %>%
       dplyr::mutate(
-        range_error = as.integer(NA)) %>%
+        range_error = as.integer(NA)
+      ) %>%
       dplyr::select(.data$internal_id, .data$range_error)
-
   }
 
   class(x) <- append(class(x), "string_1d", after = 0)
 
   return(x)
-
 }
 
 
@@ -351,13 +337,14 @@ flag_range.date_1d <- function(x = NULL) {
   x %<>%
     dplyr::mutate(
       range_error = ifelse(.data$value > Sys.Date(), 104L,
-                    ifelse(.data$value < lubridate::dmy("01/01/1900"), 103L, 0))) %>%
+        ifelse(.data$value < lubridate::dmy("01/01/1900"), 103L, 0)
+      )
+    ) %>%
     dplyr::select(.data$internal_id, .data$range_error)
 
   class(x) <- append(class(x), "date_1d", after = 0)
 
   return(x)
-
 }
 
 
@@ -369,15 +356,18 @@ flag_range.datetime_1d <- function(x = NULL) {
   x %<>%
     dplyr::mutate(
       range_error = ifelse(.data$value > Sys.time(), 104L,
-                    ifelse(.data$value < lubridate::dmy_hms(
-                      "01/01/1900 00:00:00"),
-                  103L, 0))) %>%
+        ifelse(.data$value < lubridate::dmy_hms(
+          "01/01/1900 00:00:00"
+        ),
+        103L, 0
+        )
+      )
+    ) %>%
     dplyr::select(.data$internal_id, .data$range_error)
 
   class(x) <- append(class(x), "datetime_1d", after = 0)
 
   return(x)
-
 }
 
 
@@ -410,9 +400,7 @@ flag_bounds <- function(x, los_table = NULL) {
 
 
 flag_bounds.default <- function(...) {
-
   print("there are no methods for this class")
-
 }
 
 
@@ -431,56 +419,51 @@ flag_bounds.default <- function(...) {
 #' @examples
 #' flag_bounds_2d(x, los_table)
 flag_bounds_2d <- function(x = NULL, los_table = NULL) {
-
   x <- x %>%
     left_join(los_table %>%
-                select(-.data$site), by = "episode_id") %>%
+      select(-.data$site), by = "episode_id") %>%
     mutate(out_of_bounds = if_else(
       (.data$validity != 0L), as.integer(NA),
+      if_else(
+        (as.integer(difftime(.data$datetime, .data$epi_start_dttm, units = "days")) < -2L), 101L,
         if_else(
-      (as.integer(difftime(.data$datetime, .data$epi_start_dttm, units = "days")) < -2L), 101L,
-        if_else(
-      (as.integer(difftime(.data$datetime, .data$epi_end_dttm, units = "days")) > 2L), 102L, 0L)))) %>%
+          (as.integer(difftime(.data$datetime, .data$epi_end_dttm, units = "days")) > 2L), 102L, 0L
+        )
+      )
+    )) %>%
     select(.data$internal_id, .data$out_of_bounds)
 
   return(x)
-
 }
 
 
 #' @export
 flag_bounds.real_2d <- function(x = NULL, los_table = NULL) {
-
   x %<>% flag_bounds_2d(los_table = los_table)
 
   class(x) <- append(class(x), "real_2d", after = 0)
 
   return(x)
-
 }
 
 
 #' @export
 flag_bounds.integer_2d <- function(x = NULL, los_table = NULL) {
-
   x %<>% flag_bounds_2d(los_table = los_table)
 
   class(x) <- append(class(x), "integer_2d", after = 0)
 
   return(x)
-
 }
 
 
 #' @export
 flag_bounds.string_2d <- function(x = NULL, los_table = NULL) {
-
   x %<>% flag_bounds_2d(los_table = los_table)
 
   class(x) <- append(class(x), "string_2d", after = 0)
 
   return(x)
-
 }
 
 
@@ -505,110 +488,100 @@ flag_duplicate <- function(x) {
 
 
 flag_duplicate.default <- function(...) {
-
   print("no default methods are defined for this class")
-
 }
 
 
 #' @export
 flag_duplicate_2d <- function(x = NULL) {
-
   x %<>%
     ungroup() %>%
     distinct(.data$episode_id,
-             .data$datetime,
-             .data$value,
-             .keep_all = TRUE) %>%
+      .data$datetime,
+      .data$value,
+      .keep_all = TRUE
+    ) %>%
     mutate(duplicate = 0L) %>%
     select(.data$internal_id, .data$duplicate) %>%
     right_join(x, by = "internal_id") %>%
-    mutate_at(.vars = vars(.data$duplicate),
-              .funs = funs(ifelse(is.na(.), 106L, .))) %>%
+    mutate_at(
+      .vars = vars(.data$duplicate),
+      .funs = funs(ifelse(is.na(.), 106L, .))
+    ) %>%
     select(.data$internal_id, .data$duplicate)
 
   return(x)
-
 }
 
 
 #' @export
 flag_duplicate.real_2d <- function(x = NULL) {
-
   x %<>% flag_duplicate_2d()
 
   class(x) <- append(class(x), "real_2d", after = 0)
 
   return(x)
-
 }
 
 
 #' @export
 flag_duplicate.integer_2d <- function(x = NULL) {
-
   x %<>% flag_duplicate_2d()
 
   class(x) <- append(class(x), "integer_2d", after = 0)
 
   return(x)
-
 }
 
 
 #' @export
 flag_duplicate.string_2d <- function(x = NULL) {
-
   x %<>% flag_duplicate_2d()
 
   class(x) <- append(class(x), "string_2d", after = 0)
 
   return(x)
-
 }
 
 
 #' @export
 flag_duplicate_1d <- function(x = NULL) {
-
   x %<>%
     ungroup() %>%
     distinct(.data$episode_id,
-             .data$value,
-             .keep_all = TRUE) %>%
+      .data$value,
+      .keep_all = TRUE
+    ) %>%
     mutate(duplicate = 0L) %>%
     select(.data$internal_id, .data$duplicate) %>%
     right_join(x, by = "internal_id") %>%
-    mutate_at(.vars = vars(.data$duplicate),
-              .funs = funs(ifelse(is.na(.), 106L, .))) %>%
+    mutate_at(
+      .vars = vars(.data$duplicate),
+      .funs = funs(ifelse(is.na(.), 106L, .))
+    ) %>%
     select(.data$internal_id, .data$duplicate)
 
   return(x)
-
 }
 
 
 #' @export
 flag_duplicate.real_1d <- function(x = NULL) {
-
   x %<>% flag_duplicate_1d()
 
   class(x) <- append(class(x), "real_1d", after = 0)
 
   return(x)
-
 }
 
 
 #' @export
 flag_duplicate.integer_1d <- function(x = NULL) {
-
   x %<>% flag_duplicate_1d()
 
   class(x) <- append(class(x), "integer_1d", after = 0)
 
   return(x)
-
 }
 
 
@@ -616,49 +589,41 @@ flag_duplicate.integer_1d <- function(x = NULL) {
 
 #' @export
 flag_duplicate.string_1d <- function(x = NULL) {
-
   x %<>% flag_duplicate_1d()
 
   class(x) <- append(class(x), "string_1d", after = 0)
 
   return(x)
-
 }
 
 
 #' @export
 flag_duplicate.datetime_1d <- function(x = NULL) {
-
   x %<>% flag_duplicate_1d()
 
   class(x) <- append(class(x), "datetime_1d", after = 0)
 
   return(x)
-
 }
 
 
 #' @export
 flag_duplicate.date_1d <- function(x = NULL) {
-
   x %<>% flag_duplicate_1d()
 
   class(x) <- append(class(x), "date_1d", after = 0)
 
   return(x)
-
 }
 
 
 #' @export
 flag_duplicate.time_1d <- function(x = NULL) {
-
   x %<>% flag_duplicate_1d()
 
   class(x) <- append(class(x), "time_1d", after = 0)
 
   return(x)
-
 }
 
 #' Flags for Periodicity of a Data Item (S3 Generic)
@@ -686,9 +651,7 @@ flag_periodicity <- function(x, los_table = NULL) {
 
 
 flag_periodicity.default <- function(x) {
-
   print("There are no default methods for this class")
-
 }
 
 
@@ -706,13 +669,14 @@ flag_periodicity.default <- function(x) {
 #' @examples
 #' flag_periodicity(x, los_table)
 flag_periodicity_generic <- function(x, los_table = NULL) {
-
   x %<>%
 
     # filter out values that cannot be taken into consideration for this calculation
-    dplyr::filter(.data$out_of_bounds == 0L,
-                  .data$range_error == 0L,
-                  .data$duplicate == 0L) %>%
+    dplyr::filter(
+      .data$out_of_bounds == 0L,
+      .data$range_error == 0L,
+      .data$duplicate == 0L
+    ) %>%
 
     # only need 1 value of interest to track periodicity (we'll choose datetime)
     dplyr::select(.data$episode_id, .data$datetime) %>%
@@ -722,13 +686,14 @@ flag_periodicity_generic <- function(x, los_table = NULL) {
     dplyr::summarise(count = n()) %>%
     dplyr::left_join(los_table %>%
 
-                       # only checking validated episodes
-                       dplyr::filter(.data$validity == 0L) %>%
-                       dplyr::select(.data$episode_id, .data$los),
-                     by = "episode_id") %>%
+      # only checking validated episodes
+      dplyr::filter(.data$validity == 0L) %>%
+      dplyr::select(.data$episode_id, .data$los),
+    by = "episode_id"
+    ) %>%
 
     # calculate the periodicity
-    dplyr::mutate(periodicity = count/as.numeric(los)) %>%
+    dplyr::mutate(periodicity = count / as.numeric(los)) %>%
     dplyr::select(.data$episode_id, .data$periodicity) %>%
 
     # right join back into the original object
@@ -737,43 +702,36 @@ flag_periodicity_generic <- function(x, los_table = NULL) {
     dplyr::right_join(x, by = "episode_id")
 
   return(x)
-
 }
 
 
 #' @export
 flag_periodicity.real_2d <- function(x, los_table = NULL) {
-
   x <- flag_periodicity_generic(x, los_table = los_table)
 
   class(x) <- append(class(x), "real_2d", after = 0)
 
   return(x)
-
 }
 
 
 #' @export
 flag_periodicity.integer_2d <- function(x, los_table = NULL) {
-
   x <- flag_periodicity_generic(x, los_table = los_table)
 
   class(x) <- append(class(x), "integer_2d", after = 0)
 
   return(x)
-
 }
 
 
 #' @export
 flag_periodicity.string_2d <- function(x, los_table = NULL) {
-
   x <- flag_periodicity_generic(x, los_table = los_table)
 
   class(x) <- append(class(x), "string_2d", after = 0)
 
   return(x)
-
 }
 
 

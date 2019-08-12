@@ -17,7 +17,6 @@ plot_heatcal <- function(reference_table = NULL,
                          start_date = "2014-01-01",
                          end_date = "2019-01-01",
                          max_limit = 25) {
-
   calendar_template <- reference_table %>%
     daily_admssions(by_site = site) %>%
     create_calendar_template(start_date = start_date, end_date = end_date)
@@ -26,25 +25,25 @@ plot_heatcal <- function(reference_table = NULL,
     create_grid()
 
   if (is.null(filename)) {
-
-    plotted_heatcal <- ggHeatCal_episodes(x = calendar_template,
-              gridLines = calendar_grid,
-              Title = paste0("Admission Calendar Heatmap for " , site),
-              max_limit = max_limit)
+    plotted_heatcal <- ggHeatCal_episodes(
+      x = calendar_template,
+      gridLines = calendar_grid,
+      Title = paste0("Admission Calendar Heatmap for ", site),
+      max_limit = max_limit
+    )
 
     return(plotted_heatcal)
-
   } else {
-
     ggsave(
-      ggHeatCal_episodes(x = calendar_template,
-                gridLines = calendar_grid,
-                Title = paste0("Admission Calendar Heatmap for " , site),
-                max_limit = max_limit),
-      filename = filename)
-
+      ggHeatCal_episodes(
+        x = calendar_template,
+        gridLines = calendar_grid,
+        Title = paste0("Admission Calendar Heatmap for ", site),
+        max_limit = max_limit
+      ),
+      filename = filename
+    )
   }
-
 }
 
 
@@ -61,12 +60,10 @@ plot_heatcal <- function(reference_table = NULL,
 #' @examples
 #' find_first_sunday(x)
 find_first_sunday <- function(x) {
-
   first <- floor_date(x, "month")
-  dow <- sapply(seq(0,6),function(x) wday(first+days(x)))
-  firstSunday <- first + days(which(dow==1)-1)
+  dow <- sapply(seq(0, 6), function(x) wday(first + days(x)))
+  firstSunday <- first + days(which(dow == 1) - 1)
   return(firstSunday)
-
 }
 
 
@@ -95,21 +92,26 @@ find_first_sunday <- function(x) {
 create_calendar_template <- function(x = NULL,
                                      start_date = "2014-01-01",
                                      end_date = "2018-01-01") {
-
   first_date <- floor_date(ymd(start_date), unit = "years")
   last_date <- ceiling_date(ymd(end_date), unit = "years") - 1
 
   # days till first sunday for each year
   remaining <-
     tibble(
-      years = seq(from = first_date,
-                    to = last_date,
-                    by = "year")) %>%
+      years = seq(
+        from = first_date,
+        to = last_date,
+        by = "year"
+      )
+    ) %>%
     mutate(
       firstSundays = as.Date(
-        sapply(years, find_first_sunday), origin = "1970/01/01"),
-    remaining_days = as.integer(firstSundays - years),
-              year = year(years))
+        sapply(years, find_first_sunday),
+        origin = "1970/01/01"
+      ),
+      remaining_days = as.integer(firstSundays - years),
+      year = year(years)
+    )
 
   calendar <-
     tibble(date = seq(from = first_date, to = last_date, by = "day")) %>%
@@ -119,37 +121,33 @@ create_calendar_template <- function(x = NULL,
   week_of_year <- vector(mode = "integer")
 
   for (year in years) {
-
     if (remaining$remaining_days[remaining$year == year] == 0) {
       this_week_of_year <- rep(1:52, each = 7)
-
     } else {
-
-      this_week_of_year <- c(rep(1, times = remaining$remaining_days[remaining$year == year]),
-                             rep(2:52, each = 7))
-
+      this_week_of_year <- c(
+        rep(1, times = remaining$remaining_days[remaining$year == year]),
+        rep(2:52, each = 7)
+      )
     }
 
-    remaining_length <- nrow(calendar[calendar$year == year,]) - length(this_week_of_year)
+    remaining_length <- nrow(calendar[calendar$year == year, ]) - length(this_week_of_year)
 
     if (remaining_length != 0) {
-
       this_week_of_year <- c(this_week_of_year, rep(53, times = remaining_length))
-
     }
 
     week_of_year <- c(week_of_year, this_week_of_year)
-
   }
 
   calendar <- calendar %>%
-    mutate(week_of_year = as.integer(week_of_year),
-            day_of_week = wday(date, label = TRUE),
-                  month = month(date, label = TRUE)) %>%
+    mutate(
+      week_of_year = as.integer(week_of_year),
+      day_of_week = wday(date, label = TRUE),
+      month = month(date, label = TRUE)
+    ) %>%
     left_join(x, by = "date")
 
   return(calendar)
-
 }
 
 #' Create Calendar Grid
@@ -165,7 +163,6 @@ create_calendar_template <- function(x = NULL,
 #' @examples
 #' create_grid(cal_template)
 create_grid <- function(calendar_template = NULL) {
-
   template <- calendar_template %>%
     select(date, year, week_of_year, day_of_week, month)
 
@@ -176,7 +173,8 @@ create_grid <- function(calendar_template = NULL) {
         lead(month, 7) != month |
           is.na(lead(month, 7)),
         week_of_year + 0.5,
-        NA),
+        NA
+      ),
       y_start = ifelse(
         lead(month, 7) != month |
           is.na(lead(month, 7)),
@@ -184,16 +182,18 @@ create_grid <- function(calendar_template = NULL) {
         NA
       )
     ) %>%
-    na.omit %>%
+    na.omit() %>%
     select(year, x_start, y_start) %>%
-    mutate(x_end = x_start,
-           y_end = y_start - 1)
+    mutate(
+      x_end = x_start,
+      y_end = y_start - 1
+    )
 
   # Left Vertical
   lv <- template %>%
     mutate(
       x_start = ifelse(lag(month, 7) != month |
-                         is.na(lag(month, 7)), week_of_year - 0.5, NA),
+        is.na(lag(month, 7)), week_of_year - 0.5, NA),
       y_start = ifelse(
         lag(month, 7) != month |
           is.na(lag(month, 7)),
@@ -201,10 +201,12 @@ create_grid <- function(calendar_template = NULL) {
         NA
       )
     ) %>%
-    na.omit %>%
+    na.omit() %>%
     select(year, x_start, y_start) %>%
-    mutate(x_end = x_start,
-           y_end = y_start - 1)
+    mutate(
+      x_end = x_start,
+      y_end = y_start - 1
+    )
 
   # Top Horizontal
   th <- template %>%
@@ -224,10 +226,12 @@ create_grid <- function(calendar_template = NULL) {
         NA
       )
     ) %>%
-    na.omit %>%
+    na.omit() %>%
     select(year, x_start, y_start) %>%
-    mutate(x_end = x_start + 1,
-           y_end = y_start)
+    mutate(
+      x_end = x_start + 1,
+      y_end = y_start
+    )
 
   # Bottom Horizontal
   bh <- template %>%
@@ -247,15 +251,16 @@ create_grid <- function(calendar_template = NULL) {
         NA
       )
     ) %>%
-    na.omit %>%
+    na.omit() %>%
     select(year, x_start, y_start) %>%
-    mutate(x_end = x_start + 1,
-           y_end = y_start)
+    mutate(
+      x_end = x_start + 1,
+      y_end = y_start
+    )
 
   gridLines <- rbind(rv, lv, th, bh) %>% distinct()
 
   return(gridLines)
-
 }
 
 
@@ -279,28 +284,30 @@ create_grid <- function(calendar_template = NULL) {
 #' @examples
 #' ggHeatCal_episodes(x, gridlines, "UCL Admission Heatmap")
 ggHeatCal_episodes <- function(x, gridLines, Title, max_limit = 25) {
-
   x %>%
     ggplot() +
     geom_tile(aes(x = week_of_year, y = day_of_week, fill = episodes), colour = "#FFFFFF") +
-    facet_grid(year~.) +
+    facet_grid(year ~ .) +
     theme_minimal() +
-    theme(panel.grid.major=element_blank(),
-          plot.title = element_text(hjust = 0.5),
-          axis.text.x = element_blank(),
-          axis.title.y = element_blank(),
-          axis.title.x = element_blank()) +
+    theme(
+      panel.grid.major = element_blank(),
+      plot.title = element_text(hjust = 0.5),
+      axis.text.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.title.x = element_blank()
+    ) +
     geom_segment(aes(x = x_start, y = y_start, xend = x_end, yend = y_end),
-                 colour = "black", size = 0.5, data = gridLines) +
+      colour = "black", size = 0.5, data = gridLines
+    ) +
     scale_fill_viridis_c(rescaler = function(x, to = c(0, 1), from = NULL) {
       if_else(x < max_limit,
-              scales::rescale(x, to = to, from = c(min(x, na.rm = TRUE), max_limit)), 1)
+        scales::rescale(x, to = to, from = c(min(x, na.rm = TRUE), max_limit)), 1
+      )
     }, na.value = "grey60") +
     labs(title = Title) +
     ylab(label = "Day of Week") +
     xlab(label = "Month") +
     coord_equal()
-
 }
 
 
@@ -324,22 +331,25 @@ ggHeatCal_episodes <- function(x, gridLines, Title, max_limit = 25) {
 #' @examples
 #' ggHeatCal_events(df, gridlines, "Heart Rate Heatmap")
 ggHeatCal_events <- function(x, gridLines, Title, max_limit = 24) {
-
   x %>%
     ggplot() +
     geom_tile(aes(x = week_of_year, y = day_of_week, fill = events), colour = "#FFFFFF") +
-    facet_grid(year~.) +
+    facet_grid(year ~ .) +
     theme_minimal() +
-    theme(panel.grid.major=element_blank(),
-          plot.title = element_text(hjust = 0.5),
-          axis.text.x = element_blank(),
-          axis.title.y = element_blank(),
-          axis.title.x = element_blank()) +
+    theme(
+      panel.grid.major = element_blank(),
+      plot.title = element_text(hjust = 0.5),
+      axis.text.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.title.x = element_blank()
+    ) +
     geom_segment(aes(x = x_start, y = y_start, xend = x_end, yend = y_end),
-                 colour = "black", size = 0.5, data = gridLines) +
+      colour = "black", size = 0.5, data = gridLines
+    ) +
     scale_fill_viridis_c(rescaler = function(x, to = c(0, 1), from = NULL) {
       if_else(x < max_limit,
-              scales::rescale(x, to = to, from = c(min(x, na.rm = TRUE), max_limit)), 1)
+        scales::rescale(x, to = to, from = c(min(x, na.rm = TRUE), max_limit)), 1
+      )
     }, na.value = "grey60") +
     labs(title = Title) +
     ylab(label = "Day of Week") +

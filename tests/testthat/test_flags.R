@@ -49,13 +49,17 @@ test_that("flagged tables are all the same length", {
   expect_length(flag_date_1d, 9)
 })
 
-test_names_1d <- c("internal_id", "site", "code_name", "episode_id",
-                "value", "range_error", "out_of_bounds",
-                "duplicate", "periodicity")
+test_names_1d <- c(
+  "internal_id", "site", "code_name", "episode_id",
+  "value", "range_error", "out_of_bounds",
+  "duplicate", "periodicity"
+)
 
-test_names_2d <- c("episode_id", "periodicity", "internal_id", "site",
-                   "code_name", "datetime", "value", "range_error", "out_of_bounds",
-                   "duplicate")
+test_names_2d <- c(
+  "episode_id", "periodicity", "internal_id", "site",
+  "code_name", "datetime", "value", "range_error", "out_of_bounds",
+  "duplicate"
+)
 
 test_that("flagged tables have the correct naming scheme", {
   expect_equal(names(flag_real_1d), test_names_1d)
@@ -105,7 +109,7 @@ test_that("string_1d handled correctly", {
 
 test_that("string_2d handled correctly", {
   expect_equal(flag_string_2d[4, "out_of_bounds", drop = TRUE], 102)
-  #expect_equal(flag_string_2d[5, "out_of_bounds", drop = TRUE], 101)
+  # expect_equal(flag_string_2d[5, "out_of_bounds", drop = TRUE], 101)
   expect_equal(flag_string_2d[8, "out_of_bounds", drop = TRUE], as.integer(NA))
   expect_equal(flag_string_2d[9, "out_of_bounds", drop = TRUE], as.integer(NA))
   expect_equal(flag_string_2d[8, "range_error", drop = TRUE], 105)

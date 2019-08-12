@@ -15,29 +15,35 @@ coverage <- function(x, ...) {
 
 #' @export
 coverage.hic_dbl <- function(x, occupancy_tbl = NULL, cases_all_tbl = NULL) {
-
   x %<>%
-    dplyr::filter(out_of_bounds == 0,
-                  range_error == 0,
-                  duplicate == 0) %>%
+    dplyr::filter(
+      out_of_bounds == 0,
+      range_error == 0,
+      duplicate == 0
+    ) %>%
     dplyr::mutate(date = lubridate::date(datetime)) %>%
     dplyr::select(site, date, value) %>%
     dplyr::group_by(site, date) %>%
     dplyr::summarise(count = n()) %>%
     dplyr::ungroup() %>%
     dplyr::right_join(occupancy_tbl,
-                      by = c("site" = "site",
-                             "date" = "date")) %>%
+      by = c(
+        "site" = "site",
+        "date" = "date"
+      )
+    ) %>%
     dplyr::left_join(cases_all_tbl,
-                     by = c("site" = "site",
-                            "year" = "year",
-                           "month" = "month",
-                   "week_of_month" = "week_of_month")) %>%
+      by = c(
+        "site" = "site",
+        "year" = "year",
+        "month" = "month",
+        "week_of_month" = "week_of_month"
+      )
+    ) %>%
     dplyr::select(site, date, year, month, week_of_month, wday, count, episodes, patients, est_occupancy) %>%
-    dplyr::mutate(disparity = ifelse(is.na(count), NA, count/est_occupancy))
+    dplyr::mutate(disparity = ifelse(is.na(count), NA, count / est_occupancy))
 
   class(x) <- c(class(x), "hic_coverage")
 
   return(x)
-
 }

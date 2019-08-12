@@ -11,15 +11,15 @@
 #' @examples
 #' xml_stats(tbls[["importstats"]])
 xml_stats <- function(importstats) {
-
   collect(importstats) %>%
-  left_join(provenance %>%
-              select(file_id, site), by = c("provenance_id" = "file_id")) %>%
-  group_by(site) %>%
-  summarise(episodes_read = sum(episodes_read),
-     episodes_missing_key = sum(episodes_missing_key),
-           events_dropped = sum(events_dropped))
-
+    left_join(provenance %>%
+      select(file_id, site), by = c("provenance_id" = "file_id")) %>%
+    group_by(site) %>%
+    summarise(
+      episodes_read = sum(episodes_read),
+      episodes_missing_key = sum(episodes_missing_key),
+      events_dropped = sum(events_dropped)
+    )
 }
 
 
@@ -39,7 +39,6 @@ xml_stats <- function(importstats) {
 #' @examples
 #' xml_validation(xml, schema)
 xml_validation <- function(xml_file, schema) {
-
   xml_file_x <- xml2::read_xml(xml_file)
 
   validation <- xml2::xml_validate(xml_file_x, schema)
@@ -47,15 +46,12 @@ xml_validation <- function(xml_file, schema) {
   if (validation == TRUE) {
     return(TRUE)
   } else {
-
-  errors <- validation %>%
+    errors <- validation %>%
       base::attr(which = "errors") %>%
       stringr::str_sub(start = 54L, end = -1L)
 
-   return(errors)
-
+    return(errors)
   }
-
 }
 
 
@@ -76,7 +72,6 @@ xml_validation <- function(xml_file, schema) {
 #' @examples
 #' error_summary(xml_validation)
 error_summary <- function(xml_validation) {
-
   xml_validation %>%
     dplyr::left_join(provenance %>% select(file_id, site), by = c("provenance_id" = "file_id")) %>%
     dplyr::mutate(message_type = dplyr::case_when(
@@ -90,13 +85,8 @@ error_summary <- function(xml_validation) {
       grepl("not a valid value of the atomic type \'xs:integer\'", message) ~ "Wrong Data Type",
       grepl("could not convert string to float", message) ~ "Wrong Data Type",
       grepl("is not an element of the set", message) ~ "Wrong Data Type",
-      TRUE ~ "Other")) %>%
+      TRUE ~ "Other"
+    )) %>%
     dplyr::group_by(site, message_type) %>%
     dplyr::summarise(count = n())
-
 }
-
-
-
-
-

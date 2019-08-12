@@ -57,10 +57,12 @@ make_report <- function(database = "lenient_dev",
     cat("path:", paste(path_name), "does not exist. Creating directory")
   }
 
-  if(!dir.exists(paste0(path_name,"plots"))) {
-    dir.create(paste0(path_name, "plots")) }
-  if(!dir.exists(paste0(path_name, "data"))) {
-    dir.create(paste0(path_name, "data")) }
+  if (!dir.exists(paste0(path_name, "plots"))) {
+    dir.create(paste0(path_name, "plots"))
+  }
+  if (!dir.exists(paste0(path_name, "data"))) {
+    dir.create(paste0(path_name, "data"))
+  }
 
   print("Starting Episode Evaluation")
 
@@ -70,20 +72,24 @@ make_report <- function(database = "lenient_dev",
     dplyr::pull()
 
   for (i in seq_along(hic_codes)) {
-    if(!dir.exists(paste0(path_name,"plots/", hic_codes[i]))) {
-      dir.create(paste0(path_name, "plots/", hic_codes[i])) }
+    if (!dir.exists(paste0(path_name, "plots/", hic_codes[i]))) {
+      dir.create(paste0(path_name, "plots/", hic_codes[i]))
+    }
   }
 
-  if(!dir.exists(paste0(path_name,"plots/episodes"))) {
-    dir.create(paste0(path_name, "plots/episodes")) }
+  if (!dir.exists(paste0(path_name, "plots/episodes"))) {
+    dir.create(paste0(path_name, "plots/episodes"))
+  }
 
   # Prepare Connections
-  ctn <- connect(database = database,
-                 username = username,
-                 password = password,
-                 host = host,
-                 port = port,
-                 sqlite_file = sqlite_file)
+  ctn <- connect(
+    database = database,
+    username = username,
+    password = password,
+    host = host,
+    port = port,
+    sqlite_file = sqlite_file
+  )
 
   tbls <- retrieve_tables(ctn)
 
@@ -109,39 +115,53 @@ make_report <- function(database = "lenient_dev",
     dplyr::pull()
 
   # Make a new data frame with codes replicated for each site
-  all_events <- dplyr::tibble(site = rep(all_sites, each = nrow(qref)),
-                       code_name = rep(hic_codes, length(all_sites)))
+  all_events <- dplyr::tibble(
+    site = rep(all_sites, each = nrow(qref)),
+    code_name = rep(hic_codes, length(all_sites))
+  )
 
   # use anti_join to find which sites aren't providing certain codes
   missing_events <- dplyr::anti_join(
     all_events, unique_events,
-    by = c("site" = "site",
-           "code_name" = "code_name")) %>%
+    by = c(
+      "site" = "site",
+      "code_name" = "code_name"
+    )
+  ) %>%
     dplyr::left_join(qref %>%
-                dplyr::select(code_name, short_name),
-              by = c("code_name" = "code_name")) %>%
+      dplyr::select(code_name, short_name),
+    by = c("code_name" = "code_name")
+    ) %>%
     dplyr::mutate(new_name = paste0(
       str_sub(
-        code_name, -4, -1), ": ", short_name))
+        code_name, -4, -1
+      ), ": ", short_name
+    ))
 
   # make a plot highlighting missing data
   missing_events_plot <- missing_events %>%
     ggplot2::ggplot(
-      ggplot2::aes(x = site, y = new_name)) +
+      ggplot2::aes(x = site, y = new_name)
+    ) +
     ggplot2::geom_tile(fill = "red", colour = "black") +
-    ggplot2::theme(panel.grid.major.x = ggplot2::element_blank(),
-          panel.grid.minor.x = ggplot2::element_blank(),
-          panel.background = ggplot2::element_rect(fill = NA)) +
+    ggplot2::theme(
+      panel.grid.major.x = ggplot2::element_blank(),
+      panel.grid.minor.x = ggplot2::element_blank(),
+      panel.background = ggplot2::element_rect(fill = NA)
+    ) +
     ggplot2::ylab("Code and Name of Missing Item") +
     ggplot2::ggtitle("Missing Events") +
     ggplot2::scale_x_discrete(sec.axis = dup_axis())
 
-  ggplot2::ggsave(filename = paste0(
-    path_name,
-    "plots/",
-    "missing_events.png"),
+  ggplot2::ggsave(
+    filename = paste0(
+      path_name,
+      "plots/",
+      "missing_events.png"
+    ),
     plot = missing_events_plot,
-    height = 40)
+    height = 40
+  )
 
 
   # Reference Table
@@ -149,7 +169,7 @@ make_report <- function(database = "lenient_dev",
 
   ## Capture colour profile for consistency
   all_sites.col <- c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854")
-  names(all_sites.col)  <- all_sites
+  names(all_sites.col) <- all_sites
 
   # Cases ----
   # Gives a tibble of admission numbers (patients/episodes) by week
@@ -159,15 +179,20 @@ make_report <- function(database = "lenient_dev",
 
   # Gives overall admission numbers (totals) for patients/episodes
   admissions_by_unit <-
-    unit_admissions(events_table = tbls[["events"]],
-                    reference_table = reference)
+    unit_admissions(
+      events_table = tbls[["events"]],
+      reference_table = reference
+    )
 
   for (i in seq_along(all_sites)) {
-    plot_heatcal(reference_table = reference,
-                 site = all_sites[i],
-                 filename = paste0(
-                   path_name, "plots/episodes/",
-                   all_sites[i], "_admissions.png"))
+    plot_heatcal(
+      reference_table = reference,
+      site = all_sites[i],
+      filename = paste0(
+        path_name, "plots/episodes/",
+        all_sites[i], "_admissions.png"
+      )
+    )
   }
 
   # Length of Stay "Episode Length" ----
@@ -183,33 +208,40 @@ make_report <- function(database = "lenient_dev",
   core <- make_core(ctn)
 
   # Epsiode_length
-  episode_length <- epi_length(core_table = core,
-                               reference_table = reference,
-                               events_table = tbls[["events"]])
+  episode_length <- epi_length(
+    core_table = core,
+    reference_table = reference,
+    events_table = tbls[["events"]]
+  )
 
   # Seplls
   spells_user_defined <- identify_spells(
     episode_length = episode_length,
     episodes = episodes,
-    minutes = spell_boundary_mins) %>%
-      group_by(site) %>%
-      summarise(patients = n_distinct(nhs_number),
-                episodes = n_distinct(episode_id),
-                spells_user = n_distinct(spell_id))
+    minutes = spell_boundary_mins
+  ) %>%
+    group_by(site) %>%
+    summarise(
+      patients = n_distinct(nhs_number),
+      episodes = n_distinct(episode_id),
+      spells_user = n_distinct(spell_id)
+    )
 
   spells_50_under <- identify_spells(
     episode_length = episode_length,
     episodes = episodes,
-    minutes = spell_boundary_mins/2) %>%
-      group_by(site) %>%
-      summarise(spells_50_under = n_distinct(spell_id))
+    minutes = spell_boundary_mins / 2
+  ) %>%
+    group_by(site) %>%
+    summarise(spells_50_under = n_distinct(spell_id))
 
   spells_50_over <- identify_spells(
     episode_length = episode_length,
     episodes = episodes,
-    minutes = (spell_boundary_mins+(spell_boundary_mins/2))) %>%
-      group_by(site) %>%
-      summarise(spells_50_over = n_distinct(spell_id))
+    minutes = (spell_boundary_mins + (spell_boundary_mins / 2))
+  ) %>%
+    group_by(site) %>%
+    summarise(spells_50_over = n_distinct(spell_id))
 
   # This is to help give a better understanding of how sensitive our
   # decisions around
@@ -222,10 +254,12 @@ make_report <- function(database = "lenient_dev",
   # typical_admissions gives me the mean and sd for the long running admissions
   # by wday
 
-  validated_episodes <- validate_episodes(episode_length_table = episode_length,
-                                          reference_table = reference,
-                                          all_sites = all_sites,
-                                          threshold = 10)
+  validated_episodes <- validate_episodes(
+    episode_length_table = episode_length,
+    reference_table = reference,
+    all_sites = all_sites,
+    threshold = 10
+  )
 
   # Write out this validation to the database
   validated_episodes_db <- validated_episodes %>%
@@ -236,9 +270,10 @@ make_report <- function(database = "lenient_dev",
   }
 
   DBI::dbWriteTable(
-    conn =  ctn,
+    conn = ctn,
     name = "episode_validation",
-    value = validated_episodes_db)
+    value = validated_episodes_db
+  )
 
   print("Finished Episode Evaluation")
 
@@ -265,37 +300,42 @@ make_report <- function(database = "lenient_dev",
 
     # Plotting
     if (write_plots) {
-      plot_hic(x = temp_df,
-               path_name = paste0(path_name, "plots/", hic_codes[i]),
-               all_sites.col = all_sites.col)
+      plot_hic(
+        x = temp_df,
+        path_name = paste0(path_name, "plots/", hic_codes[i]),
+        all_sites.col = all_sites.col
+      )
     }
 
-    #Saving errors outside the main list
+    # Saving errors outside the main list
     try(hic_event_summary[[hic_codes[i]]] <- summary_main(temp_df, reference))
 
     hic_event_validation <- validate_event(validated_episodes, temp_df)
 
     if (nrow(hic_event_validation) > 0) {
-    DBI::dbWriteTable(conn = ctn, name = "event_validation", value = hic_event_validation, append = TRUE)
+      DBI::dbWriteTable(conn = ctn, name = "event_validation", value = hic_event_validation, append = TRUE)
     }
 
     print(paste0("finished validating: ", hic_codes[i]))
-
   }
 
   print("Finished Event Level Evaluation")
 
   save(hic_event_summary,
-       file = paste0(path_name,
-                     "data/hic_event_summary.RData"))
+    file = paste0(
+      path_name,
+      "data/hic_event_summary.RData"
+    )
+  )
 
   save(spells,
-       file = paste0(path_name,
-                     "data/working_data.RData"))
+    file = paste0(
+      path_name,
+      "data/working_data.RData"
+    )
+  )
 
   # close the connection
 
   DBI::dbDisconnect(ctn)
-
 }
-

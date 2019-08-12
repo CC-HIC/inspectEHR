@@ -10,7 +10,6 @@
 #' @examples
 #' weekly_admissions(distinct_episodes)
 weekly_admissions <- function(distinct_episodes = NULL) {
-
   admissions <- distinct_episodes %>%
     dplyr::mutate(
       year = lubridate::year(start_date),
@@ -18,11 +17,12 @@ weekly_admissions <- function(distinct_episodes = NULL) {
       week_of_month = as.integer(ceiling(lubridate::day(start_date) / 7))
     ) %>%
     dplyr::group_by(site, year, month, week_of_month) %>%
-    dplyr::summarise(patients = n_distinct(nhs_number),
-                     episodes = n_distinct(episode_id))
+    dplyr::summarise(
+      patients = n_distinct(nhs_number),
+      episodes = n_distinct(episode_id)
+    )
 
   return(admissions)
-
 }
 
 
@@ -36,18 +36,20 @@ weekly_admissions <- function(distinct_episodes = NULL) {
 #' @examples
 #' report_cases_daily(unique_cases)
 report_cases_daily <- function(unique_cases_tbl = NULL) {
-
   cases <- unique_cases_tbl %>%
-    mutate(year = lubridate::year(start_date),
-           month = lubridate::month(start_date, label = TRUE),
-           week_of_month = as.integer(ceiling(lubridate::day(start_date)/7)),
-           wday = lubridate::wday(start_date, label = TRUE)) %>%
+    mutate(
+      year = lubridate::year(start_date),
+      month = lubridate::month(start_date, label = TRUE),
+      week_of_month = as.integer(ceiling(lubridate::day(start_date) / 7)),
+      wday = lubridate::wday(start_date, label = TRUE)
+    ) %>%
     group_by(site, year, month, week_of_month, wday) %>%
-    summarise(patients = n_distinct(nhs_number),
-              episodes = n_distinct(episode_id))
+    summarise(
+      patients = n_distinct(nhs_number),
+      episodes = n_distinct(episode_id)
+    )
 
   return(cases)
-
 }
 
 
@@ -66,7 +68,6 @@ report_cases_daily <- function(unique_cases_tbl = NULL) {
 #' @examples
 #' daily_admssions(unique_cases, by_site == "UCL")
 daily_admssions <- function(reference = NULL, by_site = NULL) {
-
   admissions <- reference %>%
     filter(site == by_site) %>%
     mutate(date = lubridate::date(start_date)) %>%
@@ -75,7 +76,6 @@ daily_admssions <- function(reference = NULL, by_site = NULL) {
     filter(episodes > 0)
 
   return(admissions)
-
 }
 
 
@@ -93,7 +93,6 @@ daily_admssions <- function(reference = NULL, by_site = NULL) {
 #' @examples
 #' event_occurrances(x, by_site == "UCL")
 event_occurrances <- function(extracted_event = NULL, by_site = "UCL") {
-
   occurances <- extracted_event %>%
     filter(site == by_site) %>%
     mutate(date = lubridate::date(datetime)) %>%
@@ -102,7 +101,6 @@ event_occurrances <- function(extracted_event = NULL, by_site = "UCL") {
     filter(events > 0)
 
   return(occurances)
-
 }
 
 
@@ -121,8 +119,7 @@ event_occurrances <- function(extracted_event = NULL, by_site = "UCL") {
 #'
 #' @examples
 #' unit_admissions(events, reference)
-unit_admissions <- function(events_table = NULL, reference_table = NULL){
-
+unit_admissions <- function(events_table = NULL, reference_table = NULL) {
   unit_numbers <- events_table %>%
     dplyr::filter(code_name == "NIHR_HIC_ICU_0002") %>%
     dplyr::select(episode_id, string) %>%
@@ -130,12 +127,13 @@ unit_admissions <- function(events_table = NULL, reference_table = NULL){
     dplyr::right_join(reference_table, by = "episode_id") %>%
     dplyr::select(episode_id, nhs_number, string, site) %>%
     dplyr::group_by(site, string) %>%
-    dplyr::summarise(patients = n_distinct(nhs_number),
-                     episodes = n_distinct(episode_id)) %>%
+    dplyr::summarise(
+      patients = n_distinct(nhs_number),
+      episodes = n_distinct(episode_id)
+    ) %>%
     dplyr::rename(unit = string)
 
   return(unit_numbers)
-
 }
 
 
@@ -173,9 +171,11 @@ unit_admissions <- function(events_table = NULL, reference_table = NULL){
 epi_length <- function(core_table, reference_table = NULL, events_table = NULL) {
 
   # Find the episode end time from administrative records
-  on_unit_exit <- episode_end_generic(reference_table = reference_table,
-                               events_table = events_table,
-                               code_name = "NIHR_HIC_ICU_0412")
+  on_unit_exit <- episode_end_generic(
+    reference_table = reference_table,
+    events_table = events_table,
+    code_name = "NIHR_HIC_ICU_0412"
+  )
 
   # Find the end time by death
   on_death <- resolve_date_time(core_tbl = core_table, "NIHR_HIC_ICU_0042", "NIHR_HIC_ICU_0043") %>%
@@ -200,24 +200,32 @@ epi_length <- function(core_table, reference_table = NULL, events_table = NULL) 
     dplyr::mutate(
       end_date = if_else(
         is.na(end_date) | ((death_time < end_date) & !is.na(death_time)),
-                             death_time, end_date)) %>%
+        death_time, end_date
+      )
+    ) %>%
     dplyr::mutate(
       end_date = if_else(
         is.na(end_date) | ((brainstem_death_time < end_date) & !is.na(brainstem_death_time)),
-        brainstem_death_time, end_date)) %>%
+        brainstem_death_time, end_date
+      )
+    ) %>%
     dplyr::mutate(
       end_date = if_else(
         is.na(end_date) & is.na(brainstem_death_time) & is.na(death_time) & !is.na(body_time),
-        body_time, end_date)) %>%
+        body_time, end_date
+      )
+    ) %>%
     dplyr::select(episode_id, site, start_date, end_date) %>%
-    dplyr::rename(epi_end_dttm = end_date,
-                  epi_start_dttm = start_date) %>%
+    dplyr::rename(
+      epi_end_dttm = end_date,
+      epi_start_dttm = start_date
+    ) %>%
     dplyr::mutate(los = difftime(epi_end_dttm, epi_start_dttm, units = "days")) %>%
     dplyr::mutate(validity = ifelse(is.na(epi_end_dttm), 1L,
-                               ifelse(los <= 0, 2L, 0L)))
+      ifelse(los <= 0, 2L, 0L)
+    ))
 
   return(combined)
-
 }
 
 
@@ -239,24 +247,23 @@ epi_length <- function(core_table, reference_table = NULL, events_table = NULL) 
 #' @examples
 #' identify_spells(episode_length, episodes)
 identify_spells <- function(episode_length = NULL, episodes = NULL, minutes = 60) {
-
   episode_length %>%
     filter(validity == 0) %>%
     left_join(episodes %>%
-                select(episode_id, nhs_number),
-              by = "episode_id") %>%
+      select(episode_id, nhs_number),
+    by = "episode_id"
+    ) %>%
     arrange(nhs_number, epi_start_dttm) %>%
     group_by(nhs_number) %>%
     # check how much time patient spent outside the unit
     mutate(time_out = epi_start_dttm[-1] %>%
-             difftime(epi_end_dttm[-length(epi_end_dttm)], units = "mins") %>%
-             as.integer() %>%
-             c(NA)) %>%
+      difftime(epi_end_dttm[-length(epi_end_dttm)], units = "mins") %>%
+      as.integer() %>%
+      c(NA)) %>%
     mutate(new_spell = if_else(lag(time_out) > minutes | is.na(lag(time_out)), TRUE, FALSE)) %>%
     ungroup() %>%
     mutate(spell_id = cumsum(new_spell)) %>%
     select(spell_id, episode_id, nhs_number, site, epi_start_dttm, epi_end_dttm, los, validity)
-
 }
 
 
@@ -272,12 +279,10 @@ identify_spells <- function(episode_length = NULL, episodes = NULL, minutes = 60
 #' @examples
 #' unit_discharge_status(events)
 unit_discharge_status <- function(event_table) {
-
   event_table %>%
     filter(code_name == "NIHR_HIC_ICU_0097") %>%
     select(string, episode_id) %>%
     collect()
-
 }
 
 
@@ -297,27 +302,25 @@ unit_discharge_status <- function(event_table) {
 #' @examples
 #' episode_end_generic(reference, tbl[["events"]])
 episode_end_generic <- function(reference_table = NULL, events_table = NULL, code_name = "NIHR_HIC_ICU_0412") {
-
   sym_code_name <- rlang::sym("code_name")
   quo_column <- enquo(code_name)
 
   episode_end <- events_table %>%
-    dplyr::select(episode_id, !! sym_code_name, datetime) %>%
+    dplyr::select(episode_id, !!sym_code_name, datetime) %>%
     dplyr::filter(sym_code_name == quo_column) %>%
     dplyr::collect() %>%
     dplyr::rename(end_date = datetime)
 
-    if (class(episode_end$end_date) == "numeric") {
-      episode_end <- episode_end %>%
-        dplyr::mutate(end_date = lubridate::as_datetime(end_date))
-    }
+  if (class(episode_end$end_date) == "numeric") {
+    episode_end <- episode_end %>%
+      dplyr::mutate(end_date = lubridate::as_datetime(end_date))
+  }
 
-    episode_boundaries <-
-      dplyr::left_join(reference_table, episode_end, by = c("episode_id" = "episode_id")) %>%
-      dplyr::select(episode_id, nhs_number, start_date, end_date, site)
+  episode_boundaries <-
+    dplyr::left_join(reference_table, episode_end, by = c("episode_id" = "episode_id")) %>%
+    dplyr::select(episode_id, nhs_number, start_date, end_date, site)
 
-    return(episode_boundaries)
-
+  return(episode_boundaries)
 }
 
 
@@ -335,7 +338,7 @@ episode_end_generic <- function(reference_table = NULL, events_table = NULL, cod
 #'   \item "NIHR_HIC_ICU_0044", "NIHR_HIC_ICU_0045" - Brain stem death
 #'   \item "NIHR_HIC_ICU_0048", "NIHR_HIC_ICU_0049" - Treatment Withdrawal
 #'   \item "NIHR_HIC_ICU_0050", "NIHR_HIC_ICU_0051" - Discharge ready
-#'}
+#' }
 #' If a date or time component is missing, nothing is returned as the datetime
 #' cannot be accurately formed.
 #'
@@ -353,44 +356,49 @@ episode_end_generic <- function(reference_table = NULL, events_table = NULL, cod
 resolve_date_time <- function(core_tbl = NULL,
                               date_code = as.character(NULL),
                               time_code = as.character(NULL)) {
+  stopifnot(any(is.null(c(core_table, date_code, time_code))))
 
-    stopifnot(any(is.null(c(core_table, date_code, time_code))))
+  misaligned <- core_tbl %>%
+    dplyr::select(
+      .data$episode_id, .data$code_name, .data$date, .data$time
+    ) %>%
+    dplyr::filter(
+      rlang::sym("code_name") %in% c(date_code, time_code)
+    ) %>%
+    dplyr::collect()
 
-    misaligned <- core_tbl %>%
-      dplyr::select(
-        .data$episode_id, .data$code_name, .data$date, .data$time) %>%
-      dplyr::filter(
-        rlang::sym("code_name") %in% c(date_code, time_code)) %>%
-      dplyr::collect()
+  date_tbl <- misaligned %>%
+    dplyr::select(.data$episode_id, .data$date) %>%
+    na.omit()
 
-    date_tbl <- misaligned %>%
-      dplyr::select(.data$episode_id, .data$date) %>% na.omit()
+  time_tbl <- misaligned %>%
+    dplyr::select(.data$episode_id, .data$time) %>%
+    na.omit()
 
-    time_tbl <- misaligned %>%
-      dplyr::select(.data$episode_id, .data$time) %>% na.omit()
+  aligned <- dplyr::inner_join(date_tbl, time_tbl, by = "episode_id")
 
-    aligned <- dplyr::inner_join(date_tbl, time_tbl, by = "episode_id")
-
-    if (
-      attributes(
-        class(
-          core_tbl$src$con))$package == "RSQLite") {
-
+  if (
+    attributes(
+      class(
+        core_tbl$src$con
+      )
+    )$package == "RSQLite") {
     aligned <- aligned %>%
       dplyr::mutate(date_time = date + time) %>%
       dplyr::select(episode_id, date_time)
-
-    } else {
-
+  } else {
     aligned <- aligned %>%
       dplyr::mutate(date_time = lubridate::ymd_hms(
         paste0(
-          date, time, sep = " "), tz = "Europe/London")) %>%
+          date, time,
+          sep = " "
+        ),
+        tz = "Europe/London"
+      )) %>%
       dplyr::select(episode_id, date_time)
-    }
+  }
 
   return(aligned)
-
 }
 
 
@@ -415,12 +423,10 @@ resolve_date_time <- function(core_tbl = NULL,
 #' @examples
 #' episode_validity(episode_length)
 episode_validity <- function(x) {
-
   x %<>%
     group_by(site, validity) %>%
     summarise(episodes = n()) %>%
     spread(key = validity, value = episodes)
-
 }
 
 
@@ -475,5 +481,3 @@ episode_validity <- function(x) {
 #'
 #'
 #' }
-
-

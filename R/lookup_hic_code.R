@@ -10,19 +10,14 @@
 #' @examples
 #' lookup_hic()
 lookup_hic <- function(search = 0108) {
-
   if (is.numeric(search)) {
-
     search_result <- qref %>%
       filter(grepl(search, code_name)) %>%
       select(code_name, short_name)
-
   } else if (is.character(search)) {
-
     search_result <- qref %>%
       filter(grepl(search, short_name, ignore.case = TRUE)) %>%
       select(code_name, short_name)
-
   }
 
   if (nrow(search_result) == 0) {
@@ -30,6 +25,4 @@ lookup_hic <- function(search = 0108) {
   } else {
     print(search_result)
   }
-
 }
-

@@ -44,13 +44,13 @@ extract <- function(core_table = NULL, input = "NIHR_HIC_ICU_0557") {
       string_2d = extract_2d(core_table, input, data_location = primary_col),
       datetime_1d = extract_1d(core_table, input, data_location = primary_col),
       date_1d = extract_1d(core_table, input, data_location = primary_col),
-      time_1d = extract_1d(core_table, input, data_location = primary_col))
+      time_1d = extract_1d(core_table, input, data_location = primary_col)
+    )
 
   class(extracted_table) <- append(class(extracted_table), dataitem, after = 0)
   attr(extracted_table, "code_name") <- input
 
   return(extracted_table)
-
 }
 
 
@@ -73,23 +73,23 @@ extract <- function(core_table = NULL, input = "NIHR_HIC_ICU_0557") {
 #' @examples
 #' extract_1d(core, input = "NIHR_HIC_ICU_0409", data_location = "integer")
 extract_1d <- function(core_table = NULL, input = NULL, data_location = NULL) {
-
   sym_code_name <- rlang::sym("code_name")
   quo_column <- enquo(data_location)
 
   extracted_table <- core_table %>%
-    dplyr::filter(!! sym_code_name == input) %>%
+    dplyr::filter(!!sym_code_name == input) %>%
     dplyr::collect() %>%
-    dplyr::select(.data$event_id,
-                  .data$site,
-                  .data$code_name,
-                  .data$episode_id,
-                  !! quo_column) %>%
-    dplyr::rename(value = !! quo_column) %>%
+    dplyr::select(
+      .data$event_id,
+      .data$site,
+      .data$code_name,
+      .data$episode_id,
+      !!quo_column
+    ) %>%
+    dplyr::rename(value = !!quo_column) %>%
     dplyr::arrange(.data$episode_id)
 
   return(extracted_table)
-
 }
 
 
@@ -113,29 +113,27 @@ extract_1d <- function(core_table = NULL, input = NULL, data_location = NULL) {
 #' @examples
 #' extract_2d(core, input = "NIHR_HIC_ICU_0108", data_location = "integer")
 extract_2d <- function(core_table = NULL, input = NULL, data_location = NULL) {
-
   sym_code_name <- rlang::sym("code_name")
   quo_column <- rlang::enquo(data_location)
 
   extracted_table <- core_table %>%
-    dplyr::filter(!! sym_code_name == input) %>%
+    dplyr::filter(!!sym_code_name == input) %>%
     dplyr::collect() %>%
-    dplyr::select(.data$event_id,
-                  .data$site,
-                  .data$code_name,
-                  .data$episode_id,
-                  .data$datetime,
-                  !! quo_column) %>%
-    dplyr::rename(value = !! quo_column) %>%
+    dplyr::select(
+      .data$event_id,
+      .data$site,
+      .data$code_name,
+      .data$episode_id,
+      .data$datetime,
+      !!quo_column
+    ) %>%
+    dplyr::rename(value = !!quo_column) %>%
     dplyr::arrange(.data$episode_id, .data$datetime)
 
   if (any(stringr::str_detect(class(core_table), "SQLite"))) {
-
     extracted_table <- extracted_table %>%
       mutate(datetime = lubridate::ymd_hms(datetime))
-
   }
 
   return(extracted_table)
-
 }
