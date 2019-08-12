@@ -2,54 +2,56 @@
 % Please edit documentation in R/extract_timevarying.R
 \name{extract_timevarying}
 \alias{extract_timevarying}
-\title{Reshape timevarying events into a long form timeseries table}
+\title{Reshape Timevarying Dateitems}
 \usage{
-extract_timevarying(events, metadata, code_names, chunk_size = 5000,
-  cadance = 1, rename = NULL)
+extract_timevarying(connection, code_names, rename = NULL,
+  chunk_size = 5000, cadance = 1)
 }
 \arguments{
-\item{events}{database events table}
+\item{connection}{a CC-HIC database connection}
 
-\item{metadata}{database metadata table (collected)}
-
-\item{code_names}{a vector of HIC codes names to be wrangled out}
+\item{code_names}{a vector of CC-HIC codes names to be extracted}
 
 \item{chunk_size}{a chunking parameter to help speed up the function and manage memory constaints}
 
-\item{cadance}{a numerical scalar to describe the base time unit to build
-each row, in divisions of an hour. For exampple: 1 = 1 hour, 0.5 = 30 mins, 2 = 2 hourly.
-If you set cadance = "exact", then the EXACT datetime will be used at the time column.
+\item{cadance}{a numerical scalar or one of "exact" or "timestamp". If a numerical
+scalar is used, it will describe the base time unit to build each row, in divisions of an hour.
+For example: 1 = 1 hour, 0.5 = 30 mins, 2 = 2 hourly. If multiple events occur within the
+specified time, then the first is chosen and the others are dropped.
+If cadance = "exact", then the EXACT datetime will be used at the time column.
 This is likely to generate a LARGE table, so use cautiously.}
 }
 \value{
 sparse tibble with hourly cadance as rows, and unique hic events as columns
 }
 \description{
-This is the workhorse function that transcribes 2d data from the HIC DB
-to a dense table with 1 column per variable (and metadata if relevent)
-and 1 row per time unit per patient.
+This is the workhorse function that transcribes 2d data from CC-HIC
+to a table with 1 column per dataitem (and any metadata if relevent)
+and 1 row per time per patient.
 }
 \details{
 The time unit is user definable, and set by the "cadance" argument.
-The default behaviour is to procude a table with 1 row per hour per patient.
+The default behaviour is to produce a table with 1 row per hour per patient.
 
 Many events inside CC-HIC occur on a greater than hourly basis. Depending upon
 the chosen analysis, you may which to increase the cadance. 0.5 for example will produce
 a table with 1 row per 30 minutes per patient.
 
-Choose what variables you want to pull out wisely. Whilst this is actually
-pretty quick considering what it needs to do, it can take a very long time (24 hours or more)
+Choose what variables you want to pull out wisely. This function is actually
+quite efficient considering what it needs to do, but it can take a very long time
+if pulling out lots of data (24 hours or more). Consider optiming the database with indexes
+prior to using this function.
 
 It is perfectly possible for this table to produce negative time rows. If, for example
 a patient had a measure taken in the hours before they were admitted, then this would
 be added to the table with a negative time value. As a concrete example,
 if a patient had a sodium measured at 08:00, and they were admitted to the
-ICU at 20:00 the same day, then the sodium would present on the output table
-at time = -12. This is normal behaviour it is left to the end user to
-descibe how best they wish to account for this.
+ICU at 20:00 the same day, then the sodium would be displayed at time = -12.
+This is normal behaviour it is left to the end user to determine how best they
+wish to account for this.
 }
 \examples{
 \dontrun{
-extract_timevarying(tbls[["events"]], collect(tbls[["variables"]]), "NIHR_HIC_ICU_0108")
+extract_timevarying(ctn, "NIHR_HIC_ICU_0108")
 }
 }
