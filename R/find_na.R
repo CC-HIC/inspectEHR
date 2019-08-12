@@ -1,6 +1,6 @@
 #' Adds episodes without input variables as NA
 #'
-#' Returns a list with 2 tibbles of the exact same form as produced by \link{\code{process_dbl}}
+#' Returns a list with 2 tibbles of the exact same form as produced by \code{\link{process_dbl}}
 #' NAs can be found in position 2 ("empty"). This is useful in understanding how many episodes
 #' do not report on a certain field. As both lists are in the exact same form, then can be bound
 #' easily.
