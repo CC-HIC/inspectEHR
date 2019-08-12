@@ -7,7 +7,7 @@
 plot_full(x, code_name, all_sites.col)
 }
 \arguments{
-\item{x}{an extracted (\link{\code{extract}}) table}
+\item{x}{an extracted (\code{\link{extract}}) table}
 
 \item{code_name}{the CC-HIC codename of interest.}
 }

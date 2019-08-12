@@ -12,7 +12,7 @@ resolve_date_time(core_tbl = NULL, date_code = as.character(NULL),
 
 \item{time_code}{the cc-hic code for the time of interest}
 
-\item{core}{core table from \link{\code{make_core()}}}
+\item{core}{core table from \code{\link{make_core()}}}
 }
 \value{
 a table with the correct datetime pairing for the codes given

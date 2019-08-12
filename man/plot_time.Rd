@@ -7,7 +7,7 @@
 plot_time(x, code_name, all_sites.col)
 }
 \arguments{
-\item{x}{an extracted (using \link{\code{extract}}) and flagged (using \link{\code{flag_all}}) table}
+\item{x}{an extracted (using \code{\link{extract}}) and flagged (using \code{\link{flag_all}}) table}
 
 \item{code_name}{the code name of interest}
 

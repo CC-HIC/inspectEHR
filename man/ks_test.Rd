@@ -7,7 +7,7 @@
 ks_test(x)
 }
 \arguments{
-\item{x}{extracted data item from \link{\code{extract}}}
+\item{x}{extracted data item from \code{\link{extract}}}
 }
 \description{
 Takes a distribution from a CC-HIC dataitem and returns

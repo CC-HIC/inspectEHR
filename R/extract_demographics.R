@@ -1,17 +1,18 @@
 #' Extract 1d data from CC-HIC
 #'
-#' Takes a remote database contection to CC-HIC, a vector of HIC codes
-#' (and optionally a vector of labels to rename the codes) and returns
-#' a table with 1 row per patient and 1 column per data item.
+#' Takes a remote database contection to CC-HIC, a vector of HIC codes (and
+#' optionally a vector of labels to rename the codes) and returns a table with 1
+#' row per patient and 1 column per data item.
 #'
 #' @param connection a CC-HIC database connection
 #' @param code_names a character vector of CC-HIC codes
 #' @param rename a character vector of names you want to relabel CC-HIC codes
-#' as, or NULL (the default) if you do not want to relabel.
+#'   as, or NULL (the default) if you do not want to relabel.
 #'
 #' @export
 #'
-#' @importFrom dplyr collect select mutate filter inner_join full_join if_else summarise_all
+#' @importFrom dplyr collect select mutate filter inner_join full_join if_else
+#'   summarise_all
 #' @importFrom tidyr spread
 #' @importFrom tibble as_tibble
 #' @importFrom purrr reduce
@@ -23,7 +24,6 @@
 #' new_labels <- c("apache_score")
 #' extract_demographics(ctn, hic_codes, new_labels)
 extract_demographics <- function(connection = NULL, code_names = NULL, rename = NULL) {
-
   stopifnot(!any(is.null(connection), is.null(code_names)))
 
   tbls <- retrieve_tables(connection)
@@ -31,10 +31,10 @@ extract_demographics <- function(connection = NULL, code_names = NULL, rename = 
   demographics <- tbls[["variables"]] %>%
     collect() %>%
     dplyr::mutate(nas = tbls[["variables"]] %>%
-                    dplyr::select(-code_name, -long_name, -primary_column) %>%
-                    collect() %>%
-                    tibble::as_tibble() %>%
-                    apply(1, function(x) sum(!is.na(x)))) %>%
+      dplyr::select(-code_name, -long_name, -primary_column) %>%
+      collect() %>%
+      tibble::as_tibble() %>%
+      apply(1, function(x) sum(!is.na(x)))) %>%
     dplyr::filter(nas == 1) %>%
     dplyr::select(code_name, primary_column)
 
@@ -61,10 +61,11 @@ extract_demographics <- function(connection = NULL, code_names = NULL, rename = 
     tb_segments[[i]] <- extract_demographics_helper(tb_base, complete_fields[i], demographics)
   }
 
-    db_1 <- purrr::reduce(
-      tb_segments,
-      full_join,
-      by = "episode_id")
+  db_1 <- purrr::reduce(
+    tb_segments,
+    full_join,
+    by = "episode_id"
+  )
 
   if (!is.null(rename)) {
     replacement_names <- rename[match(names(db_1), code_names)]
@@ -72,22 +73,21 @@ extract_demographics <- function(connection = NULL, code_names = NULL, rename = 
   }
 
   return(db_1)
-
 }
 
 
 extract_demographics_helper <- function(tb_base, col_name, demographics) {
-
   quo_column <- enquo(col_name)
 
   tb_section <- tb_base %>%
-    dplyr::select(.data$code_name, !! quo_column, .data$episode_id) %>%
+    dplyr::select(.data$code_name, !!quo_column, .data$episode_id) %>%
     dplyr::inner_join(
       demographics %>%
-        dplyr::filter(.data$primary_column == !! quo_column), by = "code_name") %>%
+        dplyr::filter(.data$primary_column == !!quo_column),
+      by = "code_name"
+    ) %>%
     select(-primary_column) %>%
-    spread(key = code_name, value = !! quo_column)
+    spread(key = code_name, value = !!quo_column)
 
   return(tb_section)
-
 }
