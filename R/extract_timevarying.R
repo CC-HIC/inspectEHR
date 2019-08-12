@@ -46,7 +46,6 @@
 #' @examples
 #' extract_timevarying(ctn, "NIHR_HIC_ICU_0108")
 extract_timevarying <- function(connection, code_names, rename = NULL, chunk_size = 5000, cadance = 1) {
-
   starting <- lubridate::now()
 
   if (!(any(code_names %in% "NIHR_HIC_ICU_0411"))) {
@@ -59,44 +58,39 @@ extract_timevarying <- function(connection, code_names, rename = NULL, chunk_siz
     select(episode_id) %>%
     distinct() %>%
     collect() %>%
-    mutate(group = as.integer(seq(n())/chunk_size)) %>%
+    mutate(group = as.integer(seq(n()) / chunk_size)) %>%
     split(., .$group) %>%
     map(function(epi_ids) {
-
       collect_events <- dplyr::tbl(connection, "events") %>%
         filter(code_name %in% exons) %>%
-        filter(episode_id %in% !! epi_ids$episode_id) %>%
+        filter(episode_id %in% !!epi_ids$episode_id) %>%
         collect()
 
       map(collect_events %>%
-            select(episode_id) %>%
-            distinct() %>%
-            pull(), process_all,
-          events = collect_events,
-          metadata = collect(dplyr::tbl(connection, "variables")),
-          cadance = cadance) %>%
-          bind_rows()
-
-      }) %>%
+        select(episode_id) %>%
+        distinct() %>%
+        pull(), process_all,
+      events = collect_events,
+      metadata = collect(dplyr::tbl(connection, "variables")),
+      cadance = cadance
+      ) %>%
+        bind_rows()
+    }) %>%
     bind_rows()
 
   if (!is.null(rename)) {
-
     replacement_names <- rename[match(names(episode_groups), code_names)]
     names(episode_groups) <- if_else(is.na(replacement_names), names(episode_groups), replacement_names)
-
   }
 
   elapsed_time <- signif(as.numeric(difftime(lubridate::now(), starting, units = "hour")), 2)
   print(paste(elapsed_time, "hours to process"))
 
   return(episode_groups)
-
 }
 
 
 process_all <- function(epi_id, events, metadata, cadance) {
-
   pt <- events %>%
     filter(episode_id == epi_id)
 
@@ -107,56 +101,52 @@ process_all <- function(epi_id, events, metadata, cadance) {
     pull()
 
   if (cadance == "exact") {
-
     imap(pt %>%
-           filter(code_name %in% find_2d(metadata)$code_name) %>%
-           arrange(code_name) %>%
-           split(., .$code_name), process_episode_exact,
-         metadata = metadata,
-         start_time = start_time) %>%
+      filter(code_name %in% find_2d(metadata)$code_name) %>%
+      arrange(code_name) %>%
+      split(., .$code_name), process_episode_exact,
+    metadata = metadata,
+    start_time = start_time
+    ) %>%
       reduce(full_join, by = "r_diff_time", .init = tibble(r_diff_time = as.numeric(NULL))) %>%
       rename(time = r_diff_time) %>%
       mutate(episode_id = epi_id) %>%
       arrange(time)
-
   } else if (cadance == "timestamp") {
-
     imap(pt %>%
-           filter(code_name %in% find_2d(metadata)$code_name) %>%
-           arrange(code_name) %>%
-           split(., .$code_name), process_episode_timestamp,
-         metadata = metadata) %>%
+      filter(code_name %in% find_2d(metadata)$code_name) %>%
+      arrange(code_name) %>%
+      split(., .$code_name), process_episode_timestamp,
+    metadata = metadata
+    ) %>%
       reduce(full_join, by = "time_stamp", .init = tibble(time_stamp = lubridate::ymd_hms(NULL))) %>%
       rename(time = time_stamp) %>%
       mutate(episode_id = epi_id) %>%
       arrange(time)
-
   } else {
-
-  imap(pt %>%
-         filter(code_name %in% find_2d(metadata)$code_name) %>%
-         arrange(code_name) %>%
-         split(., .$code_name), process_episode,
-       metadata = metadata,
-       start_time = start_time,
-       cadance = cadance) %>%
-    reduce(full_join, by = "r_diff_time", .init = tibble(r_diff_time = as.numeric(NULL))) %>%
-    rename(time = r_diff_time) %>%
-    mutate(episode_id = epi_id) %>%
-    arrange(time)
-
+    imap(pt %>%
+      filter(code_name %in% find_2d(metadata)$code_name) %>%
+      arrange(code_name) %>%
+      split(., .$code_name), process_episode,
+    metadata = metadata,
+    start_time = start_time,
+    cadance = cadance
+    ) %>%
+      reduce(full_join, by = "r_diff_time", .init = tibble(r_diff_time = as.numeric(NULL))) %>%
+      rename(time = r_diff_time) %>%
+      mutate(episode_id = epi_id) %>%
+      arrange(time)
   }
 }
 
 
 process_episode <- function(df, var_name, metadata, start_time, cadance) {
-
   stopifnot(!is.na(df$datetime))
 
   prim_col <- metadata %>%
     filter(code_name == var_name) %>%
     select(primary_column) %>%
-    pull
+    pull()
 
   meta_names <- find_2d_meta(metadata, var_name)
 
@@ -166,18 +156,15 @@ process_episode <- function(df, var_name, metadata, start_time, cadance) {
     mutate(r_diff_time = as.numeric(round_any(diff_time, cadance))) %>%
     distinct(r_diff_time, .keep_all = TRUE) %>%
     select(-event_id, -episode_id, -datetime, -code_name, -diff_time) %>%
-    rename(!! var_name := prim_col) %>%
-    select(r_diff_time, !! var_name, !!! meta_names)
+    rename(!!var_name := prim_col) %>%
+    select(r_diff_time, !!var_name, !!!meta_names)
 
-  if(length(meta_names) == 0) {
-
+  if (length(meta_names) == 0) {
     return(tb_a)
-
   }
 
   names(meta_names) <- paste(var_name, "meta", 1:length(meta_names), sep = ".")
-  rename(tb_a, !!! meta_names)
-
+  rename(tb_a, !!!meta_names)
 }
 
 
@@ -192,13 +179,12 @@ process_episode <- function(df, var_name, metadata, start_time, cadance) {
 #' @param metadata the CC-HIC metadata table
 #' @param start_time the episode start time (or whatever other anchor you wish to use)
 process_episode_exact <- function(df, var_name, metadata, start_time) {
-
   stopifnot(!is.na(df$datetime))
 
   prim_col <- metadata %>%
     filter(code_name == var_name) %>%
     select(primary_column) %>%
-    pull
+    pull()
 
   meta_names <- find_2d_meta(metadata, var_name)
 
@@ -207,18 +193,15 @@ process_episode_exact <- function(df, var_name, metadata, start_time) {
     mutate(r_diff_time = as.numeric(difftime(datetime, start_time, units = "hours"))) %>%
     distinct(r_diff_time, .keep_all = TRUE) %>%
     select(-event_id, -episode_id, -datetime, -code_name) %>%
-    rename(!! var_name := prim_col) %>%
-    select(r_diff_time, !! var_name, !!! meta_names)
+    rename(!!var_name := prim_col) %>%
+    select(r_diff_time, !!var_name, !!!meta_names)
 
-  if(length(meta_names) == 0) {
-
+  if (length(meta_names) == 0) {
     return(tb_a)
-
   }
 
   names(meta_names) <- paste(var_name, "meta", 1:length(meta_names), sep = ".")
-  rename(tb_a, !!! meta_names)
-
+  rename(tb_a, !!!meta_names)
 }
 
 
@@ -234,31 +217,27 @@ process_episode_exact <- function(df, var_name, metadata, start_time) {
 #' @param var_name the CC-HIC codename for the current variable being processed
 #' @param metadata the CC-HIC metadata table
 process_episode_timestamp <- function(df, var_name, metadata) {
-
   stopifnot(!is.na(df$datetime))
 
   prim_col <- metadata %>%
     filter(code_name == var_name) %>%
     select(primary_column) %>%
-    pull
+    pull()
 
   meta_names <- find_2d_meta(metadata, var_name)
 
   tb_a <- df %>%
     mutate(time_stamp = as.POSIXct(datetime, origin = "1970-01-01 00:00:00")) %>%
     select(-event_id, -episode_id, -code_name, -datetime) %>%
-    rename(!! var_name := prim_col) %>%
-    select(time_stamp, !! var_name, !!! meta_names)
+    rename(!!var_name := prim_col) %>%
+    select(time_stamp, !!var_name, !!!meta_names)
 
-  if(length(meta_names) == 0) {
-
+  if (length(meta_names) == 0) {
     return(tb_a)
-
   }
 
   names(meta_names) <- paste(var_name, "meta", 1:length(meta_names), sep = ".")
-  rename(tb_a, !!! meta_names)
-
+  rename(tb_a, !!!meta_names)
 }
 
 
@@ -270,18 +249,17 @@ not_na <- function(x) {
 
 find_2d <- function(metadata) {
   metadata %>%
-  dplyr::mutate(nas = metadata %>%
-                  dplyr::select(-code_name, -long_name, -primary_column) %>%
-                  collect() %>%
-                  tibble::as.tibble() %>%
-                  apply(1, function(x) sum(!is.na(x)))) %>%
-  dplyr::filter(nas > 1) %>%
-  dplyr::select(code_name, primary_column)
+    dplyr::mutate(nas = metadata %>%
+      dplyr::select(-code_name, -long_name, -primary_column) %>%
+      collect() %>%
+      tibble::as.tibble() %>%
+      apply(1, function(x) sum(!is.na(x)))) %>%
+    dplyr::filter(nas > 1) %>%
+    dplyr::select(code_name, primary_column)
 }
 
 
 find_2d_meta <- function(metadata, c_name) {
-
   select_row <- metadata %>%
     filter(code_name == c_name)
 
@@ -290,10 +268,9 @@ find_2d_meta <- function(metadata, c_name) {
     pull()
 
   select_row %>%
-    select(-code_name, -long_name, -primary_column, -datetime, -!! prim_col) %>%
+    select(-code_name, -long_name, -primary_column, -datetime, -!!prim_col) %>%
     select_if(.predicate = not_na) %>%
     names()
-
 }
 
 
@@ -315,16 +292,18 @@ find_2d_meta <- function(metadata, c_name) {
 #' @examples
 #' expand_missing(tb_1)
 expand_missing <- function(df, cadance = 1) {
-
   df %>%
     select(episode_id, time) %>%
     split(., .$episode_id) %>%
     imap(function(base_table, epi_id) {
-      tibble(episode_id = epi_id,
-            time = seq(min(base_table$time, 0),
-                       max(base_table$time, 0), by = cadance))
-        }
-      ) %>%
+      tibble(
+        episode_id = epi_id,
+        time = seq(min(base_table$time, 0),
+          max(base_table$time, 0),
+          by = cadance
+        )
+      )
+    }) %>%
     bind_rows() %>%
     left_join(df, by = c("episode_id", "time"))
 }
