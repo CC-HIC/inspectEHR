@@ -127,7 +127,7 @@ plot_hic <- function(x, path_name = NULL, all_sites.col,
 #'
 #' Produce a default plot (eCDF or histogram) for a CC-HIC event code.
 #'
-#' @param x an extracted (using \link{\code{extract}}) and flagged (using \link{\code{flag_all}}) table
+#' @param x an extracted (using \code{\link{extract}}) and flagged (using \code{\link{flag_all}}) table
 #' @param code_name the code name of interest
 #' @param all_sites.col the HEX colour pallet for each site
 #'
@@ -171,7 +171,7 @@ plot_default <- function(x, code_name, all_sites.col) {
 #'
 #' Plots the full distribution of a HIC event, regardless of any outliers or invalid data.
 #'
-#' @param x an extracted (\link{\code{extract}}) table
+#' @param x an extracted (\code{\link{extract}}) table
 #' @param code_name the CC-HIC codename of interest.
 #'
 #' @export
@@ -208,7 +208,7 @@ plot_full <- function(x, code_name, all_sites.col) {
 #'
 #' Plot a histogram of a CC-HIC event, with each site normalised to 100%
 #'
-#' @param x an extracted (using \link{\code{extract}}) and flagged (using \link{\code{flag_all}}) table
+#' @param x an extracted (using \code{\link{extract}}) and flagged (using \code{\link{flag_all}}) table
 #' @param code_name the code name of interest
 #' @param all_sites.col the HEX colour pallet for each site
 #'
@@ -258,7 +258,7 @@ plot_histogram_percent <- function(x, code_name, all_sites.col) {
 #' Plot the periodicity for a CC-HIC event. This is the typical
 #' number of entries for the event per patient per 24 hours.
 #'
-#' @param x an extracted (using \link{\code{extract}}) and flagged (using \link{\code{flag_all}}) table
+#' @param x an extracted (using \code{\link{extract}}) and flagged (using \code{\link{flag_all}}) table
 #' @param code_name the code name of interest
 #' @param all_sites.col the HEX colour pallet for each site
 #'
@@ -295,7 +295,7 @@ plot_periodicity <- function(x, code_name, all_sites.col) {
 #'
 #' Plot dates from CC-HIC.
 #'
-#' @param x an extracted (using \link{\code{extract}}) and flagged (using \link{\code{flag_all}}) table
+#' @param x an extracted (using \code{\link{extract}}) and flagged (using \code{\link{flag_all}}) table
 #' @param code_name the code name of interest
 #' @param all_sites.col the HEX colour pallet for each site
 #'
@@ -328,7 +328,7 @@ plot_date <- function(x, code_name, all_sites.col) {
 #'
 #' Plot datetimes from CC-HIC
 #'
-#' @param x an extracted (using \link{\code{extract}}) and flagged (using \link{\code{flag_all}}) table
+#' @param x an extracted (using \code{\link{extract}}) and flagged (using \code{\link{flag_all}}) table
 #' @param code_name the code name of interest
 #' @param all_sites.col the HEX colour pallet for each site
 #'
@@ -361,7 +361,7 @@ plot_datetime <- function(x, code_name, all_sites.col) {
 #'
 #' Plot time values from CC-HIC
 #'
-#' @param x an extracted (using \link{\code{extract}}) and flagged (using \link{\code{flag_all}}) table
+#' @param x an extracted (using \code{\link{extract}}) and flagged (using \code{\link{flag_all}}) table
 #' @param code_name the code name of interest
 #' @param all_sites.col the HEX colour pallet for each site
 #'

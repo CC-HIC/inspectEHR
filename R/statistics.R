@@ -3,7 +3,7 @@
 #' Takes a distribution from a CC-HIC dataitem and returns
 #' the pairwise KS distance by site.
 #'
-#' @param x extracted data item from \link{\code{extract}}
+#' @param x extracted data item from \code{\link{extract}}
 #'
 #' @export
 #'

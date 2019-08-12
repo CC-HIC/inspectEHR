@@ -339,7 +339,7 @@ episode_end_generic <- function(reference_table = NULL, events_table = NULL, cod
 #' If a date or time component is missing, nothing is returned as the datetime
 #' cannot be accurately formed.
 #'
-#' @param core core table from \link{\code{make_core()}}
+#' @param core core table from \code{\link{make_core()}}
 #' @param date_code the cc-hic code for the date of interest
 #' @param time_code the cc-hic code for the time of interest
 #'
