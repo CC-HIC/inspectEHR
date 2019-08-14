@@ -35,6 +35,8 @@
 <meta property="og:description" content="This is the main function for processing data from CC-HIC. It wraps all
 other functions to evaluate the whole database in one sweep.
 This can take some time!" />
+
+<meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -189,7 +191,7 @@ produce a full report for CC-HIC</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>make_report</span>(<span class='kw'>database</span> <span class='kw'>=</span> <span class='st'>"test_db"</span>, <span class='kw'>username</span> <span class='kw'>=</span> <span class='st'>"abcde"</span>, <span class='kw'>password</span> <span class='kw'>=</span> <span class='st'>"qwerty"</span>, <span class='kw'>path_name</span> <span class='kw'>=</span> <span class='st'>"~/outputs"</span>)</div><div class='output co'>#&gt; path: ~/outputs/ does not exist. Creating directory[1] "Starting Episode Evaluation"</div><div class='output co'>#&gt; <span class='error'>Error in connection_create(names(opts), as.vector(opts)): FATAL:  role "abcde" does not exist</span></div><div class='input'><span class='fu'>make_report</span>(<span class='kw'>database</span> <span class='kw'>=</span> <span class='st'>"test_db"</span>, <span class='kw'>sqlite_file</span> <span class='kw'>=</span> <span class='st'>"~/database.sqlite"</span>, <span class='kw'>path_name</span> <span class='kw'>=</span> <span class='st'>"~/outputs"</span>)</div><div class='output co'>#&gt; [1] "Starting Episode Evaluation"</div><div class='output co'>#&gt; <span class='error'>Error in UseMethod("collect"): no applicable method for 'collect' applied to an object of class "NULL"</span></div></pre>
+    <pre class="examples"><div class='input'><span class='fu'>make_report</span>(<span class='kw'>database</span> <span class='kw'>=</span> <span class='st'>"test_db"</span>, <span class='kw'>username</span> <span class='kw'>=</span> <span class='st'>"abcde"</span>, <span class='kw'>password</span> <span class='kw'>=</span> <span class='st'>"qwerty"</span>, <span class='kw'>path_name</span> <span class='kw'>=</span> <span class='st'>"~/outputs"</span>)</div><div class='output co'>#&gt; [1] "Starting Episode Evaluation"</div><div class='output co'>#&gt; <span class='error'>Error in connection_create(names(opts), as.vector(opts)): FATAL:  role "abcde" does not exist</span></div><div class='input'><span class='fu'>make_report</span>(<span class='kw'>database</span> <span class='kw'>=</span> <span class='st'>"test_db"</span>, <span class='kw'>sqlite_file</span> <span class='kw'>=</span> <span class='st'>"~/database.sqlite"</span>, <span class='kw'>path_name</span> <span class='kw'>=</span> <span class='st'>"~/outputs"</span>)</div><div class='output co'>#&gt; [1] "Starting Episode Evaluation"</div><div class='output co'>#&gt; <span class='error'>Error in UseMethod("collect"): no applicable method for 'collect' applied to an object of class "NULL"</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

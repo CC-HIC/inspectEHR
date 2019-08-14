@@ -22,7 +22,5 @@ This is useful when working with most time-series aware stats packages
 that expect a regular cadance to the table.
 }
 \examples{
-\\{dontrun
 expand_missing(tb_1)
-}
 }

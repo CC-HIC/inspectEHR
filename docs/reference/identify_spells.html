@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Indentify Spells — identify_spells • inspectEHR</title>
+<title>Characterise Spells — identify_spells • inspectEHR</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,11 +30,14 @@
 
 
 
-<meta property="og:title" content="Indentify Spells — identify_spells" />
+<meta property="og:title" content="Characterise Spells — identify_spells" />
 
-<meta property="og:description" content="some sites have patients check out of one ICU and into another (for example ICU stepdown to HDU).
-This checks to see if patients are discharged from 1 unit and admitted to another wihtin a pre-defined
-time period, specified in the minutes argument." />
+<meta property="og:description" content="Some sites have patients check out of one ICU and into another (for example
+ICU stepdown to HDU). This checks to see if patients are discharged from one
+unit and admitted to another wihtin a pre-defined time period, specified in
+the minutes argument." />
+
+<meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -116,49 +119,47 @@ time period, specified in the minutes argument." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Indentify Spells</h1>
-    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/episode_parameters.R'><code>R/episode_parameters.R</code></a></small>
+    <h1>Characterise Spells</h1>
+    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/episodes.R'><code>R/episodes.R</code></a></small>
     <div class="hidden name"><code>identify_spells.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>some sites have patients check out of one ICU and into another (for example ICU stepdown to HDU).
-This checks to see if patients are discharged from 1 unit and admitted to another wihtin a pre-defined
-time period, specified in the minutes argument.</p>
+    <p>Some sites have patients check out of one ICU and into another (for example
+ICU stepdown to HDU). This checks to see if patients are discharged from one
+unit and admitted to another wihtin a pre-defined time period, specified in
+the minutes argument.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>identify_spells</span>(<span class='kw'>episode_length</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>episodes</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>minutes</span> <span class='kw'>=</span> <span class='fl'>60</span>)</pre>
+    <pre class="usage"><span class='fu'>identify_spells</span>(<span class='kw'>df</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>minutes</span> <span class='kw'>=</span> <span class='fl'>30</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>episode_length</th>
-      <td><p>episode length tibble</p></td>
-    </tr>
-    <tr>
-      <th>episodes</th>
-      <td><p>episodes tibble</p></td>
+      <th>df</th>
+      <td><p>episode length table</p></td>
     </tr>
     <tr>
       <th>minutes</th>
-      <td><p>numeric value to define transition period</p></td>
+      <td><p>numeric scalar to define transition period</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a tibble with spells identified and coded</p>
+    <p>a table with episodes reconciled as spells</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>This only evaluates episodes that have already been flagged as valid by the episode_length function.</p>
+    <p>This only evaluates episodes that have already been flagged as valid by the
+<code><a href='characterise_episodes.html'>characterise_episodes</a></code> function.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>identify_spells</span>(<span class='no'>episode_length</span>, <span class='no'>episodes</span>)</div><div class='output co'>#&gt; <span class='error'>Error in eval(lhs, parent, parent): object 'episode_length' not found</span></div></pre>
+    <pre class="examples"><div class='input'><span class='fu'>identify_spells</span>(<span class='no'>episodes</span>, <span class='no'>episodes</span>)</div><div class='output co'>#&gt; <span class='error'>Error in eval(lhs, parent, parent): object 'episodes' not found</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

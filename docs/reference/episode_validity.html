@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Summarise Episode Validation — episode_validity • inspectEHR</title>
+<title>Summarise Invalid Episodes — episode_validity • inspectEHR</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,9 +30,11 @@
 
 
 
-<meta property="og:title" content="Summarise Episode Validation — episode_validity" />
+<meta property="og:title" content="Summarise Invalid Episodes — episode_validity" />
 
-<meta property="og:description" content="Gives an overview summary of validation codes for the episode table" />
+<meta property="og:description" content="Provides an overview of the reasons for episode invalidation" />
+
+<meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -114,40 +116,32 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Summarise Episode Validation</h1>
-    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/episode_parameters.R'><code>R/episode_parameters.R</code></a></small>
+    <h1>Summarise Invalid Episodes</h1>
+    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/episodes.R'><code>R/episodes.R</code></a></small>
     <div class="hidden name"><code>episode_validity.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Gives an overview summary of validation codes for the episode table</p>
+    <p>Provides an overview of the reasons for episode invalidation</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>episode_validity</span>(<span class='no'>x</span>)</pre>
+    <pre class="usage"><span class='fu'>episode_validity</span>(<span class='no'>df</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>x</th>
-      <td></td>
+      <th>df</th>
+      <td><p>the episode table returned from <code><a href='characterise_episodes.html'>characterise_episodes</a></code></p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a tibble containing summary information for validation at episode level</p>
-    
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>#' validity is coded as:</p><ul>
-<li><p>\0 - Validated
-  \1 - Invalid: no end date to episode length
-  \2 - Invalid: negative length of stay
-  \3 = Invalid: length of stay under 6 hours</p></li>
-</ul>
+    <p>a tibble containing summary information for validation at episode
+  level</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
@@ -159,8 +153,6 @@
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
-
-      <li><a href="#details">Details</a></li>
       
       <li><a href="#examples">Examples</a></li>
     </ul>

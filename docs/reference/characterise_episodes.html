@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Core table — make_core • inspectEHR</title>
+<title>Characterise Episodes — characterise_episodes • inspectEHR</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,11 +30,27 @@
 
 
 
-<meta property="og:title" content="Core table — make_core" />
+<meta property="og:title" content="Characterise Episodes — characterise_episodes" />
 
-<meta property="og:description" content="Writes a remote SQL query to make a core table with all the necessary column
-names for most data extraction tasks. No work is done till the function is
-explicitly called." />
+<meta property="og:description" content="There are several ways to potentially define an episode. Fundamentally, we
+need a start and an end datetime. The start is already required to onboard
+patients into the database and so is 100
+serves to identify the end of an epsiode, which is often much less clearly
+defined. Potential sources of information, in order of precidence include:
+date and time of in unit death: 0042 and 0043
+date and time of brainstem death: 0044 and 0045
+episode end date time: 0412
+date and time of body removed: 0038 and 0039
+the last regularly recorded observation from HR (0108) and SpO2
+    (0129)
+The goal is not to create a perfect record, as doing so drops too many cases.
+Rather, the goal is to characterise the episode in a meaningful way. This
+means that episodes cannot have negative episode length, and you should not
+be able to record a vital sign after a death has occurred. If date and time
+of death preceed the discharge time we overwrite the episode end datetime
+with the date and time of death. The same is not true for brainstem death and
+body removal. This would result in a situation whereby a body is kept
+physiologically active on the ICU, but the episode is now listed as finished." />
 
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
@@ -118,37 +134,67 @@ explicitly called." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Core table</h1>
-    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/utils.R'><code>R/utils.R</code></a></small>
-    <div class="hidden name"><code>make_core.Rd</code></div>
+    <h1>Characterise Episodes</h1>
+    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/episodes.R'><code>R/episodes.R</code></a></small>
+    <div class="hidden name"><code>characterise_episodes.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Writes a remote SQL query to make a core table with all the necessary column
-names for most data extraction tasks. No work is done till the function is
-explicitly called.</p>
+    <p>There are several ways to potentially define an episode. Fundamentally, we
+need a start and an end datetime. The start is already required to onboard
+patients into the database and so is 100<!-- % complete. This function primary -->
+serves to identify the end of an epsiode, which is often much less clearly
+defined. Potential sources of information, in order of precidence include:</p><ul>
+<li><p>date and time of in unit death: 0042 and 0043</p></li>
+<li><p>date and time of brainstem death: 0044 and 0045</p></li>
+<li><p>episode end date time: 0412</p></li>
+<li><p>date and time of body removed: 0038 and 0039</p></li>
+<li><p>the last regularly recorded observation from HR (0108) and SpO2
+    (0129)</p></li>
+</ul><p>The goal is not to create a perfect record, as doing so drops too many cases.
+Rather, the goal is to characterise the episode in a meaningful way. This
+means that episodes cannot have negative episode length, and you should not
+be able to record a vital sign after a death has occurred. If date and time
+of death preceed the discharge time we overwrite the episode end datetime
+with the date and time of death. The same is not true for brainstem death and
+body removal. This would result in a situation whereby a body is kept
+physiologically active on the ICU, but the episode is now listed as finished.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>make_core</span>(<span class='no'>connection</span>)</pre>
+    <pre class="usage"><span class='fu'>characterise_episodes</span>(<span class='kw'>connection</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>connection</th>
-      <td><p>a database connection</p></td>
+      <td><p>a connection to the CC-HIC database</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a database object</p>
+    <p>a tibble that characterises each episode. The attribute
+  "invalid_records" contains information related to invalid records and the
+  reason for invalidation</p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>Since a patient can only die once, checks are also performed to ensure that
+death events, can only be linked to a single episode. This is relevent for
+the following situations:</p><ul>
+<li><p>More than one episode has become linked with the same death event. In
+    this situation, the final episode is closed with an end datetime of the
+    datetime of death. The death is then uncoupled from any prior episodes</p></li>
+<li><p>A patient was discharged alive, but subseqnetly died.</p></li>
+</ul><p>Checks are taken to ensure that episodes are non-overlapping, though they can
+run immediately from one to the next.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>make_core</span>(<span class='no'>ctn</span>)</div><div class='output co'>#&gt; <span class='error'>Error in dplyr::tbl(connection, "events"): object 'ctn' not found</span></div></pre>
+    <pre class="examples"><div class='input'><span class='fu'>epi_length</span>(<span class='no'>ctn</span>)</div><div class='output co'>#&gt; <span class='error'>Error in epi_length(ctn): could not find function "epi_length"</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -156,6 +202,8 @@ explicitly called.</p>
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
+
+      <li><a href="#details">Details</a></li>
       
       <li><a href="#examples">Examples</a></li>
     </ul>

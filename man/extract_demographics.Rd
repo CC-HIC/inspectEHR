@@ -19,9 +19,9 @@ as, or NULL (the default) if you do not want to relabel.}
 A tibble of 1d data
 }
 \description{
-Takes a remote database contection to CC-HIC, a vector of HIC codes
-(and optionally a vector of labels to rename the codes) and returns
-a table with 1 row per patient and 1 column per data item.
+Takes a remote database contection to CC-HIC, a vector of HIC codes (and
+optionally a vector of labels to rename the codes) and returns a table with 1
+row per patient and 1 column per data item.
 }
 \examples{
 hic_codes <- c("NIHR_HIC_ICU_0409")

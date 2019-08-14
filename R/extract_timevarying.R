@@ -83,6 +83,11 @@ extract_timevarying <- function(connection, code_names, rename = NULL, chunk_siz
     names(episode_groups) <- if_else(is.na(replacement_names), names(episode_groups), replacement_names)
   }
 
+  lookups <- tibble(codes = code_names,
+                    names = rename)
+
+  attr(episode_groups, "lookups") <- lookups
+
   elapsed_time <- signif(as.numeric(difftime(lubridate::now(), starting, units = "hour")), 2)
   print(paste(elapsed_time, "hours to process"))
 

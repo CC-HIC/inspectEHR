@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Reshape timevarying events into a long form timeseries table — extract_timevarying • inspectEHR</title>
+<title>Reshape Timevarying Dateitems — extract_timevarying • inspectEHR</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,11 +30,13 @@
 
 
 
-<meta property="og:title" content="Reshape timevarying events into a long form timeseries table — extract_timevarying" />
+<meta property="og:title" content="Reshape Timevarying Dateitems — extract_timevarying" />
 
-<meta property="og:description" content="This is the workhorse function that transcribes 2d data from the HIC DB
-to a dense table with 1 column per variable (and metadata if relevent)
-and 1 row per time unit per patient." />
+<meta property="og:description" content="This is the workhorse function that transcribes 2d data from CC-HIC to a
+table with 1 column per dataitem (and any metadata if relevent) and 1 row per
+time per patient." />
+
+<meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -116,76 +118,77 @@ and 1 row per time unit per patient." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Reshape timevarying events into a long form timeseries table</h1>
+    <h1>Reshape Timevarying Dateitems</h1>
     <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/extract_timevarying.R'><code>R/extract_timevarying.R</code></a></small>
     <div class="hidden name"><code>extract_timevarying.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>This is the workhorse function that transcribes 2d data from the HIC DB
-to a dense table with 1 column per variable (and metadata if relevent)
-and 1 row per time unit per patient.</p>
+    <p>This is the workhorse function that transcribes 2d data from CC-HIC to a
+table with 1 column per dataitem (and any metadata if relevent) and 1 row per
+time per patient.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>extract_timevarying</span>(<span class='no'>events</span>, <span class='no'>metadata</span>, <span class='no'>code_names</span>, <span class='kw'>chunk_size</span> <span class='kw'>=</span> <span class='fl'>5000</span>,
-  <span class='kw'>cadance</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>rename</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'>extract_timevarying</span>(<span class='no'>connection</span>, <span class='no'>code_names</span>, <span class='kw'>rename</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>chunk_size</span> <span class='kw'>=</span> <span class='fl'>5000</span>, <span class='kw'>cadance</span> <span class='kw'>=</span> <span class='fl'>1</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>events</th>
-      <td><p>database events table</p></td>
-    </tr>
-    <tr>
-      <th>metadata</th>
-      <td><p>database metadata table (collected)</p></td>
+      <th>connection</th>
+      <td><p>a CC-HIC database connection</p></td>
     </tr>
     <tr>
       <th>code_names</th>
-      <td><p>a vector of HIC codes names to be wrangled out</p></td>
+      <td><p>a vector of CC-HIC codes names to be extracted</p></td>
     </tr>
     <tr>
       <th>chunk_size</th>
-      <td><p>a chunking parameter to help speed up the function and manage memory constaints</p></td>
+      <td><p>a chunking parameter to help speed up the function and
+manage memory constaints</p></td>
     </tr>
     <tr>
       <th>cadance</th>
-      <td><p>a numerical scalar to describe the base time unit to build
-each row, in divisions of an hour. For exampple: 1 = 1 hour, 0.5 = 30 mins, 2 = 2 hourly.
-If you set cadance = "exact", then the EXACT datetime will be used at the time column.
-This is likely to generate a LARGE table, so use cautiously.</p></td>
+      <td><p>a numerical scalar or one of "exact" or "timestamp". If a
+numerical scalar is used, it will describe the base time unit to build each
+row, in divisions of an hour. For example: 1 = 1 hour, 0.5 = 30 mins, 2 = 2
+hourly. If multiple events occur within the specified time, then the first
+is chosen and the others are dropped. If cadance = "exact", then the EXACT
+datetime will be used at the time column. This is likely to generate a
+LARGE table, so use cautiously.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>sparse tibble with hourly cadance as rows, and unique hic events as columns</p>
+    <p>sparse tibble with hourly cadance as rows, and unique hic events as
+  columns</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The time unit is user definable, and set by the "cadance" argument.
-The default behaviour is to procude a table with 1 row per hour per patient.</p>
-<p>Many events inside CC-HIC occur on a greater than hourly basis. Depending upon
-the chosen analysis, you may which to increase the cadance. 0.5 for example will produce
-a table with 1 row per 30 minutes per patient.</p>
-<p>Choose what variables you want to pull out wisely. Whilst this is actually
-pretty quick considering what it needs to do, it can take a very long time (24 hours or more)</p>
-<p>It is perfectly possible for this table to produce negative time rows. If, for example
-a patient had a measure taken in the hours before they were admitted, then this would
-be added to the table with a negative time value. As a concrete example,
-if a patient had a sodium measured at 08:00, and they were admitted to the
-ICU at 20:00 the same day, then the sodium would present on the output table
-at time = -12. This is normal behaviour it is left to the end user to
-descibe how best they wish to account for this.</p>
+    <p>The time unit is user definable, and set by the "cadance" argument. The
+default behaviour is to produce a table with 1 row per hour per patient.</p>
+<p>Many events inside CC-HIC occur on a greater than hourly basis. Depending
+upon the chosen analysis, you may which to increase the cadance. 0.5 for
+example will produce a table with 1 row per 30 minutes per patient.</p>
+<p>Choose what variables you want to pull out wisely. This function is actually
+quite efficient considering what it needs to do, but it can take a very long
+time if pulling out lots of data (24 hours or more). Consider optiming the
+database with indexes prior to using this function.</p>
+<p>It is perfectly possible for this table to produce negative time rows. If,
+for example a patient had a measure taken in the hours before they were
+admitted, then this would be added to the table with a negative time value.
+As a concrete example, if a patient had a sodium measured at 08:00, and they
+were admitted to the ICU at 20:00 the same day, then the sodium would be
+displayed at time = -12. This is normal behaviour it is left to the end user
+to determine how best they wish to account for this.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><span class='co'># NOT RUN {</span>
-<span class='fu'>extract_timevarying</span>(<span class='no'>tbls</span><span class='kw'>[[</span><span class='st'>"events"</span>]], <span class='fu'>collect</span>(<span class='no'>tbls</span><span class='kw'>[[</span><span class='st'>"variables"</span>]]), <span class='st'>"NIHR_HIC_ICU_0108"</span>)
-<span class='co'># }</span></pre>
+    <pre class="examples"><div class='input'><span class='fu'>extract_timevarying</span>(<span class='no'>ctn</span>, <span class='st'>"NIHR_HIC_ICU_0108"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in dplyr::tbl(connection, "events"): object 'ctn' not found</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

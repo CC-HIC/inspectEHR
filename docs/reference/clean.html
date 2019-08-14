@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Core table — make_core • inspectEHR</title>
+<title>Clean Table — clean • inspectEHR</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,11 +30,12 @@
 
 
 
-<meta property="og:title" content="Core table — make_core" />
+<meta property="og:title" content="Clean Table — clean" />
 
-<meta property="og:description" content="Writes a remote SQL query to make a core table with all the necessary column
-names for most data extraction tasks. No work is done till the function is
-explicitly called." />
+<meta property="og:description" content="This function takes an extracted table from either
+extract_demographics or extract_timevarying and
+returns the table with values that are out of range or impossible (as defined
+in the data quality reference table)" />
 
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
@@ -118,47 +119,50 @@ explicitly called." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Core table</h1>
-    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/utils.R'><code>R/utils.R</code></a></small>
-    <div class="hidden name"><code>make_core.Rd</code></div>
+    <h1>Clean Table</h1>
+    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/clean.R'><code>R/clean.R</code></a></small>
+    <div class="hidden name"><code>clean.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Writes a remote SQL query to make a core table with all the necessary column
-names for most data extraction tasks. No work is done till the function is
-explicitly called.</p>
+    <p>This function takes an extracted table from either
+<code><a href='extract_demographics.html'>extract_demographics</a></code> or <code><a href='extract_timevarying.html'>extract_timevarying</a></code> and
+returns the table with values that are out of range or impossible (as defined
+in the data quality reference table)</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>make_core</span>(<span class='no'>connection</span>)</pre>
+    <pre class="usage"><span class='fu'>clean</span>(<span class='kw'>tbl</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>col_names</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>connection</th>
-      <td><p>a database connection</p></td>
+      <th>tbl</th>
+      <td><p>a table extracted from the CC-HIC database</p></td>
+    </tr>
+    <tr>
+      <th>col_names</th>
+      <td><p>a vector of the names you want to change</p></td>
+    </tr>
+    <tr>
+      <th>dq_ref</th>
+      <td><p>a tibble if you want to override the default boundary conditions
+with the following column headings:
+code_names
+min_range
+max_range</p></td>
     </tr>
     </table>
     
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a database object</p>
-    
-
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>make_core</span>(<span class='no'>ctn</span>)</div><div class='output co'>#&gt; <span class='error'>Error in dplyr::tbl(connection, "events"): object 'ctn' not found</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-      
-      <li><a href="#value">Value</a></li>
-      
-      <li><a href="#examples">Examples</a></li>
-    </ul>
+                </ul>
 
   </div>
 </div>

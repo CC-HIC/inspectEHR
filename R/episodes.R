@@ -181,8 +181,9 @@ unit_admissions <- function(events_table = NULL, reference_table = NULL) {
 #'
 #' @param connection a connection to the CC-HIC database
 #'
-#' @return a tibble that characterises each episode. The attribute "invalid_records"
-#'   contains information related to invalid records and the reason for invalidation
+#' @return a tibble that characterises each episode. The attribute
+#'   "invalid_records" contains information related to invalid records and the
+#'   reason for invalidation
 #' @export
 #'
 #' @importFrom rlang abort
@@ -209,7 +210,7 @@ characterise_episodes <- function(connection = NULL) {
     "NIHR_HIC_ICU_0097", "outcome",
     "NIHR_HIC_ICU_0400", "bsd"
   )
-  
+
 
   # df <- extract_demographics(
   #   tbl(ctn, "events"),
@@ -223,19 +224,25 @@ characterise_episodes <- function(connection = NULL) {
     code_names = df_extract$codes,
     rename = df_extract$names)
 
-  df <- df %>%
-    mutate(
-      death_dttm = if_else(!is.na(death_date) & !is.na(body_time),
-                           paste0(format(death_date), " ", format(body_time)), as.character(NA))) %>%
-    mutate(death_dttm = if_else(!is.na(death_dttm), lubridate::ymd_hms(death_dttm), as.POSIXct(NA))) %>%
-    mutate(
-      bsd_dttm = if_else(!is.na(bsd_date) & !is.na(bsd_time),
-                           paste0(format(bsd_date), " ", format(bsd_time)), as.character(NA))) %>%
-    mutate(bsd_dttm = if_else(!is.na(bsd_dttm), lubridate::ymd_hms(bsd_dttm), as.POSIXct(NA))) %>%
-    mutate(
-      body_dttm = if_else(!is.na(body_date) & !is.na(body_time),
-                           paste0(format(body_date), " ", format(body_time)), as.character(NA))) %>%
-    mutate(body_dttm = if_else(!is.na(body_dttm), lubridate::ymd_hms(body_dttm), as.POSIXct(NA)))
+df <- df %>%
+  mutate(
+    death_dttm = if_else(!is.na(death_date) & !is.na(body_time),
+      paste0(format(death_date), " ", format(body_time)), as.character(NA)
+    )
+  ) %>%
+  mutate(death_dttm = if_else(!is.na(death_dttm), lubridate::ymd_hms(death_dttm), as.POSIXct(NA))) %>%
+  mutate(
+    bsd_dttm = if_else(!is.na(bsd_date) & !is.na(bsd_time),
+      paste0(format(bsd_date), " ", format(bsd_time)), as.character(NA)
+    )
+  ) %>%
+  mutate(bsd_dttm = if_else(!is.na(bsd_dttm), lubridate::ymd_hms(bsd_dttm), as.POSIXct(NA))) %>%
+  mutate(
+    body_dttm = if_else(!is.na(body_date) & !is.na(body_time),
+      paste0(format(body_date), " ", format(body_time)), as.character(NA)
+    )
+  ) %>%
+  mutate(body_dttm = if_else(!is.na(body_dttm), lubridate::ymd_hms(body_dttm), as.POSIXct(NA)))
 
   df <- df %>%
     select(-tidyselect::ends_with("date"), -tidyselect::ends_with("time")) %>%
@@ -249,7 +256,6 @@ characterise_episodes <- function(connection = NULL) {
 
   df <- df %>%
     filter(nhs_validation == 1) %>%
-    filter(nhs != "0000000000") %>%
     select(-nhs_validation)
 
   invalid_records <- df %>%
@@ -333,7 +339,7 @@ characterise_episodes <- function(connection = NULL) {
     filter(time_out < 0) %>%
     select(episode_id) %>%
     mutate(reason = "overlapping episode")
-  
+
   invalid_records <- bind_rows(
     invalid_records,
     duplicate_start,
@@ -344,42 +350,38 @@ characterise_episodes <- function(connection = NULL) {
   df <- df %>%
     select(episode_id, nhs, epi_start_dttm, epi_end_dttm, outcome) %>%
     rename(nhs_number = nhs) %>%
-    anti_join(invalid_records, by = "episode_id")
-    arrange(nhs, epi_start_dttm)
-  
+    anti_join(invalid_records, by = "episode_id") %>%
+    arrange(nhs, epi_start_dttm) %>%
+    mutate(los = difftime(epi_end_dttm, epi_start_dttm, units = "hours")/24)
+
   attr(df, "invalid_records") <- invalid_records
-  
+
   return(df)
 }
 
 
-#' Indentify Spells
+#' Characterise Spells
 #'
-#' some sites have patients check out of one ICU and into another (for example ICU stepdown to HDU).
-#' This checks to see if patients are discharged from 1 unit and admitted to another wihtin a pre-defined
-#' time period, specified in the minutes argument.
+#' Some sites have patients check out of one ICU and into another (for example
+#' ICU stepdown to HDU). This checks to see if patients are discharged from one
+#' unit and admitted to another wihtin a pre-defined time period, specified in
+#' the minutes argument.
 #'
-#' This only evaluates episodes that have already been flagged as valid by the episode_length function.
+#' This only evaluates episodes that have already been flagged as valid by the
+#' \code{\link{characterise_episodes}} function.
 #'
-#' @param episode_length episode length tibble
-#' @param episodes episodes tibble
-#' @param minutes numeric value to define transition period
+#' @param df episode length table
+#' @param minutes numeric scalar to define transition period
 #'
-#' @return a tibble with spells identified and coded
+#' @return a table with episodes reconciled as spells
 #' @export
 #'
 #' @examples
-#' identify_spells(episode_length, episodes)
-identify_spells <- function(episode_length = NULL, episodes = NULL, minutes = 60) {
-  episode_length %>%
-    filter(validity == 0) %>%
-    left_join(episodes %>%
-      select(episode_id, nhs_number),
-    by = "episode_id"
-    ) %>%
+#' identify_spells(episodes, episodes)
+identify_spells <- function(df = NULL, minutes = 30) {
+  df %>%
     arrange(nhs_number, epi_start_dttm) %>%
     group_by(nhs_number) %>%
-    # check how much time patient spent outside the unit
     mutate(time_out = epi_start_dttm[-1] %>%
       difftime(epi_end_dttm[-length(epi_end_dttm)], units = "mins") %>%
       as.integer() %>%
@@ -387,75 +389,18 @@ identify_spells <- function(episode_length = NULL, episodes = NULL, minutes = 60
     mutate(new_spell = if_else(lag(time_out) > minutes | is.na(lag(time_out)), TRUE, FALSE)) %>%
     ungroup() %>%
     mutate(spell_id = cumsum(new_spell)) %>%
-    select(spell_id, episode_id, nhs_number, site, epi_start_dttm, epi_end_dttm, los, validity)
+    select(spell_id, episode_id, nhs_number, site, epi_start_dttm, epi_end_dttm, los)
 }
 
 
-#' Collect Unit Discharge Status
+#' Resolve DateTime
 #'
-#' pulls the discharge status
-#'
-#' @param event_table main event table
-#'
-#' @return a tibble with unit discharge status
-#' @export
-#'
-#' @examples
-#' unit_discharge_status(events)
-unit_discharge_status <- function(event_table) {
-  event_table %>%
-    filter(code_name == "NIHR_HIC_ICU_0097") %>%
-    select(string, episode_id) %>%
-    collect()
-}
-
-
-#' Collect Episode End Datetime
-#'
-#' Collects episodes end datetime for further processing
-#'
-#' @param core_table core table from \code{make_core()}
-#'
-#' @return a tibble with mandatory episode defining characteristics.
-#' @export
-#'
-#' @importFrom lubridate is.POSIXct ymd_hms
-#' @importFrom tidyr spread
-#' @importFrom dplyr select filter collect rename mutate_if
-#'
-#' @examples
-#' episode_end_generic(reference, tbl[["events"]])
-episode_end_generic <- function(reference_table = NULL, events_table = NULL, code_name = "NIHR_HIC_ICU_0412") {
-  sym_code_name <- rlang::sym("code_name")
-  quo_column <- enquo(code_name)
-
-  episode_end <- events_table %>%
-    dplyr::select(episode_id, !!sym_code_name, datetime) %>%
-    dplyr::filter(sym_code_name == quo_column) %>%
-    dplyr::collect() %>%
-    dplyr::rename(end_date = datetime)
-
-  if (class(episode_end$end_date) == "numeric") {
-    episode_end <- episode_end %>%
-      dplyr::mutate(end_date = lubridate::as_datetime(end_date))
-  }
-
-  episode_boundaries <-
-    dplyr::left_join(reference_table, episode_end, by = c("episode_id" = "episode_id")) %>%
-    dplyr::select(episode_id, nhs_number, start_date, end_date, site)
-
-  return(episode_boundaries)
-}
-
-
-#' Resolve Datetime of events
-#'
-#' Many events in CC-HIC are stored in separate date and time columns/objects. This function
-#' attempts to reconcile and combine these times when possible. Of note,
-#' date and time information is not always stored with consistent rules. For example,
-#' death date and time, are stored for every patient in every episode, even though
-#' the patient can only die once. The following
-#' are some date and time pairings that denote a singular event:
+#' Many events in CC-HIC are stored in separate date and time columns/objects.
+#' This function attempts to reconcile and combine these times when possible. Of
+#' note, date and time information is not always stored with consistent rules.
+#' For example, death date and time, are often stored for every patient in every
+#' episode, even though the patient can only die once. The following are some
+#' date and time pairings that denote a singular event:
 #' \itemize{
 #'   \item "NIHR_HIC_ICU_0042", "NIHR_HIC_ICU_0043" - Unit Death
 #'   \item "NIHR_HIC_ICU_0038", "NIHR_HIC_ICU_0039" - Body Removal
@@ -466,9 +411,9 @@ episode_end_generic <- function(reference_table = NULL, events_table = NULL, cod
 #' If a date or time component is missing, nothing is returned as the datetime
 #' cannot be accurately formed.
 #'
-#' @param core core table from \code{\link{make_core()}}
-#' @param date_code the cc-hic code for the date of interest
-#' @param time_code the cc-hic code for the time of interest
+#' @param df a table that contains columns for the date and time of interest
+#' @param date_code the column name for the date of interest
+#' @param time_code the column name for the time of interest
 #'
 #' @return a table with the correct datetime pairing for the codes given
 #' @export
@@ -476,132 +421,47 @@ episode_end_generic <- function(reference_table = NULL, events_table = NULL, cod
 #' @importFrom rlang .data sym
 #'
 #' @examples
-#' resolve_date_time(code, "NIHR_HIC_ICU_0042", "NIHR_HIC_ICU_0043") # unit death dttm
-resolve_date_time <- function(core_tbl = NULL,
-                              date_code = as.character(NULL),
-                              time_code = as.character(NULL)) {
-  stopifnot(any(is.null(c(core_table, date_code, time_code))))
+#' resolve_date_time(df, death_date, death_time)
+resolve_date_time <- function(df = NULL,
+                              date_code = NULL,
+                              time_code = NULL) {
 
-  misaligned <- core_tbl %>%
-    dplyr::select(
-      .data$episode_id, .data$code_name, .data$date, .data$time
-    ) %>%
-    dplyr::filter(
-      rlang::sym("code_name") %in% c(date_code, time_code)
-    ) %>%
-    dplyr::collect()
-
-  date_tbl <- misaligned %>%
-    dplyr::select(.data$episode_id, .data$date) %>%
-    na.omit()
-
-  time_tbl <- misaligned %>%
-    dplyr::select(.data$episode_id, .data$time) %>%
-    na.omit()
-
-  aligned <- dplyr::inner_join(date_tbl, time_tbl, by = "episode_id")
-
-  if (
-    attributes(
-      class(
-        core_tbl$src$con
-      )
-    )$package == "RSQLite") {
-    aligned <- aligned %>%
-      dplyr::mutate(date_time = date + time) %>%
-      dplyr::select(episode_id, date_time)
-  } else {
-    aligned <- aligned %>%
-      dplyr::mutate(date_time = lubridate::ymd_hms(
-        paste0(
-          date, time,
-          sep = " "
-        ),
-        tz = "Europe/London"
-      )) %>%
-      dplyr::select(episode_id, date_time)
+  if (any(is.null(c(df, date_code, time_code)))) {
+    rlang::abort("you must supply a dataframe and two column names")
   }
 
-  return(aligned)
+  dc <- rlang::enquo(date_code)
+  tc <- rlang::enquo(time_code)
+
+  df <- df %>%
+    mutate(
+      dttm = if_else(
+        !is.na(!!dc) & !is.na(!!tc),
+      paste0(format(!!dc), " ", format(!!tc)), as.character(NA)
+      )
+    ) %>%
+    mutate(
+      dttm = if_else(!is.na(dttm), lubridate::ymd_hms(dttm), as.POSIXct(NA)))
+
+  return(df)
 }
 
-
-
-#' Summarise Episode Validation
+#' Summarise Invalid Episodes
 #'
-#' Gives an overview summary of validation codes for the episode table
+#' Provides an overview of the reasons for episode invalidation
 #'
-#' #' validity is coded as:
-#' \itemize{
-#'   \0 - Validated
-#'   \1 - Invalid: no end date to episode length
-#'   \2 - Invalid: negative length of stay
-#'   \3 = Invalid: length of stay under 6 hours
-#' }
+#' @param df the episode table returned from \code{\link{characterise_episodes}}
 #'
-#' @param x
-#'
-#' @return a tibble containing summary information for validation at episode level
+#' @return a tibble containing summary information for validation at episode
+#'   level
 #' @export
 #'
 #' @examples
 #' episode_validity(episode_length)
-episode_validity <- function(x) {
-  x %<>%
-    group_by(site, validity) %>%
-    summarise(episodes = n()) %>%
-    spread(key = validity, value = episodes)
+episode_validity <- function(df) {
+
+  attr(df, "invalid_records") %>%
+    group_by(reason) %>%
+    tally()
+
 }
-
-
-
-
-
-#' #' Calculate Estimated Site Occupancy
-#' #'
-#' #' @param episode_length_tbl episode length table
-#' #' @param episodes_tbl episodes table
-#' #' @param provenance_tbl provenance table
-#' #'
-#' #' @return a table of similar structure to date_skelaton, but with estimated occupancies attached
-#' #' @export
-#' #'
-#' #' @examples
-#' calc_site_occupancy <- function(episode_length_tbl = NULL, impute = TRUE) {
-#'
-#'   all_sites <- c("Oxford", "RYJ", "GSTT", "UCL", "RGT")
-#'
-#'   date_skelaton <- make_date_skelaton()
-#'
-#'   occupancy_vec <- c()
-#'
-#'   for (i in 1:nrow(date_skelaton)) {
-#'
-#'     insert_this <- episode_length_tbl %>%
-#'       dplyr::filter(site == date_skelaton$site[i],
-#'                     date_skelaton$date[i] >= epi_start_dttm & date_skelaton$date[i] <= epi_end_dttm) %>%
-#'       nrow()
-#'
-#'     occupancy_vec <- c(occupancy_vec, insert_this)
-#'
-#'   }
-#'
-#'   date_skelaton$est_occupancy <- occupancy_vec
-#'
-#'   occupancy <- date_skelaton
-#'
-#'   if (!impute) {
-#'     return(occupancy)
-#'   } else {
-#'     occupancy$est_occupancy <- ifelse(occupancy$est_occupancy == 0 & occupancy$site == "RGT", 38,
-#'                              ifelse(occupancy$est_occupancy == 0 & occupancy$site == "UCL", 24,
-#'                              ifelse(occupancy$est_occupancy == 0 & occupancy$site == "Oxford", 11,
-#'                              ifelse(occupancy$est_occupancy == 0 & occupancy$site == "RYJ", 23,
-#'                              occupancy$est_occupancy))))
-#'
-#'     return(occupancy)
-#'
-#'   }
-#'
-#'
-#' }

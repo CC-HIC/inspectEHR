@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Resolve Datetime of events — resolve_date_time • inspectEHR</title>
+<title>Resolve DateTime — resolve_date_time • inspectEHR</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,14 +30,14 @@
 
 
 
-<meta property="og:title" content="Resolve Datetime of events — resolve_date_time" />
+<meta property="og:title" content="Resolve DateTime — resolve_date_time" />
 
-<meta property="og:description" content="Many events in CC-HIC are stored in separate date and time columns/objects. This function
-attempts to reconcile and combine these times when possible. Of note,
-date and time information is not always stored with consistent rules. For example,
-death date and time, are stored for every patient in every episode, even though
-the patient can only die once. The following
-are some date and time pairings that denote a singular event:
+<meta property="og:description" content="Many events in CC-HIC are stored in separate date and time columns/objects.
+This function attempts to reconcile and combine these times when possible. Of
+note, date and time information is not always stored with consistent rules.
+For example, death date and time, are often stored for every patient in every
+episode, even though the patient can only die once. The following are some
+date and time pairings that denote a singular event:
 &quot;NIHR_HIC_ICU_0042&quot;, &quot;NIHR_HIC_ICU_0043&quot; - Unit Death
 &quot;NIHR_HIC_ICU_0038&quot;, &quot;NIHR_HIC_ICU_0039&quot; - Body Removal
 &quot;NIHR_HIC_ICU_0044&quot;, &quot;NIHR_HIC_ICU_0045&quot; - Brain stem death
@@ -45,6 +45,8 @@ are some date and time pairings that denote a singular event:
 &quot;NIHR_HIC_ICU_0050&quot;, &quot;NIHR_HIC_ICU_0051&quot; - Discharge ready
 If a date or time component is missing, nothing is returned as the datetime
 cannot be accurately formed." />
+
+<meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -126,19 +128,19 @@ cannot be accurately formed." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Resolve Datetime of events</h1>
-    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/episode_parameters.R'><code>R/episode_parameters.R</code></a></small>
+    <h1>Resolve DateTime</h1>
+    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/episodes.R'><code>R/episodes.R</code></a></small>
     <div class="hidden name"><code>resolve_date_time.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Many events in CC-HIC are stored in separate date and time columns/objects. This function
-attempts to reconcile and combine these times when possible. Of note,
-date and time information is not always stored with consistent rules. For example,
-death date and time, are stored for every patient in every episode, even though
-the patient can only die once. The following
-are some date and time pairings that denote a singular event:</p><ul>
+    <p>Many events in CC-HIC are stored in separate date and time columns/objects.
+This function attempts to reconcile and combine these times when possible. Of
+note, date and time information is not always stored with consistent rules.
+For example, death date and time, are often stored for every patient in every
+episode, even though the patient can only die once. The following are some
+date and time pairings that denote a singular event:</p><ul>
 <li><p>"NIHR_HIC_ICU_0042", "NIHR_HIC_ICU_0043" - Unit Death</p></li>
 <li><p>"NIHR_HIC_ICU_0038", "NIHR_HIC_ICU_0039" - Body Removal</p></li>
 <li><p>"NIHR_HIC_ICU_0044", "NIHR_HIC_ICU_0045" - Brain stem death</p></li>
@@ -149,23 +151,22 @@ cannot be accurately formed.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>resolve_date_time</span>(<span class='kw'>core_tbl</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>date_code</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/character'>as.character</a></span>(<span class='kw'>NULL</span>),
-  <span class='kw'>time_code</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/character'>as.character</a></span>(<span class='kw'>NULL</span>))</pre>
+    <pre class="usage"><span class='fu'>resolve_date_time</span>(<span class='kw'>df</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>date_code</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>time_code</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
+      <th>df</th>
+      <td><p>a table that contains columns for the date and time of interest</p></td>
+    </tr>
+    <tr>
       <th>date_code</th>
-      <td><p>the cc-hic code for the date of interest</p></td>
+      <td><p>the column name for the date of interest</p></td>
     </tr>
     <tr>
       <th>time_code</th>
-      <td><p>the cc-hic code for the time of interest</p></td>
-    </tr>
-    <tr>
-      <th>core</th>
-      <td><p>core table from <code><a href='make_core.html'>make_core()</a></code></p></td>
+      <td><p>the column name for the time of interest</p></td>
     </tr>
     </table>
     
@@ -175,7 +176,7 @@ cannot be accurately formed.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>resolve_date_time</span>(<span class='no'>code</span>, <span class='st'>"NIHR_HIC_ICU_0042"</span>, <span class='st'>"NIHR_HIC_ICU_0043"</span>) <span class='co'># unit death dttm</span></div><div class='output co'>#&gt; <span class='error'>Error: object 'core_table' not found</span></div></pre>
+    <pre class="examples"><div class='input'><span class='fu'>resolve_date_time</span>(<span class='no'>df</span>, <span class='no'>death_date</span>, <span class='no'>death_time</span>)</div><div class='output co'>#&gt; <span class='error'>Error in resolve_date_time(df, death_date, death_time): object 'death_date' not found</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

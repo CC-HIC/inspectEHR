@@ -16,7 +16,7 @@
 #' @importFrom tidyr spread
 #' @importFrom tibble as_tibble
 #' @importFrom purrr reduce
-#' @importFrom rlang !!!
+#' @importFrom rlang !!! warn
 #'
 #' @return A tibble of 1d data
 #' @examples
@@ -42,7 +42,7 @@ extract_demographics <- function(connection = NULL, code_names = NULL, rename = 
   extract_codes <- all_demographic_codes[all_demographic_codes %in% code_names]
 
   if (length(extract_codes) != length(code_names)) {
-    warning("You are trying to extract non-1d data. Consider using `extract_timevarying()`")
+    rlang::warn("You are trying to extract non-1d data. Consider using `extract_timevarying()`")
   }
 
   tb_base <- tbls[["events"]] %>%
@@ -71,6 +71,11 @@ extract_demographics <- function(connection = NULL, code_names = NULL, rename = 
     replacement_names <- rename[match(names(db_1), code_names)]
     names(db_1) <- if_else(is.na(replacement_names), names(db_1), replacement_names)
   }
+
+  lookups <- tibble(codes = code_names,
+                    names = rename)
+
+  attr(db_1, "lookups") <- lookups
 
   return(db_1)
 }
