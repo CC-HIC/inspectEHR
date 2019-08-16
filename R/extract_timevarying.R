@@ -42,6 +42,7 @@
 #'
 #' @importFrom purrr map imap
 #' @importFrom lubridate now
+#' @importFrom praise praise
 #'
 #' @examples
 #' extract_timevarying(ctn, "NIHR_HIC_ICU_0108")
@@ -83,13 +84,20 @@ extract_timevarying <- function(connection, code_names, rename = NULL, chunk_siz
     names(episode_groups) <- if_else(is.na(replacement_names), names(episode_groups), replacement_names)
   }
 
-  lookups <- tibble(codes = code_names,
-                    names = rename)
+  if (is.null(rename)) {
+    lookups <- tibble(codes = code_names,
+                      names = code_names)
+  } else {
+    lookups <- tibble(codes = code_names,
+                      names = rename)
+  }
 
   attr(episode_groups, "lookups") <- lookups
+  class(episode_groups) <- append(class(episode_groups), "2-dim", after = 0)
 
   elapsed_time <- signif(as.numeric(difftime(lubridate::now(), starting, units = "hour")), 2)
-  print(paste(elapsed_time, "hours to process"))
+  rlang::inform(paste(elapsed_time, "hours to process"))
+  praise::praise("${Exclamation}! ${EXCLAMATION}!-${EXCLAMATION}! How ${adjective} was that?!")
 
   return(episode_groups)
 }

@@ -24,7 +24,7 @@
 <![endif]-->
 </head>
 <body>
-    <div class="container template-home">
+    <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
@@ -84,64 +84,166 @@
 
       
       </header><div class="row">
-  <div class="contents col-md-9">
+  <div class="col-md-9 contents">
+    
+
+    
+    
+<!-- README.md is generated from README.Rmd. Please edit that file -->
 <div id="inspectehr" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
-<a href="#inspectehr" class="anchor"></a>inspectEHR</h1></div>
-<p>inspectEHR is a data wrangling, cleaning and reporting tool for CC-HIC. It is designed to run with the CC-HIC EAV table structure (which at present exists in PostgreSQL and SQLite flavours). We are about to undergo a major rewrite to a OHDSI CDM version 6, so this package will be in flux. Please see the <code>R</code> vignettes for further details on how to use the package to perform the most common data wrangling tasks.</p>
-<div id="data-cleaning-rules" class="section level2">
+<a href="#inspectehr" class="anchor"></a>inspectEHR <a href="https://cc-hic.github.io/inspectEHR/"><img src="reference/figures/logo.png" align="right" height="139"></a>
+</h1></div>
+<!-- badges: start -->
+<!-- badges: end -->
+<div id="overview" class="section level2">
 <h2 class="hasAnchor">
-<a href="#data-cleaning-rules" class="anchor"></a>Data Cleaning Rules</h2>
-<div id="episode-level" class="section level3">
+<a href="#overview" class="anchor"></a>Overview</h2>
+<p>inspectEHR is a data wrangling, cleaning and reporting tool for CC-HIC. It is designed to run with the CC-HIC EAV table structure (which at present exists in PostgreSQL and SQLite flavours). We are about to undergo a major rewrite to a OHDSI CDM version 6, so this package will be in flux. Once these functions have been ported across and tested, we will aim to submit to CRAN. Please see the <code>R</code> vignettes for further details on how to use the package to perform the most common data wrangling tasks:</p>
+<ul>
+<li>
+<code><a href="reference/extract_demographics.html">extract_demographics()</a></code> produces a table for time invariant variables</li>
+<li>
+<code><a href="reference/extract_timevarying.html">extract_timevarying()</a></code> produces a table for longitudinal variables</li>
+<li>
+<code><a href="reference/clean.html">clean()</a></code> cleans the above tables according to pre-defined standards.</li>
+<li>
+<code><a href="reference/report.html">report()</a></code> produces a data quality report (note, being fixed for IDHS usage)</li>
+<li>
+<code>shiny_report()</code> starts an interactive shiny session for the data quality reports (under development)</li>
+</ul>
+</div>
+<div id="installation" class="section level2">
+<h2 class="hasAnchor">
+<a href="#installation" class="anchor"></a>Installation</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># install directly from github with</span>
+<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(devtools)
+<span class="kw"><a href="https://www.rdocumentation.org/packages/devtools/topics/reexports">install_github</a></span>(<span class="st">"cc-hic/inspectEHR"</span>)</code></pre></div>
+<p>A copy should already be installed into the group library for the CC-HIC team inside the UCL safe haven. If you are having problems with this, please contact me directly.</p>
+</div>
+<div id="usage" class="section level2">
+<h2 class="hasAnchor">
+<a href="#usage" class="anchor"></a>Usage</h2>
+<p>A synthetic database ships with inspectEHR for you to explore. Actual values are essentially garbage, but everything is internally consistent.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(inspectEHR); <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(dbplyr)
+
+<span class="co"># Synthetic database ships with inspectEHR</span>
+ctn &lt;-<span class="st"> </span><span class="kw"><a href="reference/connect.html">connect</a></span>(<span class="dt">sqlite_file =</span> <span class="st">"./data-raw/synthetic_db.sqlite3"</span>)
+
+<span class="co"># Extract static variables. Rename on the fly.</span>
+dtb &lt;-<span class="st"> </span><span class="kw"><a href="reference/extract_demographics.html">extract_demographics</a></span>(
+  <span class="dt">connection =</span> ctn,
+  <span class="dt">code_names =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="st">"NIHR_HIC_ICU_0017"</span>),
+  <span class="dt">rename =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="st">"height"</span>)
+)
+
+<span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(dtb)
+<span class="co">#&gt; # A tibble: 6 x 2</span>
+<span class="co">#&gt;   episode_id height</span>
+<span class="co">#&gt;        &lt;int&gt;  &lt;dbl&gt;</span>
+<span class="co">#&gt; 1          1   182.</span>
+<span class="co">#&gt; 2          2   188.</span>
+<span class="co">#&gt; 3          3   215.</span>
+<span class="co">#&gt; 4          4   172.</span>
+<span class="co">#&gt; 5          5   168.</span>
+<span class="co">#&gt; # … with 1 more row</span>
+
+<span class="co"># Extract time varying variables. Rename on the fly.</span>
+<span class="co"># Pull out to any arbitrary temporal resolution and custom define the</span>
+<span class="co"># behaviour for information recorded at resolution higher than you are sampling</span>
+ltb &lt;-<span class="st"> </span><span class="kw"><a href="reference/extract_timevarying.html">extract_timevarying</a></span>(
+  <span class="dt">connection =</span> ctn,
+  <span class="dt">code_names =</span>  <span class="st">"NIHR_HIC_ICU_0108"</span>, <span class="dt">rename =</span> <span class="st">"hr"</span>
+)
+<span class="co">#&gt; [1] "0.0056 hours to process"</span>
+
+<span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(ltb)
+<span class="co">#&gt; # A tibble: 6 x 3</span>
+<span class="co">#&gt;    time    hr episode_id</span>
+<span class="co">#&gt;   &lt;dbl&gt; &lt;int&gt;      &lt;int&gt;</span>
+<span class="co">#&gt; 1     0    95          1</span>
+<span class="co">#&gt; 2     1    77          1</span>
+<span class="co">#&gt; 3     2    75          1</span>
+<span class="co">#&gt; 4     3    85          1</span>
+<span class="co">#&gt; 5     4    86          1</span>
+<span class="co">#&gt; # … with 1 more row</span></code></pre></div>
+</div>
+<div id="getting-help" class="section level2">
+<h2 class="hasAnchor">
+<a href="#getting-help" class="anchor"></a>Getting help</h2>
+<p>If you find a bug, please file a minimal reproducible example on <a href="https://github.com/cc-hic/inspectEHR/issues">github</a>.</p>
+</div>
+<div id="reporting-data-quality-issues" class="section level2">
+<h2 class="hasAnchor">
+<a href="#reporting-data-quality-issues" class="anchor"></a>Reporting Data Quality Issues</h2>
+<p>Please submit an issue and tag it with “data quality”. Data quality issues are often related to site in specific. If this is the case, please also tag the site.</p>
+</div>
+<div id="data-quality-rules" class="section level2">
+<h2 class="hasAnchor">
+<a href="#data-quality-rules" class="anchor"></a>Data Quality Rules</h2>
+<p>The data quality rules are largely based upon standards set by OHDSI<sup>1</sup>, and Khan et al.<sup>2</sup>. The CC-HIC currently uses an episode centric model. As such, many of the data quality checks are based around this way of thinking. As we move to OMOP (a patient centric model) many of these will change accordingly.</p>
+<div id="episode-characterisation" class="section level3">
 <h3 class="hasAnchor">
-<a href="#episode-level" class="anchor"></a>Episode Level</h3>
+<a href="#episode-characterisation" class="anchor"></a>Episode Characterisation</h3>
 <ul>
 <li>Internal consistency check of episode</li>
 <li>Each episode has a unique identifier</li>
 <li>Each episode has a start date</li>
 <li>Each episode has an end date defined by one of:
 <ul>
-<li>End of episode date time</li>
-<li>Death date time</li>
-<li>Or: is flagged as an “open” episode</li>
+<li>End of episode date time (often administrative in nature and used with caution)</li>
+<li>On unit death date time from any means</li>
+<li>Death</li>
+<li>Brain stem Death</li>
+<li>“Body Removal”: strongly suggesting death</li>
+<li>The last measured bedside physiological result (HR and SpO2)</li>
 </ul>
 </li>
 </ul>
+<p>Records that are flagged as “open” are dropped.</p>
 </div>
-<div id="event-level-1-episode-and-event-characterisation" class="section level3">
+<div id="event-characterisation" class="section level3">
 <h3 class="hasAnchor">
-<a href="#event-level-1-episode-and-event-characterisation" class="anchor"></a>Event Level 1 (Episode and Event Characterisation)</h3>
+<a href="#event-characterisation" class="anchor"></a>Event Characterisation</h3>
 <ul>
-<li>Events occur within their episode (with a buffer of 48 hours)</li>
-<li>Events fall within range validation checks - see <code>qref</code>
-</li>
+<li>Event missingness</li>
+<li>Events occur within their episode (within a reasonable buffer time)</li>
+<li>Events fall within range validation checks</li>
 <li>Events are not duplicates</li>
+<li>Events are contributed over time in consistent manner</li>
 </ul>
 </div>
-<div id="event-level-2-restrictions" class="section level3">
+<div id="event-restrictions" class="section level3">
 <h3 class="hasAnchor">
-<a href="#event-level-2-restrictions" class="anchor"></a>Event Level 2 (Restrictions)</h3>
+<a href="#event-restrictions" class="anchor"></a>Event Restrictions</h3>
 <ul>
-<li>Co-occurance events:
+<li>Co-occurrence events:
 <ul>
-<li>When systolic and diastolic BP are recorded together, diastolic is lower than systolic</li>
+<li>Systolic &gt; MAP &gt; Diastolic</li>
+<li>BMI (derived from height and weight) in plausible range</li>
+<li>Organ support days cannot exceed episode duration</li>
 </ul>
 </li>
 </ul>
 </div>
-<div id="event-level-3-statistical" class="section level3">
+<div id="statistical-evaluations" class="section level3">
 <h3 class="hasAnchor">
-<a href="#event-level-3-statistical" class="anchor"></a>Event Level 3 (Statistical)</h3>
+<a href="#statistical-evaluations" class="anchor"></a>Statistical Evaluations</h3>
 <ul>
 <li>Events that are known to follow a particular distribution, conform to this distribution.</li>
-<li>KS testing checks for significant deviation of a distribution applied as a pairwise testing between ICUs.</li>
+<li>Kolmogorov-Smirnov testing checks for major distributional deviation between contributing sites. Deviations are often either due to a data quality issue, or a major shift in case mix.</li>
 </ul>
 </div>
 </div>
 <div id="synthetic-database" class="section level2">
 <h2 class="hasAnchor">
 <a href="#synthetic-database" class="anchor"></a>Synthetic Database</h2>
-<p>There is a copy of the CC-HIC database located in <code>data-raw/synthetic_db.sqlite3</code>. This is a structurally sound copy of the real database, but entirely hand crafted (so there is no patient data here). It’s quite sparese at present, but I will add more variables as time goes on. For now, it acts as a test database to make sure inspectEHR works as it should.</p>
+<p>There is a copy of the CC-HIC database located in <code>data-raw/synthetic_db.sqlite3</code>. This is a structurally sound copy of the real database, but entirely hand crafted (so there is no patient data here). It’s quite sparse at present, but I will add more variables as time goes on. For now, it acts as a test database to make sure inspectEHR works as it should.</p>
+<hr>
+<ol style="list-style-type: decimal">
+<li><a href="https://www.ohdsi.org/analytic-tools/achilles-for-data-characterization/" class="uri">https://www.ohdsi.org/analytic-tools/achilles-for-data-characterization/</a></li>
+<li>Kahn, Michael G.; Callahan, Tiffany J.; Barnard, Juliana; Bauck, Alan E.; Brown, Jeff; Davidson, Bruce N.; Estiri, Hossein; Goerg, Carsten; Holve, Erin; Johnson, Steven G.; Liaw, Siaw-Teng; Hamilton-Lopez, Marianne; Meeker, Daniella; Ong, Toan C.; Ryan, Patrick; Shang, Ning; Weiskopf, Nicole G.; Weng, Chunhua; Zozus, Meredith N.; and Schilling, Lisa (2016) “A Harmonized Data Quality Assessment Terminology and Framework for the Secondary Use of Electronic Health Record Data,” eGEMs (Generating Evidence &amp; Methods to improve patient outcomes): Vol. 4: Iss. 1, Article 18.</li>
+</ol>
 </div>
 </div>
   </div>
@@ -169,8 +271,10 @@
 </ul>
 </div>
 
-  </div>
+      </div>
+
 </div>
+
 
       <footer><div class="copyright">
   <p>Developed by Edward Palmer.</p>

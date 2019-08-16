@@ -4,8 +4,8 @@
 \alias{plot_hic}
 \title{Plot NHIC Events}
 \usage{
-plot_hic(x, path_name = NULL, all_sites.col, start_date = "2014-01-01",
-  end_date = "2019-01-01")
+plot_hic(x, output_folder = NULL, all_sites.col,
+  start_date = "2014-01-01", end_date = "2019-01-01")
 }
 \arguments{
 \item{x}{flagged table}

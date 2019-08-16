@@ -147,12 +147,8 @@ Plot Calendar Heatmap" />
       <td><p>optional string to save output. must include extension</p></td>
     </tr>
     <tr>
-      <th>episodes</th>
-      <td><p>collected episodes table</p></td>
-    </tr>
-    <tr>
-      <th>provenance</th>
-      <td><p>collected provenance table</p></td>
+      <th>referenec_table</th>
+      <td><p>reference table produced from <code><a href='make_reference.html'>make_reference</a></code></p></td>
     </tr>
     <tr>
       <th>episodes</th>
@@ -179,7 +175,7 @@ Plot Calendar Heatmap" />
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>plot_heatcal</span>(<span class='no'>episodes</span>, <span class='no'>provenance</span>, <span class='st'>"UCL"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in eval(lhs, parent, parent): object 'episodes' not found</span></div><div class='input'><span class='fu'>plot_heatcal</span>(<span class='no'>episodes</span>, <span class='no'>provenance</span>, <span class='st'>"UCL"</span>, <span class='st'>"~/some/path/plot.png"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in eval(lhs, parent, parent): object 'episodes' not found</span></div><div class='input'><span class='fu'>plot_heatcal</span>(<span class='no'>episodes</span>, <span class='no'>provenance</span>, <span class='st'>"UCL"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in eval(lhs, parent, parent): object 'episodes' not found</span></div><div class='input'><span class='fu'>plot_heatcal</span>(<span class='no'>episodes</span>, <span class='no'>provenance</span>, <span class='st'>"UCL"</span>, <span class='st'>"~/some/path/plot.png"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in eval(lhs, parent, parent): object 'episodes' not found</span></div></pre>
+    <pre class="examples"><div class='input'><span class='fu'>plot_heatcal</span>(<span class='no'>ref</span>, <span class='st'>"UCL"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in eval(lhs, parent, parent): object 'ref' not found</span></div><div class='input'><span class='fu'>plot_heatcal</span>(<span class='no'>ref</span>, <span class='st'>"UCL"</span>, <span class='st'>"~/some/path/plot.png"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in eval(lhs, parent, parent): object 'ref' not found</span></div><div class='input'><span class='fu'>plot_heatcal</span>(<span class='no'>episodes</span>, <span class='no'>provenance</span>, <span class='st'>"UCL"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in eval(lhs, parent, parent): object 'episodes' not found</span></div><div class='input'><span class='fu'>plot_heatcal</span>(<span class='no'>episodes</span>, <span class='no'>provenance</span>, <span class='st'>"UCL"</span>, <span class='st'>"~/some/path/plot.png"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in eval(lhs, parent, parent): object 'episodes' not found</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

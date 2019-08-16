@@ -72,10 +72,16 @@ extract_demographics <- function(connection = NULL, code_names = NULL, rename = 
     names(db_1) <- if_else(is.na(replacement_names), names(db_1), replacement_names)
   }
 
-  lookups <- tibble(codes = code_names,
-                    names = rename)
+  if (is.null(rename)) {
+    lookups <- tibble(codes = code_names,
+                      names = code_names)
+  } else {
+    lookups <- tibble(codes = code_names,
+                      names = rename)
+  }
 
   attr(db_1, "lookups") <- lookups
+  class(db_1) <- append(class(db_1), "1-dim", after = 0)
 
   return(db_1)
 }

@@ -10,9 +10,9 @@
 #' @export
 #'
 #' @return A tibble 1 row per event
-plot_hic <- function(x, path_name = NULL, all_sites.col,
+plot_hic <- function(x, output_folder = NULL, all_sites.col,
                      start_date = "2014-01-01", end_date = "2019-01-01") {
-  if (is.null(path_name)) stop("please supply a path name")
+  if (is.null(output_folder)) stop("please supply a path name")
 
   this_event <- attr(x, "code_name")
 
@@ -47,7 +47,7 @@ plot_hic <- function(x, path_name = NULL, all_sites.col,
 
       cowplot::ggsave(
         plot = primary_plot,
-        filename = paste0(path_name, "/", this_event, "_main.png"),
+        filename = paste0(output_folder, "/", this_event, "_main.png"),
         dpi = 300, width = 6, height = 4, units = "in"
       )
 
@@ -60,7 +60,7 @@ plot_hic <- function(x, path_name = NULL, all_sites.col,
 
       cowplot::ggsave(
         plot = full_plot,
-        filename = paste0(path_name, "/", this_event, "_main_full.png"),
+        filename = paste0(output_folder, "/", this_event, "_main_full.png"),
         dpi = 300, width = 6, height = 4, units = "in"
       )
 
@@ -70,7 +70,7 @@ plot_hic <- function(x, path_name = NULL, all_sites.col,
 
         cowplot::ggsave(
           plot = periodicity_plot,
-          filename = paste0(path_name, "/", this_event, "_periodicity.png"),
+          filename = paste0(output_folder, "/", this_event, "_periodicity.png"),
           dpi = 300, width = 6, height = 4, units = "in"
         )
 
@@ -101,7 +101,7 @@ plot_hic <- function(x, path_name = NULL, all_sites.col,
 
           ggplot2::ggsave(
             plot = cal_plot,
-            filename = paste0(path_name, "/", this_event, "_covarage_", names(all_sites.col)[i], ".png"),
+            filename = paste0(output_folder, "/", this_event, "_covarage_", names(all_sites.col)[i], ".png"),
             dpi = 300, width = 6, height = 4, units = "in"
           )
         }
@@ -114,7 +114,7 @@ plot_hic <- function(x, path_name = NULL, all_sites.col,
         ks_out <- ks_plot(ks_t)
         cowplot::ggsave(
           plot = ks_out,
-          filename = paste0(path_name, "/", this_event, "_ks.png"),
+          filename = paste0(output_folder, "/", this_event, "_ks.png"),
           dpi = 300, units = "in", width = 6, height = 4
         )
       }

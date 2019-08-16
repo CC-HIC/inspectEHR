@@ -8,6 +8,8 @@ library(lubridate)
 library(devtools)
 load_all()
 
+set.seed(20190816)
+
 ## PROVENANCE TABLE ====
 
 provenance <- tibble(
@@ -73,11 +75,34 @@ dfs <- dfs %>%
     NIHR_HIC_ICU_0004 = sample(tfc$code, size = ss, replace = TRUE),
     NIHR_HIC_ICU_0005 = NIHR_HIC_ICU_0001,
     # 0006 is depricated,
+    NIHR_HIC_ICU_0010 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
+    NIHR_HIC_ICU_0011 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
+    NIHR_HIC_ICU_0013 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
+    NIHR_HIC_ICU_0015 = sample(c(0L, 1L), 1000, TRUE, c(0.7, 0.3)),
+    NIHR_HIC_ICU_0016 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
     NIHR_HIC_ICU_0017 = rnorm(ss, 168, 20),
     NIHR_HIC_ICU_0018 = rnorm(ss, 75, 10),
+    NIHR_HIC_ICU_0024 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
+    NIHR_HIC_ICU_0025 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
+    NIHR_HIC_ICU_0026 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
+    NIHR_HIC_ICU_0029 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
     NIHR_HIC_ICU_0033 = sample(seq.Date(ymd("1935-01-01"), ymd("1990-01-01"), by = 1), ss, TRUE),
+    NIHR_HIC_ICU_0055 = sample(c("A", "J", "N", "T"), 1000, TRUE),
+    NIHR_HIC_ICU_0058 = sample(c("A", "B", "C", "D", "E", "F", "G", "H", "J",
+                                 "K", "L", "M", "N", "P", "R", "S", "Z"), 1000, TRUE),
+    NIHR_HIC_ICU_0060 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
+    NIHR_HIC_ICU_0062 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
+    NIHR_HIC_ICU_0063 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
+    NIHR_HIC_ICU_0070 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
+    NIHR_HIC_ICU_0071 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
     NIHR_HIC_ICU_0073 = generate_nhs(ss),
+    NIHR_HIC_ICU_0075 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
+    NIHR_HIC_ICU_0080 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
+    NIHR_HIC_ICU_0082 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
+    NIHR_HIC_ICU_0092 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
     NIHR_HIC_ICU_0093 = sample(c("M", "F"), ss, TRUE),
+    NIHR_HIC_ICU_0099 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
+    NIHR_HIC_ICU_0107 = sample(c(0L, 1L), 1000, TRUE, c(0.99, 0.01)),
     NIHR_HIC_ICU_0399 = generate_icnarc(ss),
     NIHR_HIC_ICU_0088 = generate_icnarc(ss),
     NIHR_HIC_ICU_0409 = as.integer(rbeta(ss, 2, 8) * 100)
@@ -93,17 +118,17 @@ dfs <- dfs %>%
       NIHR_HIC_ICU_0412
     )
   ) %>%
-  mutate(NIHR_HIC_ICU_0081 = sample(c("D", "A"), size = ss, prob = c(0.1, 0.9), replace = TRUE)) %>%
+  mutate(NIHR_HIC_ICU_0097 = sample(c("D", "A"), size = ss, prob = c(0.1, 0.9), replace = TRUE)) %>% # A/D on discharge from the unit
   mutate(NIHR_HIC_ICU_0095 = if_else(
-    NIHR_HIC_ICU_0081 == "D", "D",
+    NIHR_HIC_ICU_0097 == "D", "D",
     sample(c("D", "A"), size = 1, prob = c(0.1, 0.9), replace = TRUE)
-  )) %>%
+  )) %>% # hospital mortality
   mutate(
-    NIHR_HIC_ICU_0042 = if_else(NIHR_HIC_ICU_0081 == "D",
+    NIHR_HIC_ICU_0042 = if_else(NIHR_HIC_ICU_0097 == "D",
       as.Date(NIHR_HIC_ICU_0412), as.Date(NA)
     ),
-    NIHR_HIC_ICU_0043 = if_else(NIHR_HIC_ICU_0081 == "D",
-      hms::as.hms(NIHR_HIC_ICU_0412), hms::as.hms(ymd_hms(NA))
+    NIHR_HIC_ICU_0043 = if_else(NIHR_HIC_ICU_0097 == "D",
+      hms::as_hms(NIHR_HIC_ICU_0412), hms::as_hms(ymd_hms(NA))
     )
   )
 
@@ -121,7 +146,11 @@ dfl <- dfl %>%
   arrange(episode_id, datetime) %>%
   mutate(
     NIHR_HIC_ICU_0108 = as.integer(rnorm(n = n(), mean = 90, sd = 10)),
+    NIHR_HIC_ICU_0109 = sample(1:31, n(), TRUE),
     NIHR_HIC_ICU_0110 = as.integer(rnorm(n = n(), mean = 65, sd = 10)),
+    NIHR_HIC_ICU_0111 = sample(
+      c(as.integer(rnorm(1, mean = 65, sd = 10)), as.integer(NA)),
+      n(), replace = TRUE, prob = c(0.2, 0.8)),
     NIHR_HIC_ICU_0116 = round(rnorm(n = n(), mean = 5, sd = 5), digits = 2),
     NIHR_HIC_ICU_0122 = sample(
       c(round(rgamma(1, 2), digits = 2), as.numeric(NA)),
@@ -135,6 +164,67 @@ dfl <- dfl %>%
 
 dfs <- dfs %>% group_by(episode_id)
 
+spells <- dfs %>%
+  ungroup() %>%
+  filter(NIHR_HIC_ICU_0097 == "A",
+         NIHR_HIC_ICU_0095 == "A") %>%
+  sample_n(size = 150) %>%
+  mutate(NIHR_HIC_ICU_0411 = NIHR_HIC_ICU_0412) %>%
+  mutate(NIHR_HIC_ICU_0412 = NIHR_HIC_ICU_0411 + days(rpois(150, 3))) %>%
+  mutate(
+    NIHR_HIC_ICU_0412 = if_else(
+      NIHR_HIC_ICU_0411 == NIHR_HIC_ICU_0412,
+      NIHR_HIC_ICU_0411 + hours(sample(6:18, 1)),
+      NIHR_HIC_ICU_0412
+    )
+  ) %>%
+  mutate(NIHR_HIC_ICU_0097 = sample(c("D", "A"), size = 150, prob = c(0.1, 0.9), replace = TRUE)) %>% # A/D on discharge from the unit
+  mutate(NIHR_HIC_ICU_0095 = if_else(
+    NIHR_HIC_ICU_0097 == "D", "D",
+    sample(c("D", "A"), size = 1, prob = c(0.1, 0.9), replace = TRUE)
+  )) %>% # hospital mortality
+  mutate(
+    NIHR_HIC_ICU_0042 = if_else(NIHR_HIC_ICU_0097 == "D",
+                                as.Date(NIHR_HIC_ICU_0412), as.Date(NA)
+    ),
+    NIHR_HIC_ICU_0043 = if_else(NIHR_HIC_ICU_0097 == "D",
+                                hms::as_hms(NIHR_HIC_ICU_0412), hms::as_hms(ymd_hms(NA))
+    )
+  ) %>%
+  mutate(episode_id = (ss+1):(ss+150))
+
+dfs <- bind_rows(dfs, spells)
+
+spells_l <- spells %>%
+  select(episode_id, NIHR_HIC_ICU_0411, NIHR_HIC_ICU_0412) %>%
+  nest(NIHR_HIC_ICU_0411, NIHR_HIC_ICU_0412) %>%
+  mutate(data = map(data, ~ seq.POSIXt(.x$NIHR_HIC_ICU_0411, .x$NIHR_HIC_ICU_0412, by = "hour"))) %>%
+  unnest(data) %>%
+  rename(datetime = data)
+
+spells_l <- spells_l %>%
+  group_by(episode_id) %>%
+  arrange(episode_id, datetime) %>%
+  mutate(
+    NIHR_HIC_ICU_0108 = as.integer(rnorm(n = n(), mean = 90, sd = 10)),
+    NIHR_HIC_ICU_0109 = sample(1:31, n(), TRUE),
+    NIHR_HIC_ICU_0110 = as.integer(rnorm(n = n(), mean = 65, sd = 10)),
+    NIHR_HIC_ICU_0111 = sample(
+      c(as.integer(rnorm(1, mean = 65, sd = 10)), as.integer(NA)),
+      n(), replace = TRUE, prob = c(0.2, 0.8)),
+    NIHR_HIC_ICU_0116 = round(rnorm(n = n(), mean = 5, sd = 5), digits = 2),
+    NIHR_HIC_ICU_0122 = sample(
+      c(round(rgamma(1, 2), digits = 2), as.numeric(NA)),
+      size = n(), replace = TRUE, prob = c(0.2, 0.8)
+    ),
+    NIHR_HIC_ICU_0122 = sample(
+      c("E", "N", "T", as.character(NA)),
+      size = n(), replace = TRUE, prob = c(0.1, 0.1, 0.1, 0.7)
+    )
+  )
+
+dfl <- bind_rows(dfl, spells_l)
+
 ## I'm sure there is a better way to do this bit
 str_var <- select_if(dfs, is.character) %>%
   gather(key = "code_name", value = "string", -episode_id) %>%
@@ -143,7 +233,7 @@ int_var <- select_if(dfs, is.integer) %>%
   gather(key = "code_name", value = "integer", -episode_id) %>%
   na.omit()
 dbl_var <- select_if(dfs, function(x) {
-  is.double(x) && !is.POSIXct(x) && !hms::is.hms(x) && !lubridate::is.Date(x)
+  is.double(x) && !is.POSIXct(x) && !hms::is_hms(x) && !lubridate::is.Date(x)
 }) %>%
   gather(key = "code_name", value = "real", -episode_id) %>%
   na.omit()
@@ -169,7 +259,7 @@ int_var <- select_if(dfl, is.integer) %>%
   gather(key = "code_name", value = "integer", -episode_id, -datetime) %>%
   na.omit()
 dbl_var <- select_if(dfl, function(x) {
-  is.double(x) && !is.POSIXct(x) && !hms::is.hms(x) && !lubridate::is.Date(x)
+  is.double(x) && !is.POSIXct(x) && !hms::is_hms(x) && !lubridate::is.Date(x)
 }) %>%
   gather(key = "code_name", value = "real", -episode_id, -datetime) %>%
   na.omit()
@@ -209,10 +299,10 @@ events <- events %>%
   mutate_if(hms::is.hms, function(x) if_else(is.na(x), as.character(NA), format(x)))
 provenance <- provenance %>% mutate_if(is.POSIXct, format)
 
-copy_to(cchic, episodes, temporary = FALSE)
-copy_to(cchic, events, temporary = FALSE)
-copy_to(cchic, provenance, temporary = FALSE)
-copy_to(cchic, variables, temporary = FALSE)
+copy_to(cchic, episodes, temporary = FALSE, overwrite = TRUE)
+copy_to(cchic, events, temporary = FALSE, overwrite = TRUE)
+copy_to(cchic, provenance, temporary = FALSE, overwrite = TRUE)
+copy_to(cchic, variables, temporary = FALSE, overwrite = TRUE)
 
 db_list_tables(cchic)
 DBI::dbDisconnect(cchic)

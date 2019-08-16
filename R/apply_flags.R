@@ -43,7 +43,7 @@ flag_all <- function(x, los_table = NULL) {
   } else {
     rf <- x %>%
       dplyr::mutate(range_error = NA) %>%
-      dplyr::select(.data$internal_id, .data$range_error)
+      dplyr::select(.data$event_id, .data$range_error)
   }
 
   # Apply BOUNDARY FLAG if an appropriate method exists, or return NA
@@ -52,7 +52,7 @@ flag_all <- function(x, los_table = NULL) {
   } else {
     bf <- x %>%
       dplyr::mutate(out_of_bounds = NA) %>%
-      dplyr::select(.data$internal_id, .data$out_of_bounds)
+      dplyr::select(.data$event_id, .data$out_of_bounds)
   }
 
   # Apply DUPLICATE FLAG if an appropriate method exists, or return NA
@@ -61,16 +61,16 @@ flag_all <- function(x, los_table = NULL) {
   } else {
     df <- x %>%
       dplyr::mutate(duplicate = NA) %>%
-      dplyr::select(.data$internal_id, .data$duplicate)
+      dplyr::select(.data$event_id, .data$duplicate)
   }
 
   # Join the flags above back to the original df
   # This step must be performed prior to periodicity checking
   # Using LEFT join on the original table so as to not loose any data
   x %<>%
-    left_join(rf, by = "internal_id") %>%
-    left_join(bf, by = "internal_id") %>%
-    left_join(df, by = "internal_id")
+    left_join(rf, by = "event_id") %>%
+    left_join(bf, by = "event_id") %>%
+    left_join(df, by = "event_id")
 
   # Apply PERIODICITY FLAG if an appropriate method exists, or return NA
   if (any(grepl("flag_periodicity", avail_methods))) {
@@ -147,7 +147,7 @@ flag_range_numeric <- function(x = NULL) {
         if_else(.data$value < .data$range_min, 103L, 0L)
       )
     ) %>%
-    dplyr::select(.data$internal_id, .data$range_error)
+    dplyr::select(.data$event_id, .data$range_error)
 
   return(x)
 }
@@ -208,7 +208,7 @@ flag_range.string_2d <- function(x = NULL) {
   # Checks to see if this is microdata, and if so aborts
   if (attr(x, "code_name") == "NIHR_HIC_ICU_0187") {
     x %<>%
-      dplyr::select(.data$internal_id) %>%
+      dplyr::select(.data$event_id) %>%
       dplyr::mutate(range_error = 0L)
   } else {
 
@@ -217,7 +217,7 @@ flag_range.string_2d <- function(x = NULL) {
       dplyr::mutate(
         range_error = ifelse(value %in% c("E", "N", "T"), 0L, 105L)
       ) %>%
-      dplyr::select(.data$internal_id, .data$range_error)
+      dplyr::select(.data$event_id, .data$range_error)
   }
 
   class(x) <- append(class(x), "string_2d", after = 0)
@@ -260,7 +260,7 @@ flag_range.string_1d <- function(x = NULL) {
           if_else(.data$value %in% possible_values, 0L, 105L)
         )
       ) %>%
-      dplyr::select(.data$internal_id, .data$range_error)
+      dplyr::select(.data$event_id, .data$range_error)
 
     flags_applied <- TRUE
   } else {
@@ -275,7 +275,7 @@ flag_range.string_1d <- function(x = NULL) {
         dplyr::mutate(
           range_error = if_else(validate_post_code(.data$value), 0L, 109L)
         ) %>%
-        dplyr::select(.data$internal_id, .data$range_error)
+        dplyr::select(.data$event_id, .data$range_error)
 
       flags_applied <- TRUE
     }
@@ -289,7 +289,7 @@ flag_range.string_1d <- function(x = NULL) {
             if_else(validate_nhs(.data$value), 0L, 109L)
           )
         ) %>%
-        dplyr::select(.data$internal_id, .data$range_error)
+        dplyr::select(.data$event_id, .data$range_error)
 
       flags_applied <- TRUE
     }
@@ -306,7 +306,7 @@ flag_range.string_1d <- function(x = NULL) {
             if_else(validate_icnarc(.data$value), 0L, 109L)
           )
         ) %>%
-        dplyr::select(.data$internal_id, .data$range_error)
+        dplyr::select(.data$event_id, .data$range_error)
 
       flags_applied <- TRUE
     }
@@ -320,7 +320,7 @@ flag_range.string_1d <- function(x = NULL) {
       dplyr::mutate(
         range_error = as.integer(NA)
       ) %>%
-      dplyr::select(.data$internal_id, .data$range_error)
+      dplyr::select(.data$event_id, .data$range_error)
   }
 
   class(x) <- append(class(x), "string_1d", after = 0)
@@ -340,7 +340,7 @@ flag_range.date_1d <- function(x = NULL) {
         ifelse(.data$value < lubridate::dmy("01/01/1900"), 103L, 0)
       )
     ) %>%
-    dplyr::select(.data$internal_id, .data$range_error)
+    dplyr::select(.data$event_id, .data$range_error)
 
   class(x) <- append(class(x), "date_1d", after = 0)
 
@@ -363,7 +363,7 @@ flag_range.datetime_1d <- function(x = NULL) {
         )
       )
     ) %>%
-    dplyr::select(.data$internal_id, .data$range_error)
+    dplyr::select(.data$event_id, .data$range_error)
 
   class(x) <- append(class(x), "datetime_1d", after = 0)
 
@@ -431,7 +431,7 @@ flag_bounds_2d <- function(x = NULL, los_table = NULL) {
         )
       )
     )) %>%
-    select(.data$internal_id, .data$out_of_bounds)
+    select(.data$event_id, .data$out_of_bounds)
 
   return(x)
 }
@@ -502,13 +502,13 @@ flag_duplicate_2d <- function(x = NULL) {
       .keep_all = TRUE
     ) %>%
     mutate(duplicate = 0L) %>%
-    select(.data$internal_id, .data$duplicate) %>%
-    right_join(x, by = "internal_id") %>%
+    select(.data$event_id, .data$duplicate) %>%
+    right_join(x, by = "event_id") %>%
     mutate_at(
       .vars = vars(.data$duplicate),
       .funs = funs(ifelse(is.na(.), 106L, .))
     ) %>%
-    select(.data$internal_id, .data$duplicate)
+    select(.data$event_id, .data$duplicate)
 
   return(x)
 }
@@ -553,13 +553,13 @@ flag_duplicate_1d <- function(x = NULL) {
       .keep_all = TRUE
     ) %>%
     mutate(duplicate = 0L) %>%
-    select(.data$internal_id, .data$duplicate) %>%
-    right_join(x, by = "internal_id") %>%
+    select(.data$event_id, .data$duplicate) %>%
+    right_join(x, by = "event_id") %>%
     mutate_at(
       .vars = vars(.data$duplicate),
       .funs = funs(ifelse(is.na(.), 106L, .))
     ) %>%
-    select(.data$internal_id, .data$duplicate)
+    select(.data$event_id, .data$duplicate)
 
   return(x)
 }
@@ -688,12 +688,12 @@ flag_periodicity_generic <- function(x, los_table = NULL) {
 
       # only checking validated episodes
       dplyr::filter(.data$validity == 0L) %>%
-      dplyr::select(.data$episode_id, .data$los),
+      dplyr::select(.data$episode_id, .data$los_days),
     by = "episode_id"
     ) %>%
 
     # calculate the periodicity
-    dplyr::mutate(periodicity = count / as.numeric(los)) %>%
+    dplyr::mutate(periodicity = count / as.numeric(los_days)) %>%
     dplyr::select(.data$episode_id, .data$periodicity) %>%
 
     # right join back into the original object

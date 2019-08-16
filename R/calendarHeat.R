@@ -1,7 +1,6 @@
 #' Plot Calendar Heatmap
 #'
-#' @param episodes collected episodes table
-#' @param provenance collected provenance table
+#' @param referenec_table reference table produced from \code{\link{make_reference}}
 #' @param site character string of hospital site to plot
 #' @param filename optional string to save output. must include extension
 #'
@@ -9,8 +8,8 @@
 #' @export
 #'
 #' @examples
-#' plot_heatcal(episodes, provenance, "UCL")
-#' plot_heatcal(episodes, provenance, "UCL", "~/some/path/plot.png")
+#' plot_heatcal(ref, "UCL")
+#' plot_heatcal(ref, "UCL", "~/some/path/plot.png")
 plot_heatcal <- function(reference_table = NULL,
                          site = NULL,
                          filename = NULL,

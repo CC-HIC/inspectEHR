@@ -1,20 +1,22 @@
-#' Validate Episodes Based Upon Patchy Data
+#' Validate Episodes
 #'
-#' Determines which months are invalid based on a low contribution of data
+#' Determines which months are invalid based on a low contribution of data.
 #' This is based upon the long term daily average for admissions. Days that
-#' fall below 2 SD of the long term mean are tagged. If more than the
-#' threshold value occur in a single month, the month is removed from
-#' further analysis
+#' fall below 2 SD of the long term mean are flagged. If more than the
+#' \code{threshold} number of flagged days occur in a single month, then the
+#' month is invalidated and removed from further analysis.
 #'
-#' This function removes episodes that occur during particularly sparse periods
+#' This procedure removes episodes that occur during particularly sparse periods
 #' (as this is likely that these months are contributing poor data) and return
-#' only episodes that have a logical consistency in non-sparse months
+#' only episodes that have a logical consistency in non-sparse months. The
+#' analyst should consider if the denominator for the number of study months
+#' should be changed following the use of this function.
 #'
-#' @param episodes collected episodes table
-#' @param provenance collected provenance table
+#' @param episode_length a table created by \code{\link{characterise_episodes}}
 #' @param threshold threshold number of days to use in calculation
 #'
-#' @return a tibble of months that are to be excluded from future analysis
+#' @return a table of the same form as \code{episode_length} with an additional
+#'   column indicating if the episode comes from a valid period of time.
 #' @export
 #'
 #' @importFrom dplyr mutate group_by summarise left_join right_join n_distinct
@@ -22,117 +24,113 @@
 #' @importFrom lubridate date year month wday
 #'
 #' @examples
-#' invalid_months(episodes, provenance)
-#' invalid_months(episodes, provenance, theshold = 15)
-validate_episodes <- function(
-                              episode_length_table,
-                              reference_table,
-                              all_sites,
+#' validate_episodes(episodes)
+validate_episodes <- function(episode_length = NULL,
                               threshold = 10) {
 
   # The typical admissions for a given day of the week within a year window
   # This helps to account for seasonality and trend changes over time
-  typical_admissions <- reference_table %>%
-    dplyr::mutate(date = lubridate::date(start_date)) %>%
-    dplyr::group_by(site, date) %>%
-    dplyr::summarise(episode_count = n_distinct(episode_id)) %>%
-    dplyr::mutate(
+  typical_admissions <- episode_length %>%
+    mutate(date = lubridate::date(epi_start_dttm)) %>%
+    group_by(site, date) %>%
+    summarise(episode_count = n_distinct(episode_id)) %>%
+    mutate(
       year = lubridate::year(date),
       month = lubridate::month(date, label = TRUE),
       wday = lubridate::wday(date, label = TRUE)
     ) %>%
-    dplyr::group_by(site, year, wday) %>%
-    dplyr::summarise(
+    group_by(site, year, wday) %>%
+    summarise(
       mean_episodes = mean(episode_count),
       sd_episode = sd(episode_count)
     )
 
   # too_few tells me the days when admissions fell under the expected
-  too_few <- reference_table %>%
-    dplyr::mutate(date = lubridate::date(start_date)) %>%
-    dplyr::group_by(site, date) %>%
-    dplyr::summarise(episodes = n()) %>%
-    dplyr::mutate(
+  too_few <- episode_length %>%
+    mutate(date = lubridate::date(epi_start_dttm)) %>%
+    group_by(site, date) %>%
+    summarise(episodes = n()) %>%
+    mutate(
       year = lubridate::year(date),
       wday = lubridate::wday(date, label = TRUE)
     ) %>%
-    dplyr::left_join(typical_admissions, by = c(
+    left_join(typical_admissions, by = c(
       "site" = "site",
       "year" = "year",
       "wday" = "wday"
     )) %>%
-    dplyr::mutate(
+    mutate(
       too_few = ifelse(
         episodes < (mean_episodes - 2 * sd_episode), TRUE, FALSE
       )
     ) %>%
-    dplyr::filter(too_few == TRUE) %>%
-    dplyr::select(site, date)
+    filter(too_few == TRUE) %>%
+    select(site, date)
 
-  # what we don't capture properly is days when there is no data - i.e. NAs
+  # what we don't capture is days when there is no data - i.e. NAs
   # this is what we will fix here
-  na_days <- reference_table %>%
-    dplyr::mutate(date = lubridate::date(start_date)) %>%
-    dplyr::select(site, date) %>%
-    dplyr::distinct(.keep_all = TRUE) %>%
-    dplyr::mutate(admission = TRUE)
+  na_days <- episode_length %>%
+    mutate(date = lubridate::date(epi_start_dttm)) %>%
+    select(site, date) %>%
+    distinct(.keep_all = TRUE) %>%
+    mutate(admission = TRUE)
 
   ds <- tibble(
     date = rep(
       seq.Date(
-        from = min(lubridate::date(reference_table$start_date)),
-        to = max(lubridate::date(reference_table$start_date)),
+        from = min(lubridate::date(episode_length$epi_start_dttm)),
+        to = max(lubridate::date(episode_length$epi_start_dttm)),
         by = "day"
       ),
-      times = length(all_sites)
+      times = length(unique(episode_length$site))
     )
   )
 
   ds <- ds %>%
-    mutate(site = rep(all_sites, each = nrow(ds) / length(all_sites)))
+    mutate(site = rep(unique(episode_length$site),
+                      each = nrow(ds) / length(unique(episode_length$site)
+                                               )
+                      )
+           )
 
   too_few_all <- na_days %>%
-    dplyr::right_join(ds,
+    right_join(ds,
       by = c(
         "date" = "date",
         "site" = "site"
       )
     ) %>%
-    dplyr::filter(is.na(admission)) %>%
-    dplyr::select(-admission) %>%
-    dplyr::bind_rows(too_few)
+    filter(is.na(admission)) %>%
+    select(-admission) %>%
+    bind_rows(too_few)
 
   ## Too few all now contains all the months where we will be excluding episodes
 
   invalid_months <- too_few_all %>%
-    dplyr::mutate(
+    mutate(
       year = as.integer(lubridate::year(date)),
       month = lubridate::month(date)
     ) %>%
-    dplyr::group_by(site, year, month) %>%
-    dplyr::summarise(count = n()) %>%
-    dplyr::filter(count >= threshold)
+    group_by(site, year, month) %>%
+    summarise(count = n()) %>%
+    filter(count >= threshold)
 
-  validation <- episode_length_table %>%
+  validation <- episode_length %>%
     mutate(
       year = lubridate::year(epi_start_dttm),
       month = lubridate::month(epi_start_dttm)
     ) %>%
-    dplyr::left_join(invalid_months, by = c(
+    left_join(invalid_months, by = c(
       "site" = "site",
       "year" = "year",
       "month" = "month"
     )) %>%
-    dplyr::select(episode_id, count) %>%
-    dplyr::mutate(validity = if_else(count >= threshold, 3L, as.integer(NA))) %>%
-    dplyr::filter(!is.na(validity)) %>%
-    dplyr::select(episode_id) %>%
-    dplyr::pull()
+    select(episode_id, count) %>%
+    mutate(validity = if_else(count >= threshold, 1L, 0L)) %>%
+    select(episode_id, validity) %>%
+    right_join(episode_length, by = "episode_id")
 
-  validated <- episode_length_table %>%
-    mutate(validity = if_else(episode_id %in% validation, 3L, validity))
-
-  return(validated)
+  return(validation)
 }
 
 
@@ -158,10 +156,10 @@ validate_event <- function(validated_episodes = NULL, flagged_events = NULL) {
       .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
       .data$duplicate == 0 | is.na(.data$duplicate)
     ) %>%
-    dplyr::select(.data$episode_id, .data$internal_id) %>%
+    dplyr::select(.data$episode_id, .data$event_id) %>%
     dplyr::inner_join(validated_episodes %>%
       filter(.data$validity == 0), by = "episode_id") %>%
-    dplyr::select(.data$internal_id)
+    dplyr::select(.data$event_id)
 
   return(x)
 }

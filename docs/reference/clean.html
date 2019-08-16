@@ -34,8 +34,9 @@
 
 <meta property="og:description" content="This function takes an extracted table from either
 extract_demographics or extract_timevarying and
-returns the table with values that are out of range or impossible (as defined
-in the data quality reference table)" />
+returns the table having dealt with out of range values. Currently this
+will either modify the value to NA, or limit the value at an appropraite max
+or min." />
 
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
@@ -128,12 +129,13 @@ in the data quality reference table)" />
     
     <p>This function takes an extracted table from either
 <code><a href='extract_demographics.html'>extract_demographics</a></code> or <code><a href='extract_timevarying.html'>extract_timevarying</a></code> and
-returns the table with values that are out of range or impossible (as defined
-in the data quality reference table)</p>
+returns the table having dealt with out of range values. Currently this
+will either modify the value to NA, or limit the value at an appropraite max
+or min.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>clean</span>(<span class='kw'>tbl</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>col_names</span>)</pre>
+    <pre class="usage"><span class='fu'>clean</span>(<span class='kw'>tbl</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>dq_ref</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -143,16 +145,14 @@ in the data quality reference table)</p>
       <td><p>a table extracted from the CC-HIC database</p></td>
     </tr>
     <tr>
-      <th>col_names</th>
-      <td><p>a vector of the names you want to change</p></td>
-    </tr>
-    <tr>
       <th>dq_ref</th>
-      <td><p>a tibble if you want to override the default boundary conditions
-with the following column headings:
-code_names
-min_range
-max_range</p></td>
+      <td><p>a tibble if you want to override the default boundary
+conditions with the following column headings:</p><dl class='dl-horizontal'>
+  <dt>code_name</dt><dd><p>the code name for the data item as it appears in your
+    table</p></dd>
+  <dt>range_min</dt><dd><p>the lower bound you want to set</p></dd>
+  <dt>range_max</dt><dd><p>the upper bound you want to set</p></dd>
+</dl></td>
     </tr>
     </table>
     

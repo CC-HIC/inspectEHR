@@ -35,6 +35,8 @@ Suggests:
     testthat,
     broom,
     xml2
+Enhances:
+    praise
 VignetteBuilder: knitr
 URL: https://github.com/CC-HIC/inspectEHR
 BugReports: https://github.com/CC-HIC/inspectEHR

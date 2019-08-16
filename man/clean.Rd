@@ -4,22 +4,24 @@
 \alias{clean}
 \title{Clean Table}
 \usage{
-clean(tbl = NULL, col_names)
+clean(tbl = NULL, dq_ref = NULL)
 }
 \arguments{
 \item{tbl}{a table extracted from the CC-HIC database}
 
-\item{col_names}{a vector of the names you want to change}
-
-\item{dq_ref}{a tibble if you want to override the default boundary conditions
-with the following column headings:
-code_names
-min_range
-max_range}
+\item{dq_ref}{a tibble if you want to override the default boundary
+conditions with the following column headings:
+\describe{
+  \item{code_name}{the code name for the data item as it appears in your
+    table}
+  \item{range_min}{the lower bound you want to set}
+  \item{range_max}{the upper bound you want to set}
+}}
 }
 \description{
 This function takes an extracted table from either
 \code{\link{extract_demographics}} or \code{\link{extract_timevarying}} and
-returns the table with values that are out of range or impossible (as defined
-in the data quality reference table)
+returns the table having dealt with out of range values. Currently this
+will either modify the value to NA, or limit the value at an appropraite max
+or min.
 }

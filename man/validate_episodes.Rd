@@ -2,34 +2,33 @@
 % Please edit documentation in R/validate.R
 \name{validate_episodes}
 \alias{validate_episodes}
-\title{Validate Episodes Based Upon Patchy Data}
+\title{Validate Episodes}
 \usage{
-validate_episodes(episode_length_table, reference_table, all_sites,
-  threshold = 10)
+validate_episodes(episode_length = NULL, threshold = 10)
 }
 \arguments{
+\item{episode_length}{a table created by \code{\link{characterise_episodes}}}
+
 \item{threshold}{threshold number of days to use in calculation}
-
-\item{episodes}{collected episodes table}
-
-\item{provenance}{collected provenance table}
 }
 \value{
-a tibble of months that are to be excluded from future analysis
+a table of the same form as \code{episode_length} with an additional
+  column indicating if the episode comes from a valid period of time.
 }
 \description{
-Determines which months are invalid based on a low contribution of data
+Determines which months are invalid based on a low contribution of data.
 This is based upon the long term daily average for admissions. Days that
-fall below 2 SD of the long term mean are tagged. If more than the
-threshold value occur in a single month, the month is removed from
-further analysis
+fall below 2 SD of the long term mean are flagged. If more than the
+\code{threshold} number of flagged days occur in a single month, then the
+month is invalidated and removed from further analysis.
 }
 \details{
-This function removes episodes that occur during particularly sparse periods
+This procedure removes episodes that occur during particularly sparse periods
 (as this is likely that these months are contributing poor data) and return
-only episodes that have a logical consistency in non-sparse months
+only episodes that have a logical consistency in non-sparse months. The
+analyst should consider if the denominator for the number of study months
+should be changed following the use of this function.
 }
 \examples{
-invalid_months(episodes, provenance)
-invalid_months(episodes, provenance, theshold = 15)
+validate_episodes(episodes)
 }

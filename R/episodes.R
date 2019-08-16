@@ -187,6 +187,7 @@ unit_admissions <- function(events_table = NULL, reference_table = NULL) {
 #' @export
 #'
 #' @importFrom rlang abort
+#' @importFrom dplyr setdiff
 #'
 #' @examples
 #' epi_length(ctn)
@@ -224,25 +225,51 @@ characterise_episodes <- function(connection = NULL) {
     code_names = df_extract$codes,
     rename = df_extract$names)
 
+  ## For this particular purpse, we need to add in columns that might
+  ## be all NA.
+
+  missing_names <- setdiff(df_extract$names, names(df))
+
+  for (i in seq_along(missing_names)) {
+    df[[missing_names[i]]] <- as.character(NA)
+  }
+
+  df <- df %>% mutate_at(vars(ends_with("time")), hms::as_hms)
+  df <- df %>% mutate_at(vars(ends_with("date")), lubridate::ymd)
+  df <- df %>% mutate_at(vars(ends_with("dttm")), lubridate::ymd_hms)
+
 df <- df %>%
   mutate(
-    death_dttm = if_else(!is.na(death_date) & !is.na(body_time),
-      paste0(format(death_date), " ", format(body_time)), as.character(NA)
+    death_dttm = if_else(
+      !is.na(death_date) & !is.na(death_time),
+      paste(format(death_date), format(death_time)), as.character(NA)
     )
   ) %>%
-  mutate(death_dttm = if_else(!is.na(death_dttm), lubridate::ymd_hms(death_dttm), as.POSIXct(NA))) %>%
+  mutate(death_dttm = if_else(
+    !is.na(death_dttm),
+    lubridate::ymd_hms(death_dttm),
+    as.POSIXct(NA))) %>%
   mutate(
-    bsd_dttm = if_else(!is.na(bsd_date) & !is.na(bsd_time),
-      paste0(format(bsd_date), " ", format(bsd_time)), as.character(NA)
+    bsd_dttm = if_else(
+      !is.na(bsd_date) & !is.na(bsd_time),
+      paste(format(bsd_date), format(bsd_time)), as.character(NA)
     )
   ) %>%
-  mutate(bsd_dttm = if_else(!is.na(bsd_dttm), lubridate::ymd_hms(bsd_dttm), as.POSIXct(NA))) %>%
   mutate(
-    body_dttm = if_else(!is.na(body_date) & !is.na(body_time),
-      paste0(format(body_date), " ", format(body_time)), as.character(NA)
+    bsd_dttm = if_else(
+      !is.na(bsd_dttm),
+      lubridate::ymd_hms(bsd_dttm),
+      as.POSIXct(NA))) %>%
+  mutate(
+    body_dttm = if_else(
+      !is.na(body_date) & !is.na(body_time),
+      paste(format(body_date), format(body_time)), as.character(NA)
     )
   ) %>%
-  mutate(body_dttm = if_else(!is.na(body_dttm), lubridate::ymd_hms(body_dttm), as.POSIXct(NA)))
+  mutate(
+    body_dttm = if_else(
+      !is.na(body_dttm),
+      lubridate::ymd_hms(body_dttm), as.POSIXct(NA)))
 
   df <- df %>%
     select(-tidyselect::ends_with("date"), -tidyselect::ends_with("time")) %>%
@@ -284,36 +311,38 @@ df <- df %>%
     filter(is.na(epi_end_dttm) | epi_end_dttm < epi_start_dttm) %>%
     select(-epi_end_dttm)
 
-  recover_timings <- tbl(connection, "events") %>%
-    filter(episode_id %in% broken_timings$episode_id,
-           code_name %in% c("NIHR_HIC_ICU_0108", "NIHR_HIC_ICU_0129")) %>%
-    select(episode_id, datetime) %>%
-    collect() %>%
-    group_by(episode_id) %>%
-    summarise(epi_end_dttm = max(datetime)) %>%
-    filter(!is.na(epi_end_dttm)) %>%
-    left_join(broken_timings, ., by = "episode_id")
+  if (nrow(broken_timings) > 0) {
+    recover_timings <- tbl(ctn, "events") %>%
+      filter(episode_id %in% !!broken_timings$episode_id,
+             code_name %in% c("NIHR_HIC_ICU_0108", "NIHR_HIC_ICU_0129")) %>%
+      select(episode_id, datetime) %>%
+      collect() %>%
+      group_by(episode_id) %>%
+      summarise(epi_end_dttm = max(datetime)) %>%
+      filter(!is.na(epi_end_dttm)) %>%
+      left_join(broken_timings, ., by = "episode_id")
 
-  df <- df %>%
-    filter(!(episode_id %in% broken_timings$episode_id)) %>%
-    bind_rows(recover_timings)
+    df <- df %>%
+      filter(!(episode_id %in% broken_timings$episode_id)) %>%
+      bind_rows(recover_timings)
 
-  invalid_records <- df %>%
-    filter(is.na(epi_end_dttm)) %>%
-    select(episode_id) %>%
-    mutate(reason = "no end datetime") %>%
-    bind_rows(invalid_records)
+    invalid_records <- df %>%
+      filter(is.na(epi_end_dttm)) %>%
+      select(episode_id) %>%
+      mutate(reason = "no end datetime") %>%
+      bind_rows(invalid_records)
 
-  invalid_records <- df %>%
-    filter(!is.na(epi_end_dttm)) %>%
-    filter(epi_end_dttm < epi_start_dttm) %>%
-    select(episode_id) %>%
-    mutate(reason = "end time prior to admission") %>%
-    bind_rows(invalid_records)
+    invalid_records <- df %>%
+      filter(!is.na(epi_end_dttm)) %>%
+      filter(epi_end_dttm < epi_start_dttm) %>%
+      select(episode_id) %>%
+      mutate(reason = "end time prior to admission") %>%
+      bind_rows(invalid_records)
 
-  df <- df %>%
-    filter(!is.na(epi_end_dttm)) %>%
-    filter(epi_end_dttm >= epi_start_dttm)
+    df <- df %>%
+      filter(!is.na(epi_end_dttm)) %>%
+      filter(epi_end_dttm >= epi_start_dttm)
+  }
 
   duplicate_start <- df %>%
     ungroup() %>%
@@ -351,8 +380,17 @@ df <- df %>%
     select(episode_id, nhs, epi_start_dttm, epi_end_dttm, outcome) %>%
     rename(nhs_number = nhs) %>%
     anti_join(invalid_records, by = "episode_id") %>%
-    arrange(nhs, epi_start_dttm) %>%
-    mutate(los = difftime(epi_end_dttm, epi_start_dttm, units = "hours")/24)
+    arrange(nhs_number, epi_start_dttm) %>%
+    mutate(los_days = as.numeric(difftime(epi_end_dttm, epi_start_dttm, units = "hours"))/24)
+
+  df <- left_join(
+    tbl(connection, "episodes"),
+    tbl(connection, "provenance"),
+    by = c("provenance" = "file_id")
+    ) %>%
+    select(episode_id, site) %>%
+    collect() %>%
+    left_join(df, ., by = "episode_id")
 
   attr(df, "invalid_records") <- invalid_records
 
@@ -377,8 +415,8 @@ df <- df %>%
 #' @export
 #'
 #' @examples
-#' identify_spells(episodes, episodes)
-identify_spells <- function(df = NULL, minutes = 30) {
+#' characterise_spells(episodes, episodes)
+characterise_spells <- function(df = NULL, minutes = 30) {
   df %>%
     arrange(nhs_number, epi_start_dttm) %>%
     group_by(nhs_number) %>%
@@ -389,7 +427,7 @@ identify_spells <- function(df = NULL, minutes = 30) {
     mutate(new_spell = if_else(lag(time_out) > minutes | is.na(lag(time_out)), TRUE, FALSE)) %>%
     ungroup() %>%
     mutate(spell_id = cumsum(new_spell)) %>%
-    select(spell_id, episode_id, nhs_number, site, epi_start_dttm, epi_end_dttm, los)
+    select(spell_id, episode_id, nhs_number, site, epi_start_dttm, epi_end_dttm, los_days)
 }
 
 

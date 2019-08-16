@@ -15,9 +15,7 @@ plot_heatcal(reference_table = NULL, site = NULL, filename = NULL,
 
 \item{filename}{optional string to save output. must include extension}
 
-\item{episodes}{collected episodes table}
-
-\item{provenance}{collected provenance table}
+\item{referenec_table}{reference table produced from \code{\link{make_reference}}}
 
 \item{episodes}{collected episodes table}
 
@@ -38,8 +36,8 @@ Plot Calendar Heatmap
 Plot Calendar Heatmap
 }
 \examples{
-plot_heatcal(episodes, provenance, "UCL")
-plot_heatcal(episodes, provenance, "UCL", "~/some/path/plot.png")
+plot_heatcal(ref, "UCL")
+plot_heatcal(ref, "UCL", "~/some/path/plot.png")
 plot_heatcal(episodes, provenance, "UCL")
 plot_heatcal(episodes, provenance, "UCL", "~/some/path/plot.png")
 }
