@@ -1,94 +1,78 @@
-#' Plot Calendar Heatmap
+#' Make a heat_cal object
 #'
-#' @param episodes collected episodes table
-#' @param provenance collected provenance table
+#' @param reference_table reference table produced from \code{\link{make_reference}}
 #' @param site character string of hospital site to plot
-#' @param filename optional string to save output. must include extension
+#' @param start_date a starting date as character vector of format YYYY-MM-DD
+#' @param end_date an end date as character vector of format YYYY-MM-DD
+#' @param max_limit the upper bound for determining colour scale. This is useful
+#'   if you have extreme outliers to enable good constrast over the range of
+#'   interest
 #'
-#' @return a plot with admission details in heatmap form
+#' @return an object of class heat_cal
 #' @export
 #'
 #' @examples
-#' plot_heatcal(episodes, provenance, "UCL")
-#' plot_heatcal(episodes, provenance, "UCL", "~/some/path/plot.png")
-plot_heatcal <- function(reference_table = NULL,
+#' \dontrun{
+#' make_heatcal(ref, "UCL")
+#' }
+make_heatcal <- function(reference_table = NULL,
+                         type = NULL,
                          site = NULL,
-                         filename = NULL,
                          start_date = "2014-01-01",
                          end_date = "2019-01-01",
                          max_limit = 25) {
-  calendar_template <- reference_table %>%
+
+  heatcal <- reference_table %>%
     daily_admssions(by_site = site) %>%
     create_calendar_template(start_date = start_date, end_date = end_date)
 
-  calendar_grid <- calendar_template %>%
+  calendar_grid <- heatcal %>%
     create_grid()
 
-  if (is.null(filename)) {
-    plotted_heatcal <- ggHeatCal_episodes(
-      x = calendar_template,
-      gridLines = calendar_grid,
-      Title = paste0("Admission Calendar Heatmap for ", site),
-      max_limit = max_limit
-    )
+  attr(heatcal, "grid") <- calendar_grid
+  attr(heatcal, "max") <- max_limit
+  attr(heatcal, "type") <- type
+  attr(heatcal, "site") <- site
+  class(heatcal) <- append(class(heatcal), "heat_cal", after = 0)
 
-    return(plotted_heatcal)
-  } else {
-    ggsave(
-      ggHeatCal_episodes(
-        x = calendar_template,
-        gridLines = calendar_grid,
-        Title = paste0("Admission Calendar Heatmap for ", site),
-        max_limit = max_limit
-      ),
-      filename = filename
-    )
-  }
+  return(heatcal)
+
 }
-
 
 #' Find First Sunday
 #'
 #' Finds the first sunday of the year supplied to x
 #'
 #' @param x a vector of class date
-#'
 #' @return a vector with dates for the first sunday of each year supplied to x
 #'
 #' @importFrom lubridate floor_date wday days
-#'
-#' @examples
-#' find_first_sunday(x)
 find_first_sunday <- function(x) {
   first <- floor_date(x, "month")
   dow <- sapply(seq(0, 6), function(x) wday(first + days(x)))
-  firstSunday <- first + days(which(dow == 1) - 1)
-  return(firstSunday)
+  first_sunday <- first + days(which(dow == 1) - 1)
 }
 
 
-#' Create a Calendar Template for Count Data
+#' Calendar Template for Count Data
 #'
-#' Creates the basic template for a heatmap calendar in ggplot
-#' when using count data. The calendar will automatically expand
-#' the date contrains to full years
+#' Creates the basic template for a heatmap calendar in ggplot when using count
+#' data. The calendar will automatically expand the date contrains to full
+#' years. Can be supplied the output from \code{\link{daily_admssions}}.
 #'
-#' @param start_date a starting date as character vector of format YYYY/MM/DD
-#' @param end_date an end date as character vector of format YYYY/MM/DD
-#' @param x count data to be used in the calendar
+#' @param start_date a starting date as character vector of format YYYY-MM-DD
+#' @param end_date an end date as character vector of format YYYY-MM-DD
+#' @param x count data to be used in the calendar from
+#'   \code{\link{daily_admssions}}
 #'   \describe{
 #'     \item{date}{date column formatted to a POSIX date}
 #'     \item{count_column}{counting column of integer type}
 #'   }
 #'
 #' @return a tibble with correct week alignments for a calendar heatmap
-#' @export
 #'
 #' @importFrom lubridate floor_date ceiling_date ymd year month
 #' @importFrom dplyr tibble mutate left_join
-#'
-#' @examples
-#' sample_data <- create_calendar_template(myData, "2014-01-01", "2018-01-01")
 create_calendar_template <- function(x = NULL,
                                      start_date = "2014-01-01",
                                      end_date = "2018-01-01") {
@@ -105,16 +89,17 @@ create_calendar_template <- function(x = NULL,
       )
     ) %>%
     mutate(
-      firstSundays = as.Date(
+      first_sundays = as.Date(
         sapply(years, find_first_sunday),
         origin = "1970/01/01"
       ),
-      remaining_days = as.integer(firstSundays - years),
+      remaining_days = as.integer(first_sundays - years),
       year = year(years)
     )
 
-  calendar <-
-    tibble(date = seq(from = first_date, to = last_date, by = "day")) %>%
+  calendar <- tibble(
+    date = seq(from = first_date, to = last_date, by = "day")
+    ) %>%
     mutate(year = as.integer(year(date)))
 
   years <- unique(calendar$year)
@@ -130,10 +115,12 @@ create_calendar_template <- function(x = NULL,
       )
     }
 
-    remaining_length <- nrow(calendar[calendar$year == year, ]) - length(this_week_of_year)
+    remaining_length <- nrow(
+      calendar[calendar$year == year, ]) - length(this_week_of_year)
 
     if (remaining_length != 0) {
-      this_week_of_year <- c(this_week_of_year, rep(53, times = remaining_length))
+      this_week_of_year <- c(
+        this_week_of_year, rep(53, times = remaining_length))
     }
 
     week_of_year <- c(week_of_year, this_week_of_year)
@@ -146,23 +133,20 @@ create_calendar_template <- function(x = NULL,
       month = month(date, label = TRUE)
     ) %>%
     left_join(x, by = "date")
-
-  return(calendar)
 }
 
-#' Create Calendar Grid
+#' Calendar Gridlines
 #'
 #' This calulates the correct gridlines that need to be drawn when formatting
 #' the calendar.
 #'
-#' @param calendar_template a calendar template from \code{create_calendar_template}
+#' @param calendar_template a calendar template from
+#'   \code{\link{create_calendar_template}}
 #'
 #' @return a grid for assembling a ggheatcal
 #' @importFrom dplyr select mutate lead lag distinct
-#'
-#' @examples
-#' create_grid(cal_template)
 create_grid <- function(calendar_template = NULL) {
+
   template <- calendar_template %>%
     select(date, year, week_of_year, day_of_week, month)
 
@@ -258,35 +242,40 @@ create_grid <- function(calendar_template = NULL) {
       y_end = y_start
     )
 
-  gridLines <- rbind(rv, lv, th, bh) %>% distinct()
-
-  return(gridLines)
+  grid_lines <- rbind(rv, lv, th, bh) %>% distinct()
 }
 
 
-#' Plot Calendar Heatmap - Admission episodes
+#' Plot Calendar Heatmap
 #'
 #' Builds the ggplot layers required to correctly display the calendar heatmap
 #'
-#' @param x admissions object
-#' @param gridLines gridlines object
-#' @param Title title of the final plot
-#' @param max_limit the maximim limit of the scale to display
-#'
-#' @return a ggplot2 object
-#' @export
+#' @param object a heat_cal object
 #'
 #' @importFrom ggplot2 ggplot geom_tile scale_fill_gradientn facet_grid
 #' theme_minimal theme element_blank element_text geom_segment aes labs
 #' ylab xlab coord_equal
 #' @importFrom scales viridis_pal
-#'
-#' @examples
-#' ggHeatCal_episodes(x, gridlines, "UCL Admission Heatmap")
-ggHeatCal_episodes <- function(x, gridLines, Title, max_limit = 25) {
-  x %>%
+autoplot.heat_cal <- function(object, ...) {
+
+  type <- attr(object, "type")
+  max_limit <- attr(object, "max")
+  title <- paste0("Admission Calendar Heatmap: ", attr(object, "site"))
+  grid_lines <- attr(object, "grid")
+
+  if (type == "episodes") {
+    guide_title <- "Admissions"
+  } else {
+    guide_title <- "Events"
+  }
+
+  object %>%
     ggplot() +
-    geom_tile(aes(x = week_of_year, y = day_of_week, fill = episodes), colour = "#FFFFFF") +
+    geom_tile(
+      aes(x = week_of_year,
+          y = day_of_week,
+          fill = .data[[type]]),
+      colour = "#FFFFFF") +
     facet_grid(year ~ .) +
     theme_minimal() +
     theme(
@@ -297,62 +286,27 @@ ggHeatCal_episodes <- function(x, gridLines, Title, max_limit = 25) {
       axis.title.x = element_blank()
     ) +
     geom_segment(aes(x = x_start, y = y_start, xend = x_end, yend = y_end),
-      colour = "black", size = 0.5, data = gridLines
+      colour = "black", size = 0.5, data = grid_lines
     ) +
     scale_fill_viridis_c(rescaler = function(x, to = c(0, 1), from = NULL) {
       if_else(x < max_limit,
         scales::rescale(x, to = to, from = c(min(x, na.rm = TRUE), max_limit)), 1
       )
     }, na.value = "grey60") +
-    labs(title = Title) +
+    labs(title = title) +
     ylab(label = "Day of Week") +
     xlab(label = "Month") +
+    guides(fill = guide_legend(
+      title = guide_title)) +
     coord_equal()
+
 }
 
-
-#' Plot calendar heatmap for events
-#'
-#' plots a cc-hic event over a calendar heatmap for inspection
-#'
-#' @param x modified hic event from \code{\link{event_occurances}}
-#' @param gridLines gridlines to be made by \code{\link{create_grid}}
-#' @param Title title of the plot
-#' @param max_limit the maximim limit of the scale to display
-#'
-#' @return a ggplot2 object
-#' @export
-#'
-#' @importFrom ggplot2 ggplot geom_tile scale_fill_gradientn facet_grid
-#' theme_minimal theme element_blank element_text geom_segment aes labs
-#' ylab xlab coord_equal
-#' @importFrom scales viridis_pal
-#'
-#' @examples
-#' ggHeatCal_events(df, gridlines, "Heart Rate Heatmap")
-ggHeatCal_events <- function(x, gridLines, Title, max_limit = 24) {
-  x %>%
-    ggplot() +
-    geom_tile(aes(x = week_of_year, y = day_of_week, fill = events), colour = "#FFFFFF") +
-    facet_grid(year ~ .) +
-    theme_minimal() +
-    theme(
-      panel.grid.major = element_blank(),
-      plot.title = element_text(hjust = 0.5),
-      axis.text.x = element_blank(),
-      axis.title.y = element_blank(),
-      axis.title.x = element_blank()
-    ) +
-    geom_segment(aes(x = x_start, y = y_start, xend = x_end, yend = y_end),
-      colour = "black", size = 0.5, data = gridLines
-    ) +
-    scale_fill_viridis_c(rescaler = function(x, to = c(0, 1), from = NULL) {
-      if_else(x < max_limit,
-        scales::rescale(x, to = to, from = c(min(x, na.rm = TRUE), max_limit)), 1
-      )
-    }, na.value = "grey60") +
-    labs(title = Title) +
-    ylab(label = "Day of Week") +
-    xlab(label = "Month") +
-    coord_equal()
+#' @importFrom graphics plot
+plot.heat_cal <- function(x, display = TRUE, ...) {
+  if (display) {
+    print(autoplot(x, ...))
+  } else {
+    autoplot(x, ...)
+  }
 }

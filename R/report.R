@@ -28,8 +28,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' report(sqlite_file = "./data-raw/synthetic_db.sqlite3",
 #'        output_folder = "./outputs")
+#' }
 report <- function(database = NULL,
                    username = NULL,
                    password = NULL,
@@ -104,7 +106,8 @@ report <- function(database = NULL,
     left_join(tbls[["provenance"]], by = c("provenance" = "file_id")) %>%
     select(site, code_name) %>%
     distinct() %>%
-    collect()
+    collect() %>%
+    mutate(contributed = "Yes")
 
   # Capture all the sites currently contributing to the project
   all_sites <- provenance %>%
@@ -119,7 +122,7 @@ report <- function(database = NULL,
   )
 
   # use anti_join to find which sites aren't providing certain codes
-  missing_events <- anti_join(
+  missing_events <- full_join(
     all_events, unique_events,
     by = c(
       "site" = "site",
@@ -127,25 +130,28 @@ report <- function(database = NULL,
     )
   ) %>%
     left_join(qref %>%
-      select(code_name, short_name),
-    by = "code_name") %>%
-    dplyr::mutate(new_name = paste0(
-      str_sub(
-        code_name, -4, -1
-      ), ": ", short_name
-    ))
+                select(code_name, short_name),
+              by = "code_name") %>%
+    dplyr::mutate(
+      new_name = paste0(
+        str_sub(code_name, -4, -1), ": ", str_trunc(short_name, 20)
+      )
+    ) %>%
+    mutate(contributed = if_else(is.na(contributed), "No", contributed)) %>%
+    filter(!is.na(site))
 
   # make a plot highlighting missing data
   missing_events_plot <- missing_events %>%
-    ggplot(aes(x = site, y = new_name)) +
-    geom_tile(fill = "red", colour = "black") +
+    ggplot(aes(x = site, y = new_name, fill = contributed)) +
+    geom_point(shape = 21, size = 4.5) +
+    theme_minimal() +
     theme(
       panel.grid.major.x = element_blank(),
       panel.grid.minor.x = element_blank(),
-      panel.background = element_rect(fill = NA)
+      panel.background = element_blank()
     ) +
-    ylab("Code and Name of Missing Item") +
-    ggtitle("Missing Events")
+    ylab("Code and Name of Data Item") +
+    xlab("Site")
 
   ggsave(
     filename = paste0(
@@ -154,7 +160,7 @@ report <- function(database = NULL,
       "missing_events.png"
     ),
     plot = missing_events_plot,
-    height = 40
+    height = 40, width = 5
   )
 
   # Useful Tables
@@ -179,13 +185,13 @@ report <- function(database = NULL,
     )
 
   for (i in seq_along(all_sites)) {
-    plot_heatcal(
-      reference_table = reference,
-      site = all_sites[i],
+    temp_heat <- make_heatcal(reference, type = "episodes", site = all_sites[i])
+    temp_plot <- plot(temp_heat, display = FALSE)
+    ggsave(
+      temp_plot,
       filename = paste0(
-        output_folder, "plots/episodes/",
-        all_sites[i], "_admissions.png"
-      )
+        output_folder, "plots/episodes/", all_sites[i], "_admissions.svg"
+      ), height = 8, width = 12.88
     )
   }
 

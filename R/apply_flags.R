@@ -1,20 +1,21 @@
 #' Apply all validation flags to an extracted data item
 #'
-#' Applies basic validation flags to an extracted data item.
-#' This is a wrapper function with conditional logic to flag for:
-#' data item out of value range
-#' data item out of temporal range of the episode
-#' duplication of item
-#' periodicity
+#' Applies all relevent validation flags to an extracted dataitem, including:
+#' \itemize{
+#'   \item{dataitem out of possible range}
+#'   \item{dataitem occurance outside an episode}
+#'   \item{dataitem duplication}
+#'   \item{dataitem periodicity}
+#' }
 #'
 #' periodicity checking is conditional on the preceding 3 flags,
 #' as only those events that validate are taking into consideration
-#' of periodicity checking
+#' for periodicity checking
 #'
 #' @param x extracted data item
 #' @param los_table episode length table
 #'
-#' @importFrom magrittr %>% %<>%
+#' @importFrom magrittr %>%
 #' @importFrom rlang .data !!
 #'
 #' @return a tibble with flags applied
