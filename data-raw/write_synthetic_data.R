@@ -3,10 +3,10 @@
 # It should have structually sound data 2 Hospitals, each with 2 ICUs, with
 # between 0 and 10 admissins per day for 2 years.
 
-# - []Physiology is nonsense
-# - []Coincident observations (like blood pressure) don't line up yet
+# - [] Physiology is nonsense
+# - [] Coincident observations (like blood pressure) don't line up yet
 # - [] not 100% is AMP and CMP numbers are accurate portrayals.
-# - []No meta data
+# - [] No meta data
 
 library(tidyverse)
 library(lubridate); library(hms)
@@ -329,7 +329,6 @@ load("./data-raw/resources/metadata_tbl.RData")
 variables <- variables_tbl
 
 ## Write to DB ====
-cchic <- DBI::dbConnect(RSQLite::SQLite(), "./data-raw/synthetic_db.sqlite3")
 
 # Change dates, datetimes and times into a string as sqlite3 doesn't have these as
 # native types.
@@ -348,11 +347,80 @@ events <- events %>%
 
 provenance <- provenance %>% mutate_if(is.POSIXct, format)
 
-copy_to(cchic, episodes, temporary = FALSE, overwrite = TRUE)
-copy_to(cchic, events, temporary = FALSE, overwrite = TRUE)
-copy_to(cchic, provenance, temporary = FALSE, overwrite = TRUE)
-copy_to(cchic, variables, temporary = FALSE, overwrite = TRUE)
+episode_demo <- episodes %>%
+  arrange(start_date) %>%
+  `[`(1:1000,)
 
-db_list_tables(cchic)
-DBI::dbDisconnect(cchic)
-rm(cchic)
+events_demo <- events %>%
+  filter(episode_id %in% episode_demo$episode_id)
+
+## DBI cannot send multi-line SQL statements
+## System is not working, so annoyingly we need to leave this session
+## to run `sqlite3 ./data-raw/synthetic_db.sqlite3 --init ./data-raw/db_setup.sql`
+## and `sqlite3 ~/_data/hic/public/full_synthetic_db.sqlite3 --init ./data-raw/db_setup.sql`
+
+cchic_demo <- DBI::dbConnect(RSQLite::SQLite(), "./data-raw/synthetic_db.sqlite3")
+cchic_full <- DBI::dbConnect(RSQLite::SQLite(), "~/_data/hic/public/full_synthetic_db.sqlite3")
+
+## Write tables in the following order, as foreign key constraints
+## have to be set up at the time of writing the tables in sqlite
+
+## Variables
+## Provenance
+## Episodes
+## Events
+
+DBI::dbListTables(cchic_demo)
+DBI::dbListTables(cchic_full)
+
+## Variables ====
+
+DBI::dbWriteTable(
+  conn = cchic_demo,
+  name = "variables",
+  value = variables, append = TRUE)
+
+DBI::dbWriteTable(
+  conn = cchic_full,
+  name = "variables",
+  value = variables, append = TRUE)
+
+## Provenance
+
+DBI::dbWriteTable(
+  conn = cchic_demo,
+  name = "provenance",
+  value = provenance, append = TRUE)
+
+DBI::dbWriteTable(
+  conn = cchic_full,
+  name = "provenance",
+  value = provenance, append = TRUE)
+
+## Episodes ====
+
+DBI::dbWriteTable(
+  conn = cchic_demo,
+  name = "episodes",
+  value = episode_demo, append = TRUE)
+
+DBI::dbWriteTable(
+  conn = cchic_full,
+  name = "episodes",
+  value = episodes, append = TRUE)
+
+## Events ====
+
+DBI::dbWriteTable(
+  conn = cchic_demo,
+  name = "events",
+  value = events_demo, append = TRUE)
+
+DBI::dbWriteTable(
+  conn = cchic_full,
+  name = "events",
+  value = events, append = TRUE)
+
+DBI::dbDisconnect(cchic_demo)
+DBI::dbDisconnect(cchic_full)
+rm(cchic_demo, cchic_full)

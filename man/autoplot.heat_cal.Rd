@@ -4,7 +4,7 @@
 \alias{autoplot.heat_cal}
 \title{Plot Calendar Heatmap}
 \usage{
-\method{autoplot}{heat_cal}(object, ...)
+autoplot.heat_cal(object, ...)
 }
 \arguments{
 \item{object}{a heat_cal object}

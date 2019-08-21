@@ -1,7 +1,3 @@
-# The synthetic database (it is too large to sync over github)
-# Please note, it can be downloaded externally
-data-raw/synthetic_db.sqlite3
-
 # History files
 .Rhistory
 .Rapp.history
