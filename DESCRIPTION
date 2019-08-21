@@ -33,8 +33,7 @@ Suggests:
     rmarkdown,
     testthat,
     broom,
-    xml2
-Enhances:
+    xml2,
     praise,
     shiny
 VignetteBuilder: knitr
