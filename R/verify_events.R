@@ -59,8 +59,8 @@ verify_events <- function(x, los_table = NULL) {
   event_class <- class(x)[1]
 
   # Apply RANGE FLAG if an appropriate method exists, or return NA
-  if (any(grepl("flag_range", avail_methods))) {
-    rf <- flag_range(x)
+  if (any(grepl("verify_range", avail_methods))) {
+    rf <- verify_range(x)
   } else {
     rf <- x %>%
       dplyr::mutate(range_error = NA) %>%
@@ -68,8 +68,8 @@ verify_events <- function(x, los_table = NULL) {
   }
 
   # Apply BOUNDARY FLAG if an appropriate method exists, or return NA
-  if (any(grepl("flag_bounds", avail_methods))) {
-    bf <- x %>% flag_bounds(los_table = los_table)
+  if (any(grepl("verify_bounds", avail_methods))) {
+    bf <- x %>% verify_bounds(los_table = los_table)
   } else {
     bf <- x %>%
       dplyr::mutate(out_of_bounds = NA) %>%
@@ -77,8 +77,8 @@ verify_events <- function(x, los_table = NULL) {
   }
 
   # Apply DUPLICATE FLAG if an appropriate method exists, or return NA
-  if (any(grepl("flag_duplicate", avail_methods))) {
-    df <- x %>% flag_duplicate()
+  if (any(grepl("verify_duplicate", avail_methods))) {
+    df <- x %>% verify_duplicate()
   } else {
     df <- x %>%
       dplyr::mutate(duplicate = NA) %>%
@@ -94,8 +94,8 @@ verify_events <- function(x, los_table = NULL) {
     left_join(df, by = "event_id")
 
   # Apply PERIODICITY FLAG if an appropriate method exists, or return NA
-  if (any(grepl("flag_periodicity", avail_methods))) {
-    x %<>% flag_periodicity(los_table = los_table)
+  if (any(grepl("verify_periodicity", avail_methods))) {
+    x %<>% verify_periodicity(los_table = los_table)
   } else {
     x %<>%
       dplyr::mutate(periodicity = NA)
@@ -182,7 +182,7 @@ verify_range_numeric <- function(x = NULL) {
 
 
 verify_range.real_2d <- function(x = NULL) {
-  x <- flag_range_numeric(x)
+  x <- verify_range_numeric(x)
   if (!("real_2d" %in% class(x))) {
     class(x) <- append(class(x), "real_2d", after = 0)
   }
@@ -191,7 +191,7 @@ verify_range.real_2d <- function(x = NULL) {
 
 
 verify_range.real_1d <- function(x = NULL) {
-  x <- flag_range_numeric(x)
+  x <- verify_range_numeric(x)
   if (!("real_1d" %in% class(x))) {
     class(x) <- append(class(x), "real_1d", after = 0)
   }
@@ -200,7 +200,7 @@ verify_range.real_1d <- function(x = NULL) {
 
 
 verify_range.integer_2d <- function(x = NULL) {
-  x <- flag_range_numeric(x)
+  x <- verify_range_numeric(x)
   if (!("integer_2d" %in% class(x))) {
     class(x) <- append(class(x), "integer_2d", after = 0)
   }
@@ -209,7 +209,7 @@ verify_range.integer_2d <- function(x = NULL) {
 
 
 verify_range.integer_1d <- function(x = NULL) {
-  x <- flag_range_numeric(x)
+  x <- verify_range_numeric(x)
   if (!("integer_1d" %in% class(x))) {
     class(x) <- append(class(x), "integer_1d", after = 0)
   }
@@ -334,7 +334,7 @@ verify_range_string <- function(x = NULL) {
 
 
 verify_range.string_2d <- function(x = NULL) {
-  x <- flag_range_string(x)
+  x <- verify_range_string(x)
   if (!("string_2d" %in% class(x))) {
     class(x) <- append(class(x), "string_2d", after = 0)
   }
@@ -343,7 +343,7 @@ verify_range.string_2d <- function(x = NULL) {
 
 
 verify_range.string_1d <- function(x = NULL) {
-  x <- flag_range_string(x)
+  x <- verify_range_string(x)
   if (!("string_1d" %in% class(x))) {
     class(x) <- append(class(x), "string_1d", after = 0)
   }
@@ -859,7 +859,7 @@ verify_periodicity.integer_2d <- function(x, ...) {
 }
 
 
-flag_periodicity.string_2d <- function(x, ...) {
+verify_periodicity.string_2d <- function(x, ...) {
   x <- verify_periodicity_generic(x, ...)
   if (!("string_2d" %in% class(x))) {
     class(x) <- append(class(x), "string_2d", after = 0)
