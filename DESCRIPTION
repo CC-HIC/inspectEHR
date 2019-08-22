@@ -26,16 +26,17 @@ Imports:
     scales,
     stringr,
     tibble,
-    tidyr
+    tidyr,
+    hms,
+    broom,
+    xml2,
+    praise
 RoxygenNote: 6.1.1
 Suggests:
     knitr,
     rmarkdown,
     testthat,
     covr,
-    broom,
-    xml2,
-    praise,
     shiny
 VignetteBuilder: knitr
 URL: https://github.com/CC-HIC/inspectEHR

@@ -1,4 +1,4 @@
-#' verify CC-HIC Data
+#' Verify CC-HIC Data
 #'
 #' Applies all relevent varification flags to an extracted dataitem. This
 #' includes:
@@ -46,59 +46,60 @@
 #' DBI::dbDisconnect(ctn)
 verify_events <- function(x, los_table = NULL) {
 
+  if (is.null(los_table)) rlang::abort("You must supply an episode table")
+
   # Aborts function if the class is not recognised
-  if (!(any(class(x) %in% preserved_classes))) {
+  if (!(any(class(x)[1] %in% preserved_classes))) {
     rlang::abort("this function is not defined for this class")
   }
 
   # Captures the input code_name
   input_name <- attr(x, "code_name")
 
-  # Checks the availible methods for this class
+  # Check availible methods for this class
   avail_methods <- methods(class = class(x)[1])
   event_class <- class(x)[1]
 
-  # Apply RANGE FLAG if an appropriate method exists, or return NA
+  # Range Verification
   if (any(grepl("verify_range", avail_methods))) {
     rf <- verify_range(x)
   } else {
     rf <- x %>%
-      dplyr::mutate(range_error = NA) %>%
-      dplyr::select(.data$event_id, .data$range_error)
+      mutate(range_error = as.integer(NA)) %>%
+      select(.data$event_id, .data$range_error)
   }
 
-  # Apply BOUNDARY FLAG if an appropriate method exists, or return NA
+  # Boundary Verification
   if (any(grepl("verify_bounds", avail_methods))) {
-    bf <- x %>% verify_bounds(los_table = los_table)
+    bf <- verify_bounds(x, los_table = los_table)
   } else {
     bf <- x %>%
-      dplyr::mutate(out_of_bounds = NA) %>%
-      dplyr::select(.data$event_id, .data$out_of_bounds)
+      mutate(out_of_bounds = as.integer(NA)) %>%
+      select(.data$event_id, .data$out_of_bounds)
   }
 
-  # Apply DUPLICATE FLAG if an appropriate method exists, or return NA
+  # Duplicate Verification
   if (any(grepl("verify_duplicate", avail_methods))) {
-    df <- x %>% verify_duplicate()
+    df <- verify_duplicate(x)
   } else {
     df <- x %>%
-      dplyr::mutate(duplicate = NA) %>%
-      dplyr::select(.data$event_id, .data$duplicate)
+      mutate(duplicate = as.integer(NA)) %>%
+      select(.data$event_id, .data$duplicate)
   }
 
-  # Join the flags above back to the original df
-  # This step must be performed prior to periodicity checking
-  # Using LEFT join on the original table so as to not loose any data
-  x %<>%
+  # Join the labels above back to the original df
+  # This step must be performed PRIOR to periodicity checking
+  x <- x %>%
     left_join(rf, by = "event_id") %>%
     left_join(bf, by = "event_id") %>%
     left_join(df, by = "event_id")
 
-  # Apply PERIODICITY FLAG if an appropriate method exists, or return NA
+  # Periodicity Verification
   if (any(grepl("verify_periodicity", avail_methods))) {
-    x %<>% verify_periodicity(los_table = los_table)
+    x <- verify_periodicity(x, los_table = los_table)
   } else {
-    x %<>%
-      dplyr::mutate(periodicity = NA)
+    x <- x %>% mutate(periodicity = as.numeric(NA),
+                      var_per = as.integer(NA))
   }
 
   attr(x, "code_name") <- input_name
@@ -482,8 +483,7 @@ verify_range.datetime_1d <- function(x = NULL) {
 #' vhr <- verify_bounds(hr, episodes)
 #' head(vhr)
 #' DBI::dbDisconnect(ctn)
-verify_bounds <- function(x, los_table = NULL, hours = 24) {
-  if (is.null(los_table)) abort("You must supply an episode length table.")
+verify_bounds <- function(x, ...) {
   UseMethod("verify_bounds", x)
 }
 
@@ -504,6 +504,7 @@ verify_bounds.default <- function(...) {
 #' @importFrom rlang .data
 #' @importFrom dplyr left_join select mutate case_when
 verify_bounds_2d <- function(x = NULL, los_table = NULL, hours = 24) {
+  if (is.null(los_table)) abort("You must supply an episode length table.")
 
   los_table <- los_table %>%
     select(.data$episode_id,
@@ -530,7 +531,7 @@ verify_bounds_2d <- function(x = NULL, los_table = NULL, hours = 24) {
 }
 
 
-verify_bounds.real_2d <- function(...) {
+verify_bounds.real_2d <- function(x, los_table, ...) {
   x <- verify_bounds_2d(x, los_table = los_table)
   if (!("real_2d" %in% class(x))) {
     class(x) <- append(class(x), "real_2d", after = 0)
@@ -538,7 +539,7 @@ verify_bounds.real_2d <- function(...) {
   return(x)
 }
 
-verify_bounds.integer_2d <- function(...) {
+verify_bounds.integer_2d <- function(x, los_table, ...) {
   x <- verify_bounds_2d(x, los_table = los_table)
   if (!("integer_2d" %in% class(x))) {
     class(x) <- append(class(x), "integer_2d", after = 0)
@@ -547,7 +548,7 @@ verify_bounds.integer_2d <- function(...) {
 }
 
 
-verify_bounds.string_2d <- function(...) {
+verify_bounds.string_2d <- function(x, los_table, ...) {
   x <- verify_bounds_2d(x, los_table = los_table)
   if (!("string_2d" %in% class(x))) {
     class(x) <- append(class(x), "string_2d", after = 0)
@@ -772,12 +773,12 @@ verify_duplicate.time_1d <- function(x = NULL) {
 #'
 #' @return x with a periodicity value and validation columns
 #' @export
-verify_periodicity <- function(x, los_table = NULL) {
+verify_periodicity <- function(x, ...) {
   UseMethod("verify_periodicity", x)
 }
 
 
-verify_periodicity.default <- function(x) {
+verify_periodicity.default <- function(...) {
   rlang::abort("There are no default methods for this class")
 }
 
@@ -792,12 +793,13 @@ verify_periodicity.default <- function(x) {
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @importFrom dplyr intersect filter select group_by left_join mutate right_join tally
-verify_periodicity_generic <- function(x, los_table = NULL) {
+verify_periodicity_generic <- function(x, los_table) {
   name_check <- dplyr::intersect(
     names(x),
     c("out_of_bounds", "range_error", "duplicate")
     )
-  if (length(name_check != 3)) {
+
+  if (length(name_check) != 3) {
     rlang::abort("You must supply a dataframe to `x` that contains columns with
                  names `out_of_bounds`, `range_error` and `duplicate`")
   }
@@ -806,7 +808,7 @@ verify_periodicity_generic <- function(x, los_table = NULL) {
     # calculation
     filter(
       .data$out_of_bounds == 0L | is.na(.data$out_of_bounds),
-      .data$range_error == 0L | is.na(data$range_error),
+      .data$range_error == 0L | is.na(.data$range_error),
       .data$duplicate == 0L | is.na(.data$duplicate)
     ) %>%
     group_by(.data$episode_id) %>%
@@ -818,7 +820,7 @@ verify_periodicity_generic <- function(x, los_table = NULL) {
     by = "episode_id"
     ) %>%
     # calculate the periodicity
-    mutate(periodicity = count / as.numeric(los_days)) %>%
+    mutate(periodicity = n / as.numeric(los_days)) %>%
     select(.data$episode_id, .data$periodicity) %>%
 
     # right join back into the original object
@@ -834,15 +836,15 @@ verify_periodicity_generic <- function(x, los_table = NULL) {
   x <- x %>%
     mutate(var_per = case_when(
       is.na(periodicity) ~ as.integer(NA),
-      periodicity < probs[1] ~ -1L,
-      periodicity > probs[2] ~ 1L,
+      periodicity < quan[1] ~ -1L,
+      periodicity > quan[2] ~ 1L,
       TRUE ~ 0L
     ))
 }
 
 
-verify_periodicity.real_2d <- function(x, ...) {
-  x <- verify_periodicity_generic(x, ...)
+verify_periodicity.real_2d <- function(x, los_table, ...) {
+  x <- verify_periodicity_generic(x, los_table = los_table)
   if (!("real_2d" %in% class(x))) {
     class(x) <- append(class(x), "real_2d", after = 0)
   }
@@ -850,8 +852,8 @@ verify_periodicity.real_2d <- function(x, ...) {
 }
 
 
-verify_periodicity.integer_2d <- function(x, ...) {
-  x <- verify_periodicity_generic(x, ...)
+verify_periodicity.integer_2d <- function(x, los_table, ...) {
+  x <- verify_periodicity_generic(x, los_table = los_table)
   if (!("integer_2d" %in% class(x))) {
     class(x) <- append(class(x), "integer_2d", after = 0)
   }
@@ -859,8 +861,8 @@ verify_periodicity.integer_2d <- function(x, ...) {
 }
 
 
-verify_periodicity.string_2d <- function(x, ...) {
-  x <- verify_periodicity_generic(x, ...)
+verify_periodicity.string_2d <- function(x, los_table, ...) {
+  x <- verify_periodicity_generic(x, los_table = los_table)
   if (!("string_2d" %in% class(x))) {
     class(x) <- append(class(x), "string_2d", after = 0)
   }

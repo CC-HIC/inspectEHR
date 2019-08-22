@@ -274,7 +274,7 @@ df <- df %>%
   df <- df %>%
     select(-tidyselect::ends_with("date"), -tidyselect::ends_with("time")) %>%
     mutate(nhs_validation = if_else(
-      varify_nhs(nhs), 1L, 0L
+      verify_nhs(nhs), 1L, 0L
     ))
 
   invalid_records <- df %>% filter(nhs_validation == 0) %>%
