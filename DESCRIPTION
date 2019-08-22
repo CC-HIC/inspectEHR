@@ -31,11 +31,7 @@ RoxygenNote: 6.1.1
 Suggests:
     knitr,
     rmarkdown,
-    testthat,
-    broom,
-    xml2,
-    praise,
-    shiny
+    testthat
 VignetteBuilder: knitr
 URL: https://github.com/CC-HIC/inspectEHR
 BugReports: https://github.com/CC-HIC/inspectEHR
