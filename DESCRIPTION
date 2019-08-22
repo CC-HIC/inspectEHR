@@ -32,6 +32,7 @@ Suggests:
     knitr,
     rmarkdown,
     testthat,
+    covr,
     broom,
     xml2,
     praise,
