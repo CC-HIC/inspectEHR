@@ -7,12 +7,9 @@ output: html_document
 
 ```{r setup}
 library(tidyverse)
-library(dbplyr)
 library(lubridate)
 library(magrittr)
 library(knitr)
-
-path_name <- "~/Synology/academic/CC-HIC/validator/"
 
 # load in pre-prosessed data
 load(paste0(path_name, "working_data/hic_event_summary.RData"))

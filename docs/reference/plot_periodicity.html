@@ -33,7 +33,9 @@
 <meta property="og:title" content="Plot periodicity — plot_periodicity" />
 
 <meta property="og:description" content="Plot the periodicity for a CC-HIC event. This is the typical
-number of entries for the event per patient per 24 hours." />
+number of entries for the event per patient per 24 hours. Please note,
+this can ONLY plot verified events, as the periodicity calculation is
+conditional on there being a well defined episode start and end." />
 
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
@@ -66,7 +68,7 @@ number of entries for the event per patient per 24 hours." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">inspectEHR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9000</span>
       </span>
     </div>
 
@@ -125,25 +127,23 @@ number of entries for the event per patient per 24 hours." />
     <div class="ref-description">
     
     <p>Plot the periodicity for a CC-HIC event. This is the typical
-number of entries for the event per patient per 24 hours.</p>
+number of entries for the event per patient per 24 hours. Please note,
+this can ONLY plot verified events, as the periodicity calculation is
+conditional on there being a well defined episode start and end.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>plot_periodicity</span>(<span class='no'>x</span>, <span class='no'>code_name</span>, <span class='no'>all_sites.col</span>)</pre>
+    <pre class="usage"><span class='fu'>plot_periodicity</span>(<span class='no'>x</span>, <span class='kw'>sites_col</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>verify</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>x</th>
-      <td><p>an extracted (using <code><a href='extract.html'>extract</a></code>) and flagged (using <code><a href='flag_all.html'>flag_all</a></code>) table</p></td>
+      <td><p>and extracted and verified dataitem</p></td>
     </tr>
     <tr>
-      <th>code_name</th>
-      <td><p>the code name of interest</p></td>
-    </tr>
-    <tr>
-      <th>all_sites.col</th>
+      <th>sites_col</th>
       <td><p>the HEX colour pallet for each site</p></td>
     </tr>
     </table>

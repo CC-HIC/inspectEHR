@@ -67,7 +67,7 @@ time!" />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">inspectEHR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9000</span>
       </span>
     </div>
 
@@ -179,9 +179,10 @@ takes place, which can be considerably quicker.</p></td>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>report</span>(<span class='kw'>sqlite_file</span> <span class='kw'>=</span> <span class='st'>"./data-raw/synthetic_db.sqlite3"</span>,
-       <span class='kw'>output_folder</span> <span class='kw'>=</span> <span class='st'>"./outputs"</span>)</div><div class='output co'>#&gt; <span class='message'>Path: ./outputs/ does not exist. Creating directory</span></div><div class='output co'>#&gt; <span class='message'>Starting Episode Evaluation</span></div><div class='output co'>#&gt; <span class='error'>Error: Could not connect to database:</span>
-#&gt; <span class='error'>unable to open database file</span></div></pre>
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='fu'>report</span>(<span class='kw'>sqlite_file</span> <span class='kw'>=</span> <span class='st'>"./data-raw/synthetic_db.sqlite3"</span>,
+       <span class='kw'>output_folder</span> <span class='kw'>=</span> <span class='st'>"./outputs"</span>)
+<span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

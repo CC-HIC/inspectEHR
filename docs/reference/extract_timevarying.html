@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Reshape Timevarying Dateitems — extract_timevarying • inspectEHR</title>
+<title>Extract &amp; Reshape Timevarying Dateitems — extract_timevarying • inspectEHR</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,7 +30,7 @@
 
 
 
-<meta property="og:title" content="Reshape Timevarying Dateitems — extract_timevarying" />
+<meta property="og:title" content="Extract &amp; Reshape Timevarying Dateitems — extract_timevarying" />
 
 <meta property="og:description" content="This is the workhorse function that transcribes 2d data from CC-HIC to a
 table with 1 column per dataitem (and any metadata if relevent) and 1 row per
@@ -67,7 +67,7 @@ time per patient." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">inspectEHR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9000</span>
       </span>
     </div>
 
@@ -118,7 +118,7 @@ time per patient." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Reshape Timevarying Dateitems</h1>
+    <h1>Extract &amp; Reshape Timevarying Dateitems</h1>
     <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/extract_timevarying.R'><code>R/extract_timevarying.R</code></a></small>
     <div class="hidden name"><code>extract_timevarying.Rd</code></div>
     </div>
@@ -131,8 +131,9 @@ time per patient.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>extract_timevarying</span>(<span class='no'>connection</span>, <span class='no'>code_names</span>, <span class='kw'>rename</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>chunk_size</span> <span class='kw'>=</span> <span class='fl'>5000</span>, <span class='kw'>cadance</span> <span class='kw'>=</span> <span class='fl'>1</span>)</pre>
+    <pre class="usage"><span class='fu'>extract_timevarying</span>(<span class='no'>connection</span>, <span class='kw'>episode_ids</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>code_names</span>,
+  <span class='kw'>rename</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>chunk_size</span> <span class='kw'>=</span> <span class='fl'>5000</span>, <span class='kw'>cadance</span> <span class='kw'>=</span> <span class='fl'>1</span>,
+  <span class='kw'>overlap_method</span> <span class='kw'>=</span> <span class='st'>"distinct"</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -140,6 +141,11 @@ time per patient.</p>
     <tr>
       <th>connection</th>
       <td><p>a CC-HIC database connection</p></td>
+    </tr>
+    <tr>
+      <th>episode_ids</th>
+      <td><p>an integer vector of episode_ids or NULL. If NULL (the
+default) then all episodes are extracted</p></td>
     </tr>
     <tr>
       <th>code_names</th>
@@ -160,6 +166,12 @@ is chosen and the others are dropped. If cadance = "exact", then the EXACT
 datetime will be used at the time column. This is likely to generate a
 LARGE table, so use cautiously.</p></td>
     </tr>
+    <tr>
+      <th>overlap_method</th>
+      <td><p>a summary function to adress the issue of extracting
+data that is contributed at a higher resolution than your cadance. The
+default behaviour is "distinct" which simply disgards any excess data.</p></td>
+    </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
@@ -174,11 +186,17 @@ default behaviour is to produce a table with 1 row per hour per patient.</p>
 <p>Many events inside CC-HIC occur on a greater than hourly basis. Depending
 upon the chosen analysis, you may which to increase the cadance. 0.5 for
 example will produce a table with 1 row per 30 minutes per patient.</p>
+<p>Where you are extacting at a resolution lower than is recorded in the
+database, you can specify a summary function with the <code>overlap_method</code>
+argument. This argument takes a summary function as an argument, for example,
+mean and will apply this behaviour to all data items in the database. At
+present, this doesn't deal with: functions that act differently across
+different data types, or metadata.</p>
 <p>Choose what variables you want to pull out wisely. This function is actually
 quite efficient considering what it needs to do, but it can take a very long
-time if pulling out lots of data (24 hours or more). Consider optiming the
-database with indexes prior to using this function.</p>
-<p>It is perfectly possible for this table to produce negative time rows. If,
+time if pulling out lots of data. It is a strong recomendation that you
+optimise the database with indexes prior to using this function.</p>
+<p>It is perfectly possible for this function to produce negative time rows. If,
 for example a patient had a measure taken in the hours before they were
 admitted, then this would be added to the table with a negative time value.
 As a concrete example, if a patient had a sodium measured at 08:00, and they
@@ -188,7 +206,12 @@ to determine how best they wish to account for this.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>extract_timevarying</span>(<span class='no'>ctn</span>, <span class='st'>"NIHR_HIC_ICU_0108"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in dplyr::tbl(connection, "events"): object 'ctn' not found</span></div></pre>
+    <pre class="examples"><div class='input'><span class='co'># DB Connection</span>
+<span class='no'>ctn</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='connect.html'>connect</a></span>(<span class='kw'>sqlite_file</span> <span class='kw'>=</span> <span class='st'>"./data-raw/synthetic_db.sqlite3"</span>)</div><div class='output co'>#&gt; <span class='error'>Error: Could not connect to database:</span>
+#&gt; <span class='error'>unable to open database file</span></div><div class='input'>
+<span class='co'># Extract Heart Rates for 5 episodes with default settings</span>
+<span class='no'>hr_default</span> <span class='kw'>&lt;-</span> <span class='fu'>extract_timevarying</span>(<span class='no'>ctn</span>, <span class='kw'>episode_ids</span> <span class='kw'>=</span> <span class='fl'>13639</span>:<span class='fl'>13643</span>, <span class='kw'>code_names</span> <span class='kw'>=</span> <span class='st'>"NIHR_HIC_ICU_0108"</span>)</div><div class='output co'>#&gt; <span class='error'>Error in dplyr::tbl(connection, "events"): object 'ctn' not found</span></div><div class='input'><span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>hr_default</span>)</div><div class='output co'>#&gt; <span class='error'>Error in head(hr_default): object 'hr_default' not found</span></div><div class='input'><span class='co'># Extract Heart Rates for 5 episodes with custom settings</span>
+<span class='no'>hr_custom</span> <span class='kw'>&lt;-</span> <span class='fu'>extract_timevarying</span>(<span class='no'>ctn</span>, <span class='kw'>episode_ids</span> <span class='kw'>=</span> <span class='fl'>13639</span>:<span class='fl'>13643</span>, <span class='kw'>code_names</span> <span class='kw'>=</span> <span class='st'>"NIHR_HIC_ICU_0108"</span>, <span class='kw'>cadance</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>overlap_method</span> <span class='kw'>=</span> <span class='no'>mean</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: metadata extraction is not yet supported with this feature</span></div><div class='output co'>#&gt; <span class='error'>Error in dplyr::tbl(connection, "events"): object 'ctn' not found</span></div><div class='input'><span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>hr_custom</span>)</div><div class='output co'>#&gt; <span class='error'>Error in head(hr_custom): object 'hr_custom' not found</span></div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div><div class='output co'>#&gt; <span class='error'>Error in DBI::dbDisconnect(ctn): object 'ctn' not found</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

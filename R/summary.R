@@ -11,11 +11,11 @@
 #' @importFrom tidyr gather
 #' @examples
 #' summary(x)
-summarise_verification <- function(x, reference) {
-  dl <- vector(mode = "list", length = 2)
-  names(dl) <- c("error_checks", "completeness")
+summarise_verification <- function(verified, stats, coverage, reference) {
+  dl <- vector(mode = "list", length = 4)
+  names(dl) <- c("error_checks", "stats", "completeness", "coverage")
 
-  bounds <- x %>%
+  bounds <- verified %>%
     group_by(.data$site) %>%
     summarise(
       early_event = sum(
@@ -28,7 +28,7 @@ summarise_verification <- function(x, reference) {
       )
     )
 
-  range <- x %>%
+  range <- verified %>%
     group_by(.data$site) %>%
     summarise(
       low_value = sum(
@@ -41,7 +41,7 @@ summarise_verification <- function(x, reference) {
       )
     )
 
-  dup <- x %>%
+  dup <- verified %>%
     group_by(.data$site) %>%
     summarise(
       duplicate_events = sum(
@@ -55,10 +55,14 @@ summarise_verification <- function(x, reference) {
     full_join(dup, by = "site") %>%
     gather("error_type", "n", -.data$site)
 
-  if (any(grepl("1d", class(x)))) {
-    dl[["completeness"]] <- verify_complete(x, reference)
+  dl[["stats"]] <- stats
+
+  if (any(grepl("1d", class(verified)))) {
+    dl[["completeness"]] <- verify_complete(verified, reference)
+    dl[["coverage"]] <- coverage(verified, reference)
   } else {
     dl[["completeness"]] <- NA
+    dl[["coverage"]] <- coverage(verified, reference)
   }
 
   return(dl)

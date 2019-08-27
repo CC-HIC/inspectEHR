@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>QREF - Data Quality reference file for CC-HIC. Version 1 — qref • inspectEHR</title>
+<title>Data quality reference table for CC-HIC. Version 1.1 — qref • inspectEHR</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,9 +30,9 @@
 
 
 
-<meta property="og:title" content="QREF - Data Quality reference file for CC-HIC. Version 1 — qref" />
+<meta property="og:title" content="Data quality reference table for CC-HIC. Version 1.1 — qref" />
 
-<meta property="og:description" content="A dataset containing useful metadata of each event within CC-HIC" />
+<meta property="og:description" content="A dataset containing useful metadata of each dataitem in CC-HIC" />
 
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
@@ -65,7 +65,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">inspectEHR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9000</span>
       </span>
     </div>
 
@@ -116,14 +116,14 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>QREF - Data Quality reference file for CC-HIC. Version 1</h1>
+    <h1>Data quality reference table for CC-HIC. Version 1.1</h1>
     <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/datasets.R'><code>R/datasets.R</code></a></small>
     <div class="hidden name"><code>qref.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>A dataset containing useful metadata of each event within CC-HIC</p>
+    <p>A dataset containing useful metadata of each dataitem in CC-HIC</p>
     
     </div>
 
@@ -131,18 +131,20 @@
         
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>A tibble with 255 rows and 11 variables:</p><dl class='dl-horizontal'>
-  <dt>code_name</dt><dd><p></p></dd>
-  <dt>short_name</dt><dd><p></p></dd>
-  <dt>long_name</dt><dd><p></p></dd>
-  <dt>primary_column</dt><dd><p></p></dd>
-  <dt>type</dt><dd><p></p></dd>
-  <dt>class</dt><dd><p></p></dd>
-  <dt>range_min</dt><dd><p></p></dd>
-  <dt>range_max</dt><dd><p></p></dd>
-  <dt>ref_lower</dt><dd><p></p></dd>
-  <dt>ref_upper</dt><dd><p></p></dd>
-  <dt>assumed_units</dt><dd><p></p></dd>
+    <p>A <code>tibble</code> with 255 rows and 11 variables:</p><dl class='dl-horizontal'>
+  <dt>code_name</dt><dd><p>the NIHR_HIC_ICU number</p></dd>
+  <dt>short_name</dt><dd><p>a short name</p></dd>
+  <dt>long_name</dt><dd><p>a longer name</p></dd>
+  <dt>primary_column</dt><dd><p>the primary column used for data storage in the events table of the cc-hic database</p></dd>
+  <dt>type</dt><dd><p>1d/2d</p></dd>
+  <dt>class</dt><dd><p>hic data class</p></dd>
+  <dt>range_min</dt><dd><p>a lower boundary for a normal physiological value</p></dd>
+  <dt>range_max</dt><dd><p>an upper boundary for a normal physiological value</p></dd>
+  <dt>ref_lower</dt><dd><p>a lower boundary for a possible value</p></dd>
+  <dt>ref_upper</dt><dd><p>an upper boundary for a possible value</p></dd>
+  <dt>assumed_units</dt><dd><p>the assumed units</p></dd>
+  <dt>notes</dt><dd><p>any other notes</p></dd>
+  <dt>possible_values</dt><dd><p>a list column with possible values the dataitem can take</p></dd>
 </dl>
     
 

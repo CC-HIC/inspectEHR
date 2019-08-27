@@ -19,7 +19,7 @@
 #' @importFrom dplyr select arrange pull left_join distinct collect tibble
 #'   anti_join mutate
 #' @importFrom ggplot2 ggplot aes geom_tile theme element_blank element_rect
-#'   ylab ggtitle ggsave dup_axis scale_x_discrete
+#'   ylab ggtitle ggsave dup_axis scale_x_discrete geom_point
 #' @importFrom DBI dbWriteTable
 #' @importFrom rlang inform abort
 #' @importFrom glue glue
@@ -54,7 +54,7 @@ report <- function(database = NULL,
 
   if (!dir.exists(output_folder)) {
     dir.create(output_folder)
-    inform(glue("Path: {output_folder} does not exist. Creating directory"))
+    inform(glue("Path `{output_folder}` does not exist. Creating directory"))
   }
 
   if (!dir.exists(paste0(output_folder, "plots"))) {
@@ -64,7 +64,7 @@ report <- function(database = NULL,
     dir.create(paste0(output_folder, "data"))
   }
 
-  inform("Starting Episode Evaluation")
+  inform("Starting episode evaluation")
 
   hic_codes <- qref %>%
     dplyr::select(code_name) %>%
@@ -157,10 +157,10 @@ report <- function(database = NULL,
     filename = paste0(
       output_folder,
       "plots/",
-      "missing_events.png"
+      "missing_events.svg"
     ),
     plot = missing_events_plot,
-    height = 40, width = 5
+    height = 60, width = 5, limitsize = FALSE
   )
 
   # Useful Tables
@@ -185,7 +185,7 @@ report <- function(database = NULL,
     )
 
   for (i in seq_along(all_sites)) {
-    temp_heat <- make_heatcal(reference, type = "episodes", site = all_sites[i])
+    temp_heat <- make_heatcal(reference, site = all_sites[i])
     temp_plot <- plot(temp_heat, display = FALSE)
     ggsave(
       temp_plot,
@@ -205,7 +205,7 @@ report <- function(database = NULL,
 
   # Write out this validation to the database
   episode_verification <- ve_episodes %>%
-    select(episode_id, validity)
+    select(episode_id, veracity)
 
   copy_to(ctn, episode_verification, temporary = FALSE, overwrite = TRUE)
 
@@ -218,20 +218,53 @@ report <- function(database = NULL,
 
   for (i in seq_along(hic_codes)) {
 
-    # The basics...
-    df <- extract(core_table = core, input = hic_codes[i]) %>%
-      verify_events(ve_episodes)
+    # Extract the event in question from the DB
+    df <- extract(core_table = core, input = hic_codes[i])
 
-    dfstat <- ks_test(df, reference_tbl = reference)
+    # Check to see if there is any data there
+    if (nrow(df) == 0 || sum(is.na(df$value)) == nrow(df)) {
+      rlang::inform(glue("Skipping over {hic_codes[i]} as no data present"))
+    } else {
+
+    # Basic Verification: range, boundary, duplcation, periodicity
+    df <- verify_events(df, ve_episodes)
+
+    # Coverage verification
+    df_cov <- coverage(df, reference_tbl = reference)
+
+    # Statistical verification
+    ks_pos <- qref[qref$code_name == hic_codes[i], "dist_compare", drop = TRUE]
+    if (!is.na(ks_pos) && ks_pos == "ks") {
+      df_stat <- ks_test(df)
+    } else {
+      df_stat <- NA
+    }
+
     # Saving errors outside the main list
-    hic_event_summary[[hic_codes[i]]] <- summarise_verification(df, reference)
+    dl <- summarise_verification(df, df_stat, df_cov, reference)
 
     # The plotting
     if (write_plots) {
       # Skip over these for the time being
       # They are confidential, so we don't want to plot them out right
       # Now. But we do need a better way to represent these items
-      if (!(hic_codes %in% paste0(
+
+      for (s in seq_along(all_sites)) {
+        hc <- make_heatcal(reference_tbl = reference, dataitem_tbl = df, site = all_sites[s])
+        hc_plot <- plot(hc, display = FALSE)
+        ggsave(hc_plot, filename = glue(
+          "{output_folder}plots/{hic_codes[i]}/{hic_codes[i]}_heatcal_{all_sites[s]}.svg"
+        ))
+      }
+
+      if (!is.na(ks_pos) && ks_pos == "ks") {
+        stat_plot <- plot_ks(df_stat, reference)
+        ggsave(hc_plot, filename = glue(
+          "{output_folder}plots/{hic_codes[i]}/{hic_codes[i]}_ks.svg"
+        ))
+      }
+
+      if (!(hic_codes[i] %in% paste0(
         "NIHR_HIC_ICU_0", c(
           "001", "002", "003", "004",
           "005", "073", "076", "399",
@@ -239,33 +272,23 @@ report <- function(database = NULL,
         plots <- plot(x = df, display = FALSE)
         purrr::imap(plots,
           ~ ggsave(.x,
-                   filename = paste0(
-                     output_folder, "plots/", hic_codes[i], .y, ".svg"
+                   filename = glue(
+                     "{output_folder}plots/{hic_codes[i]}/{hic_codes[i]}_{.y}.svg"
                      )
                    )
           )
       }
     }
-
-
-    hic_event_validation <- validate_event(validated_episodes, temp_df)
-
-    if (nrow(hic_event_validation) > 0) {
-      DBI::dbWriteTable(conn = ctn, name = "event_validation", value = hic_event_validation, append = TRUE)
-    }
-
     rlang::inform(glue("Finished validating: {hic_codes[i]}"))
+    }
   }
-
-  rlang::inform("Finished event level evaluation")
-
   save(hic_event_summary,
     file = paste0(
       output_folder,
       "data/hic_event_summary.RData"
     )
   )
-
+  rlang::inform("Finished event level evaluation")
   # close the connection
   DBI::dbDisconnect(ctn)
 }

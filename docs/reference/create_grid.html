@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Create Calendar Grid — create_grid • inspectEHR</title>
+<title>Calendar Gridlines — create_grid • inspectEHR</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,11 +30,9 @@
 
 
 
-<meta property="og:title" content="Create Calendar Grid — create_grid" />
+<meta property="og:title" content="Calendar Gridlines — create_grid" />
 
 <meta property="og:description" content="This calulates the correct gridlines that need to be drawn when formatting
-the calendar.
-This calulates the correct gridlines that need to be drawn when formatting
 the calendar." />
 
 <meta property="og:image" content="/logo.png" />
@@ -68,7 +66,7 @@ the calendar." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">inspectEHR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9000</span>
       </span>
     </div>
 
@@ -119,8 +117,8 @@ the calendar." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Create Calendar Grid</h1>
-    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/calendarHeat.R'><code>R/calendarHeat.R</code></a>, <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/calendar_heat.R'><code>R/calendar_heat.R</code></a></small>
+    <h1>Calendar Gridlines</h1>
+    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/calendar_heat.R'><code>R/calendar_heat.R</code></a></small>
     <div class="hidden name"><code>create_grid.Rd</code></div>
     </div>
 
@@ -128,36 +126,26 @@ the calendar." />
     
     <p>This calulates the correct gridlines that need to be drawn when formatting
 the calendar.</p>
-<p>This calulates the correct gridlines that need to be drawn when formatting
-the calendar.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>create_grid</span>(<span class='kw'>calendar_template</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)
-
-<span class='fu'>create_grid</span>(<span class='kw'>calendar_template</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'>create_grid</span>(<span class='kw'>calendar_template</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>calendar_template</th>
-      <td><p>a calendar template from <code>create_calendar_template</code></p></td>
-    </tr>
-    <tr>
-      <th>calendar_template</th>
-      <td><p>a calendar template from <code>create_calendar_template</code></p></td>
+      <td><p>a calendar template from
+<code><a href='create_calendar_template.html'>create_calendar_template</a></code></p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>a grid for assembling a ggheatcal</p>
-<p>a grid for assembling a ggheatcal</p>
     
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>create_grid</span>(<span class='no'>cal_template</span>)</div><div class='output co'>#&gt; <span class='error'>Error in create_grid(cal_template): could not find function "create_grid"</span></div><div class='input'><span class='fu'>create_grid</span>(<span class='no'>cal_template</span>)</div><div class='output co'>#&gt; <span class='error'>Error in create_grid(cal_template): could not find function "create_grid"</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -165,9 +153,7 @@ the calendar.</p>
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
-      
-      <li><a href="#examples">Examples</a></li>
-    </ul>
+          </ul>
 
   </div>
 </div>

@@ -231,6 +231,7 @@ verify_range.integer_1d <- function(x = NULL) {
 #' @importFrom tidyr unnest
 verify_range_string <- function(x = NULL) {
 
+  flags_applied <- FALSE
   code_name <- attr(x, "code_name")
   quo_codename <- enquo(code_name)
 
@@ -887,32 +888,32 @@ coverage <- function(x, ...) {
   UseMethod("coverage", x)
 }
 
-coverage.default <- function(x) {
+coverage.default <- function(x, ...) {
   rlang::abort("There are no methods defined for this class")
 }
 
-coverage.integer_1d <- function(x) {
-  x <- coverage_generic_1d(x)
+coverage.integer_1d <- function(x, reference_tbl) {
+  x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
 }
 
-coverage.string_1d <- function(x) {
-  x <- coverage_generic_1d(x)
+coverage.string_1d <- function(x, reference_tbl) {
+  x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
 }
 
-coverage.real_1d <- function(x) {
-  x <- coverage_generic_1d(x)
+coverage.real_1d <- function(x, reference_tbl) {
+  x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
 }
 
-coverage.date_1d <- function(x) {
-  x <- coverage_generic_1d(x)
+coverage.date_1d <- function(x, reference_tbl) {
+  x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
 }
 
-coverage.time_1d <- function(x) {
-  x <- coverage_generic_1d(x)
+coverage.time_1d <- function(x, reference_tbl) {
+  x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
 }
 
-coverage.datetime_1d <- function(x) {
-  x <- coverage_generic_1d(x)
+coverage.datetime_1d <- function(x, reference_tbl) {
+  x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
 }
 
 coverage_generic_1d <- function(x, reference_tbl = NULL) {
@@ -925,55 +926,90 @@ coverage_generic_1d <- function(x, reference_tbl = NULL) {
                  names `out_of_bounds`, `range_error` and `duplicate`")
   }
 
-  x <- x %>%
+  base_events <- x %>%
     filter(
       .data$out_of_bounds == 0L | is.na(.data$out_of_bounds),
-      .data$range_error == 0L | is.na(data$range_error),
+      .data$range_error == 0L | is.na(.data$range_error),
       .data$duplicate == 0L | is.na(.data$duplicate)
     ) %>%
-    mutate(date = lubridate::date(datetime)) %>%
-    select(site, date, value) %>%
-    group_by(site, date) %>%
-    tally() %>%
-    ungroup() %>%
     left_join(
-      reference_tbl,
-      by = c(
-        "site" = "site",
-        "date" = "date"
-        )
-    ) %>%
-    dplyr::left_join(cases_all_tbl,
-                     by = c(
-                       "site" = "site",
-                       "year" = "year",
-                       "month" = "month",
-                       "week_of_month" = "week_of_month"
-                     )
-    ) %>%
-    dplyr::select(site, date, year, month, week_of_month, wday, count, episodes, patients, est_occupancy) %>%
-    dplyr::mutate(disparity = ifelse(is.na(count), NA, count / est_occupancy))
+      reference_tbl %>% select(-site),
+      by = "episode_id") %>%
+    mutate(date = lubridate::as_date(start_date)) %>%
+    group_by(site, date) %>%
+    summarise(event_count = n_distinct(event_id))
 
-  class(x) <- c(class(x), "hic_coverage")
+  base_calendar <- reference_tbl %>%
+    group_by(site) %>%
+    summarise(start = lubridate::as_date(lubridate::floor_date(min(start_date), unit = "month")),
+              end = lubridate::as_date(lubridate::ceiling_date(max(start_date), unit = "month")-1)) %>%
+    tidyr::nest(start, end, .key = "date") %>%
+    mutate(date = purrr::map(date, ~ seq.Date(.x$start, .x$end, by = "day"))) %>%
+    unnest(date)
 
-  return(x)
+  out <- left_join(base_calendar, base_events, by = c("site", "date")) %>%
+    filter(is.na(event_count)) %>%
+    mutate(year = lubridate::year(date),
+           month = lubridate::month(date)) %>%
+    group_by(site, year, month) %>%
+    tally() %>%
+    filter(n > 10) %>%
+    arrange(.data$site, .data$year, .data$month)
+
+  return(out)
 }
 
-coverage.integer_2d <- function(x) {
-  x <- coverage_generic_2d(x)
+coverage.integer_2d <- function(x, reference_tbl) {
+  x <- coverage_generic_2d(x, reference_tbl = reference_tbl)
 }
 
-coverage.string_2d <- function(x) {
-  x <- coverage_generic_2d(x)
+coverage.string_2d <- function(x, reference_tbl) {
+  x <- coverage_generic_2d(x, reference_tbl = reference_tbl)
 }
 
-coverage.real_2d <- function(x) {
-  x <- coverage_generic_2d(x)
+coverage.real_2d <- function(x, reference_tbl) {
+  x <- coverage_generic_2d(x, reference_tbl = reference_tbl)
 }
 
 
 coverage_generic_2d <- function(x, reference_tbl = NULL) {
+  name_check <- dplyr::intersect(
+    names(x),
+    c("out_of_bounds", "range_error", "duplicate")
+  )
+  if (length(name_check) != 3) {
+    rlang::abort("You must supply a dataframe to `x` that contains columns with
+                 names `out_of_bounds`, `range_error` and `duplicate`")
+  }
 
+  base_events <- x %>%
+    filter(
+      .data$out_of_bounds == 0L | is.na(.data$out_of_bounds),
+      .data$range_error == 0L | is.na(.data$range_error),
+      .data$duplicate == 0L | is.na(.data$duplicate)
+    ) %>%
+    mutate(date = lubridate::as_date(datetime)) %>%
+    group_by(site, date) %>%
+    summarise(event_count = n_distinct(event_id))
+
+  base_calendar <- reference_tbl %>%
+    group_by(site) %>%
+    summarise(start = lubridate::as_date(lubridate::floor_date(min(start_date), unit = "month")),
+              end = lubridate::as_date(lubridate::ceiling_date(max(start_date), unit = "month")-1)) %>%
+    tidyr::nest(start, end, .key = "date") %>%
+    mutate(date = purrr::map(date, ~ seq.Date(.x$start, .x$end, by = "day"))) %>%
+    unnest(date)
+
+  out <- left_join(base_calendar, base_events, by = c("site", "date")) %>%
+    filter(is.na(event_count)) %>%
+    mutate(year = lubridate::year(date),
+           month = lubridate::month(date)) %>%
+    group_by(site, year, month) %>%
+    tally() %>%
+    filter(n > 10) %>%
+    arrange(.data$site, .data$year, .data$month)
+
+  return(out)
 }
 
 
