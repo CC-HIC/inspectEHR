@@ -4,7 +4,7 @@
 \alias{cross_entropy}
 \title{Calculate Cross Entropy}
 \usage{
-cross_entropy(u, v)
+cross_entropy(x)
 }
 \arguments{
 \item{u}{a vector}
@@ -15,6 +15,9 @@ cross_entropy(u, v)
 the cross entropy of \code{u} and \code{v}
 }
 \description{
+IN DEVELOPMENT
+}
+\details{
 Calculates the cross entropy of two vectors: \code{u} and \code{v}. This is
 useful is decribing how different two distributions (particularly if
 categorical) are.

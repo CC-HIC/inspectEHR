@@ -4,12 +4,12 @@
 \alias{summarise_verification}
 \title{Collate and Summarise Verification Information}
 \usage{
-summarise_verification(x, reference)
+summarise_verification(verified, stats, coverage, reference)
 }
 \arguments{
-\item{x}{a verified dataitem from \code{\link{verify_events}}}
-
 \item{reference}{the reference table from \code{\link{make_reference}}}
+
+\item{x}{a verified dataitem from \code{\link{verify_events}}}
 }
 \description{
 Collate and Summarise Verification Information
