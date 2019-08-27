@@ -2,13 +2,17 @@
 % Please edit documentation in R/extract_timevarying.R
 \name{extract_timevarying}
 \alias{extract_timevarying}
-\title{Reshape Timevarying Dateitems}
+\title{Extract & Reshape Timevarying Dateitems}
 \usage{
-extract_timevarying(connection, code_names, rename = NULL,
-  chunk_size = 5000, cadance = 1)
+extract_timevarying(connection, episode_ids = NULL, code_names,
+  rename = NULL, chunk_size = 5000, cadance = 1,
+  overlap_method = "distinct")
 }
 \arguments{
 \item{connection}{a CC-HIC database connection}
+
+\item{episode_ids}{an integer vector of episode_ids or NULL. If NULL (the
+default) then all episodes are extracted}
 
 \item{code_names}{a vector of CC-HIC codes names to be extracted}
 
@@ -22,6 +26,10 @@ hourly. If multiple events occur within the specified time, then the first
 is chosen and the others are dropped. If cadance = "exact", then the EXACT
 datetime will be used at the time column. This is likely to generate a
 LARGE table, so use cautiously.}
+
+\item{overlap_method}{a summary function to adress the issue of extracting
+data that is contributed at a higher resolution than your cadance. The
+default behaviour is "distinct" which simply disgards any excess data.}
 }
 \value{
 sparse tibble with hourly cadance as rows, and unique hic events as
@@ -40,12 +48,19 @@ Many events inside CC-HIC occur on a greater than hourly basis. Depending
 upon the chosen analysis, you may which to increase the cadance. 0.5 for
 example will produce a table with 1 row per 30 minutes per patient.
 
+Where you are extacting at a resolution lower than is recorded in the
+database, you can specify a summary function with the \code{overlap_method}
+argument. This argument takes a summary function as an argument, for example,
+mean and will apply this behaviour to all data items in the database. At
+present, this doesn't deal with: functions that act differently across
+different data types, or metadata.
+
 Choose what variables you want to pull out wisely. This function is actually
 quite efficient considering what it needs to do, but it can take a very long
-time if pulling out lots of data (24 hours or more). Consider optiming the
-database with indexes prior to using this function.
+time if pulling out lots of data. It is a strong recomendation that you
+optimise the database with indexes prior to using this function.
 
-It is perfectly possible for this table to produce negative time rows. If,
+It is perfectly possible for this function to produce negative time rows. If,
 for example a patient had a measure taken in the hours before they were
 admitted, then this would be added to the table with a negative time value.
 As a concrete example, if a patient had a sodium measured at 08:00, and they
@@ -54,5 +69,14 @@ displayed at time = -12. This is normal behaviour it is left to the end user
 to determine how best they wish to account for this.
 }
 \examples{
-extract_timevarying(ctn, "NIHR_HIC_ICU_0108")
+# DB Connection
+ctn <- connect(sqlite_file = "./data-raw/synthetic_db.sqlite3")
+
+# Extract Heart Rates for 5 episodes with default settings
+hr_default <- extract_timevarying(ctn, episode_ids = 13639:13643, code_names = "NIHR_HIC_ICU_0108")
+head(hr_default)
+# Extract Heart Rates for 5 episodes with custom settings
+hr_custom <- extract_timevarying(ctn, episode_ids = 13639:13643, code_names = "NIHR_HIC_ICU_0108", cadance = 2, overlap_method = mean)
+head(hr_custom)
+DBI::dbDisconnect(ctn)
 }

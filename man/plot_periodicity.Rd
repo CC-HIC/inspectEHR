@@ -4,16 +4,16 @@
 \alias{plot_periodicity}
 \title{Plot periodicity}
 \usage{
-plot_periodicity(x, code_name, all_sites.col)
+plot_periodicity(x, sites_col = NULL, verify = TRUE)
 }
 \arguments{
-\item{x}{an extracted (using \code{\link{extract}}) and flagged (using \code{\link{flag_all}}) table}
+\item{x}{and extracted and verified dataitem}
 
-\item{code_name}{the code name of interest}
-
-\item{all_sites.col}{the HEX colour pallet for each site}
+\item{sites_col}{the HEX colour pallet for each site}
 }
 \description{
 Plot the periodicity for a CC-HIC event. This is the typical
-number of entries for the event per patient per 24 hours.
+number of entries for the event per patient per 24 hours. Please note,
+this can ONLY plot verified events, as the periodicity calculation is
+conditional on there being a well defined episode start and end.
 }

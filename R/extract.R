@@ -7,7 +7,7 @@
 #' @param core_table core table from make_core
 #' @param input the input variable of choice
 #'
-#' @importFrom rlang .data !!
+#' @importFrom rlang .data !! abort
 #' @importFrom magrittr %>%
 #'
 #' @return A tibble with 1 row per event
@@ -16,38 +16,24 @@
 #' @examples
 #' extract(core)
 #' extract(core, input = "NIHR_HIC_ICU_0557")
-extract <- function(core_table = NULL, input = "NIHR_HIC_ICU_0557") {
+extract <- function(core_table = NULL, input = NULL) {
 
-  # ensure the core table is provided
-  if (is.null(core_table)) stop("You must include the core table")
-  stopifnot(input %in% qref$code_name)
+  if (is.null(core_table)) abort("You must include the core table")
+  if (!(input %in% qref$code_name)) abort("This is not a valid code")
 
   # Identify the correct column type to pull out
-  dataitem <- qref %>%
-    dplyr::filter(.data$code_name == input) %>%
-    dplyr::select(.data$class) %>%
-    dplyr::pull()
-
-  primary_col <- qref %>%
-    dplyr::filter(.data$code_name == input) %>%
-    dplyr::select(.data$primary_column) %>%
-    dplyr::pull()
+  q_type <- paste0("x", qref[qref$code_name == input, "type", drop = TRUE])
+  q_class <- type <- qref[qref$code_name == input, "class", drop = TRUE]
+  q_col <- qref[qref$code_name == input, "primary_column", drop = TRUE]
 
   # extract chosen input variable from the core table
-  extracted_table <- dataitem %>%
+  extracted_table <- q_type %>%
     base::switch(
-      integer_1d = extract_1d(core_table, input, data_location = primary_col),
-      integer_2d = extract_2d(core_table, input, data_location = primary_col),
-      real_1d = extract_1d(core_table, input, data_location = primary_col),
-      real_2d = extract_2d(core_table, input, data_location = primary_col),
-      string_1d = extract_1d(core_table, input, data_location = primary_col),
-      string_2d = extract_2d(core_table, input, data_location = primary_col),
-      datetime_1d = extract_1d(core_table, input, data_location = primary_col),
-      date_1d = extract_1d(core_table, input, data_location = primary_col),
-      time_1d = extract_1d(core_table, input, data_location = primary_col)
+      x1d = extract_1d(core_table, input = input, data_location = q_col),
+      x2d = extract_2d(core_table, input = input, data_location = q_col)
     )
 
-  class(extracted_table) <- append(class(extracted_table), dataitem, after = 0)
+  class(extracted_table) <- append(class(extracted_table), q_class, after = 0)
   attr(extracted_table, "code_name") <- input
 
   return(extracted_table)
@@ -69,27 +55,38 @@ extract <- function(core_table = NULL, input = "NIHR_HIC_ICU_0557") {
 #'
 #' @importFrom rlang .data !! sym enquo
 #' @importFrom magrittr %>%
-#'
-#' @examples
-#' extract_1d(core, input = "NIHR_HIC_ICU_0409", data_location = "integer")
+#' @importFrom dplyr filter collect select rename arrange
 extract_1d <- function(core_table = NULL, input = NULL, data_location = NULL) {
-  sym_code_name <- rlang::sym("code_name")
+
   quo_column <- enquo(data_location)
 
-  extracted_table <- core_table %>%
-    dplyr::filter(!!sym_code_name == input) %>%
-    dplyr::collect() %>%
-    dplyr::select(
+  x <- core_table %>%
+    filter(.data$code_name == input) %>%
+    collect() %>%
+    select(
       .data$event_id,
       .data$site,
       .data$code_name,
       .data$episode_id,
       !!quo_column
     ) %>%
-    dplyr::rename(value = !!quo_column) %>%
-    dplyr::arrange(.data$episode_id)
+    rename(value = !!quo_column) %>%
+    arrange(.data$episode_id)
 
-  return(extracted_table)
+  correct_type <- qref[qref$code_name == input,"primary_column", drop = TRUE]
+  ## Modify Date and Time Columns to the correct data type
+  if (any(stringr::str_detect(class(core_table), "SQLite")) & (
+    correct_type %in% c("datetime", "date", "time")
+  )) {
+    y <- correct_type %>%
+      base::switch(
+        datetime = modify_datetime(x),
+        date = modify_date(x),
+        time = modify_time(x)
+      )
+    return(y)
+  }
+  return(x)
 }
 
 
@@ -113,13 +110,13 @@ extract_1d <- function(core_table = NULL, input = NULL, data_location = NULL) {
 #' @examples
 #' extract_2d(core, input = "NIHR_HIC_ICU_0108", data_location = "integer")
 extract_2d <- function(core_table = NULL, input = NULL, data_location = NULL) {
-  sym_code_name <- rlang::sym("code_name")
+
   quo_column <- rlang::enquo(data_location)
 
-  extracted_table <- core_table %>%
-    dplyr::filter(!!sym_code_name == input) %>%
-    dplyr::collect() %>%
-    dplyr::select(
+  x <- core_table %>%
+    filter(.data$code_name == input) %>%
+    collect() %>%
+    select(
       .data$event_id,
       .data$site,
       .data$code_name,
@@ -127,13 +124,33 @@ extract_2d <- function(core_table = NULL, input = NULL, data_location = NULL) {
       .data$datetime,
       !!quo_column
     ) %>%
-    dplyr::rename(value = !!quo_column) %>%
-    dplyr::arrange(.data$episode_id, .data$datetime)
+    rename(value = !!quo_column) %>%
+    arrange(.data$episode_id, .data$datetime)
 
-  if (any(stringr::str_detect(class(core_table), "SQLite"))) {
-    extracted_table <- extracted_table %>%
-      mutate(datetime = lubridate::ymd_hms(datetime))
+  correct_type <- qref[qref$code_name == input,"primary_column", drop = TRUE]
+  if (any(stringr::str_detect(class(core_table), "SQLite")) & (
+    correct_type %in% c("datetime", "date", "time")
+  )) {
+    y <- correct_type %>%
+      base::switch(
+        datetime = modify_datetime(extracted_table),
+        date = modify_date(extracted_table),
+        time = modify_time(extracted_table)
+      )
+    y <- mutate(y, datetime = lubridate::ymd_hms(datetime))
+    return(y)
   }
+  return(x)
+}
 
-  return(extracted_table)
+modify_datetime <- function(x) {
+  x <- mutate(x, value = lubridate::ymd_hms(.data$value))
+}
+
+modify_date <- function(x) {
+  x <- mutate(x, value = lubridate::as_date(.data$value))
+}
+
+modify_time <- function(x) {
+  x <- mutate(x, value = hms::as_hms(.data$value))
 }

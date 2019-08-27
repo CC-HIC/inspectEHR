@@ -9,21 +9,17 @@
 #'
 #' @importFrom rlang .data
 #' @importFrom utils combn
-#' @importFrom magrittr %>% %<>%
+#' @importFrom magrittr %>%
 #' @importFrom dplyr as_tibble mutate select pull bind_rows
 #' @importFrom purrr map
 #' @importFrom broom tidy
 #' @importFrom tidyr separate
-#'
-#' @examples
-#' ks_test(heart_rates)
 ks_test <- function(x) {
-  sites <- x %>%
-    dplyr::distinct(.data$site) %>%
-    dplyr::pull()
 
-  stopifnot(length(sites) < 2, "Less than 2 sites, so comparisons cannot be made")
-
+  code_name <- attr(x, "code_name")
+  sites <- unique(x$site)
+  site_count <- length(sites)
+  if (site_count < 2) rlang::abort("Comparison must have 2 or more sites")
   site_pairs <- utils::combn(sites, 2)
 
   ks_list <- base::vector(
@@ -49,72 +45,40 @@ ks_test <- function(x) {
 
   names(site_pairs_t) <- c("site_a", "site_b")
 
-  site_pairs_t %<>%
+  site_pairs_t <- site_pairs_t %>%
     mutate(paired_name = paste(.data$site_a, .data$site_b, sep = "-")) %>%
     select(.data$paired_name) %>%
     pull()
 
   names(ks_list) <- site_pairs_t
 
-  df <- purrr::map(ks_list, .f = broom::tidy) %>%
-    dplyr::bind_rows(.id = "source") %>%
-    tidyr::separate(source, into = c("Site_A", "Site_B"), sep = "-")
+  df <- map(ks_list, .f = broom::tidy) %>%
+    bind_rows(.id = "source") %>%
+    separate(source, into = c("Site_A", "Site_B"), sep = "-")
 
+  attr(df, "code_name") <- code_name
   return(df)
 }
 
 
-#' Plot KS Distances
+#' Calculate Cross Entropy
 #'
-#' Produces a plot of the KS distances between sites.
-#' This is quite hard coded at the moment, and so could be improved in a future version
+#' Calculates the cross entropy of two vectors: \code{u} and \code{v}. This is
+#' useful is decribing how different two distributions (particularly if
+#' categorical) are.
 #'
-#' @param x an object from \code{ks_test}
+#' @param u a vector
+#' @param v a vector the same length as \code{u}
 #'
+#' @importFrom rlang abort
+#'
+#' @return the cross entropy of \code{u} and \code{v}
 #' @export
-#'
-#' @importFrom rlang .data
-#' @importFrom magrittr %>%
-#' @importFrom dplyr tibble mutate select bind_rows mutate_at vars funs
-#' @importFrom ggplot2 aes geom_tile scale_fill_viridis_c theme_minimal coord_equal ylab xlab
-#' @importFrom scales viridis_pal
-ks_plot <- function(x) {
-  df <- x %>%
-    select(Site_A, Site_B, statistic)
-
-  ## And now we reverse the columns so the downstream plot
-  df_copy <- df
-  names(df_copy) <- c("Site_B", "Site_A", "statistic")
-
-  df <- bind_rows(df, df_copy)
-
-  df <- bind_rows(
-    df,
-    tibble(
-      Site_A = c("UCL", "RYJ", "RGT", "OUH", "GSTT"),
-      Site_B = c("UCL", "RYJ", "RGT", "OUH", "GSTT"),
-      statistic = 0
-    )
-  )
-
-  out <- df %>%
-    mutate_at(
-      .vars = vars(Site_A, Site_B), .funs = factor,
-      levels = c("UCL", "RYJ", "RGT", "OUH", "GSTT"),
-      labels = c("UCL", "Imperial", "Cambridge", "Oxford", "GSTT")
-    ) %>%
-    ggplot(
-      aes(
-        x = .data$Site_A, y = .data$Site_B, fill = .data$statistic
-      )
-    ) +
-    lims(fill = c(0, 1)) +
-    geom_tile() +
-    scale_fill_gradientn(colours = scales::viridis_pal()(9), limits = c(0, 1), na.value = "grey50") +
-    coord_equal() +
-    ylab("Comparitor Site A") +
-    xlab("Comparitor Site B") +
-    guides(fill = guide_legend(title = "KS Distance"))
-
-  return(out)
+cross_entropy <- function(u, v){
+  if (length(u) != length(v)) abort("`u` and `v` must be of the same length")
+  x <- 0
+  for (i in 1:length(u)){
+    x <- x + (u[i] * log(v[i]))
+  }
+  return(-x)
 }

@@ -4,7 +4,7 @@
 \alias{verify_periodicity_generic}
 \title{verify periodicity of 2d class}
 \usage{
-verify_periodicity_generic(x, los_table = NULL)
+verify_periodicity_generic(x, los_table)
 }
 \arguments{
 \item{x}{extracted dataitem}

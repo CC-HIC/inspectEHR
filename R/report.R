@@ -201,13 +201,13 @@ report <- function(database = NULL,
   spell_length <- characterise_spells(episode_length)
 
   # Episode validity long term average
-  valid_episodes <- validate_episodes(episode_length = episode_length)
+  ve_episodes <- verify_episodes(episode_length = episode_length)
 
   # Write out this validation to the database
-  episode_validation <- valid_episodes %>%
+  episode_verification <- ve_episodes %>%
     select(episode_id, validity)
 
-  copy_to(ctn, episode_validation, temporary = FALSE, overwrite = TRUE)
+  copy_to(ctn, episode_verification, temporary = FALSE, overwrite = TRUE)
 
   rlang::inform("Finished episode evaluation")
   rlang::inform("Starting event evaluation")
@@ -219,20 +219,34 @@ report <- function(database = NULL,
   for (i in seq_along(hic_codes)) {
 
     # The basics...
-    temp_df <- extract(core_table = core, input = hic_codes[i]) %>%
-      flag_all(episode_length)
+    df <- extract(core_table = core, input = hic_codes[i]) %>%
+      verify_events(ve_episodes)
+
+    dfstat <- ks_test(df, reference_tbl = reference)
+    # Saving errors outside the main list
+    hic_event_summary[[hic_codes[i]]] <- summarise_verification(df, reference)
 
     # The plotting
     if (write_plots) {
-      plot_hic(
-        x = temp_df,
-        output_folder = paste0(output_folder, "plots/", hic_codes[i]),
-        all_sites.col = all_sites.col
-      )
+      # Skip over these for the time being
+      # They are confidential, so we don't want to plot them out right
+      # Now. But we do need a better way to represent these items
+      if (!(hic_codes %in% paste0(
+        "NIHR_HIC_ICU_0", c(
+          "001", "002", "003", "004",
+          "005", "073", "076", "399",
+          "088", "912")))) {
+        plots <- plot(x = df, display = FALSE)
+        purrr::imap(plots,
+          ~ ggsave(.x,
+                   filename = paste0(
+                     output_folder, "plots/", hic_codes[i], .y, ".svg"
+                     )
+                   )
+          )
+      }
     }
 
-    # Saving errors outside the main list
-    try(hic_event_summary[[hic_codes[i]]] <- summary_main(temp_df, reference))
 
     hic_event_validation <- validate_event(validated_episodes, temp_df)
 

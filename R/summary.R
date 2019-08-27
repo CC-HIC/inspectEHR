@@ -1,31 +1,29 @@
-#' Summary for flagged data item
+#' Collate and Summarise Verification Information
 #'
-#' Writes out summary codes following the flagging proceedure
-#'
-#' @param x a flagged dataframe
+#' @param x a verified dataitem from \code{\link{verify_events}}
+#' @param reference the reference table from \code{\link{make_reference}}
 #'
 #' @export
 #'
-#' @importFrom magrittr %>% %<>%
+#' @importFrom magrittr %>%
 #' @importFrom rlang .data
-#' @importFrom dplyr group_by summarise full_join
+#' @importFrom dplyr group_by summarise full_join n if_else
 #' @importFrom tidyr gather
-#'
 #' @examples
 #' summary(x)
-summary_main <- function(x, reference) {
+summarise_verification <- function(x, reference) {
   dl <- vector(mode = "list", length = 2)
-  names(dl) <- c("error_checks", "missingness")
+  names(dl) <- c("error_checks", "completeness")
 
   bounds <- x %>%
     group_by(.data$site) %>%
     summarise(
       early_event = sum(
-        ifelse(.data$out_of_bounds == 101, 1L, 0L),
+        if_else(.data$out_of_bounds == -1, 1L, 0L),
         na.rm = TRUE
       ),
       late_event = sum(
-        ifelse(.data$out_of_bounds == 102, 1L, 0L),
+        if_else(.data$out_of_bounds == 1, 1L, 0L),
         na.rm = TRUE
       )
     )
@@ -34,11 +32,11 @@ summary_main <- function(x, reference) {
     group_by(.data$site) %>%
     summarise(
       low_value = sum(
-        ifelse(.data$range_error == 103, 1L, 0L),
+        if_else(.data$range_error == -1, 1L, 0L),
         na.rm = TRUE
       ),
       high_value = sum(
-        ifelse(.data$range_error == 104 | .data$range_error == 105, 1L, 0L),
+        if_else(.data$range_error == 1, 1L, 0L),
         na.rm = TRUE
       )
     )
@@ -47,7 +45,7 @@ summary_main <- function(x, reference) {
     group_by(.data$site) %>%
     summarise(
       duplicate_events = sum(
-        ifelse(.data$duplicate == 106, 1L, 0L),
+        if_else(.data$duplicate == 1, 1L, 0L),
         na.rm = TRUE
       )
     )
@@ -58,10 +56,9 @@ summary_main <- function(x, reference) {
     gather("error_type", "n", -.data$site)
 
   if (any(grepl("1d", class(x)))) {
-    dl[["missingness"]] <- x %>%
-      missingness(reference)
+    dl[["completeness"]] <- verify_complete(x, reference)
   } else {
-    dl[["missingness"]] <- NA
+    dl[["completeness"]] <- NA
   }
 
   return(dl)

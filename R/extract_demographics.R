@@ -23,8 +23,12 @@
 #' hic_codes <- c("NIHR_HIC_ICU_0409")
 #' new_labels <- c("apache_score")
 #' extract_demographics(ctn, hic_codes, new_labels)
-extract_demographics <- function(connection = NULL, code_names = NULL, rename = NULL) {
+extract_demographics <- function(connection = NULL, episode_ids = NULL, code_names = NULL, rename = NULL) {
   stopifnot(!any(is.null(connection), is.null(code_names)))
+
+  if (!is.null(episode_ids) && class(episode_ids) != "integer") {
+    rlang::abort("`episode_ids` must be given as NULL (the default) or an integer vector of episode ids")
+  }
 
   tbls <- retrieve_tables(connection)
 
@@ -45,10 +49,18 @@ extract_demographics <- function(connection = NULL, code_names = NULL, rename = 
     rlang::warn("You are trying to extract non-1d data. Consider using `extract_timevarying()`")
   }
 
-  tb_base <- tbls[["events"]] %>%
-    select(episode_id, code_name, integer, string, real, date, time, datetime) %>%
-    filter(code_name %in% extract_codes) %>%
-    collect()
+  if (is.null(episode_ids)) {
+    tb_base <- tbls[["events"]] %>%
+      select(episode_id, code_name, integer, string, real, date, time, datetime) %>%
+      filter(code_name %in% extract_codes) %>%
+      collect()
+  } else {
+    tb_base <- tbls[["events"]] %>%
+      select(episode_id, code_name, integer, string, real, date, time, datetime) %>%
+      filter(code_name %in% extract_codes,
+             episode_id %in% episode_ids) %>%
+      collect()
+  }
 
   complete_fields <- tb_base %>%
     select(-episode_id, -code_name) %>%

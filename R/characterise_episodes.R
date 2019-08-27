@@ -67,20 +67,17 @@ report_cases_daily <- function(unique_cases_tbl = NULL) {
 #' @param by_site the named site of interest as a character
 #'
 #' @return a tibble with the number of unique episodes admitted for a given day
-#' @export
 #'
 #' @importFrom dplyr filter mutate group_by summarise n_distinct
 #' @importFrom lubridate date
-#'
-#' @examples
-#' daily_admssions(unique_cases, by_site == "UCL")
-daily_admssions <- function(reference = NULL, by_site = NULL) {
+daily_admissions <- function(reference = NULL, by_site = NULL) {
+
   admissions <- reference %>%
-    dplyr::filter(site == by_site) %>%
-    dplyr::mutate(date = lubridate::date(start_date)) %>%
-    dplyr::group_by(date) %>%
-    dplyr::summarise(episodes = dplyr::n_distinct(episode_id)) %>%
-    dplyr::filter(episodes > 0)
+    filter(site == by_site) %>%
+    mutate(date = lubridate::date(start_date)) %>%
+    group_by(date) %>%
+    summarise(episodes = n_distinct(episode_id)) %>%
+    filter(episodes > 0)
 }
 
 

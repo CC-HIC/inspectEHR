@@ -15,6 +15,7 @@
 #'     \code{\link{verify_atemporal_plausible}}
 #'   \item Temporal plausibility: value density over time are consistent with
 #'     local expectations
+#'     }
 #'
 #' Other varification components are found elsewhere, as they don't necessarily
 #' fit into an evaludation at the data item level. I am contemplating how to
@@ -106,9 +107,11 @@ verify_events <- function(x, los_table = NULL) {
 
   # Class tidying up
   if (any(class(x) %in% preserved_classes)) {
+    class(x) <- append(class(x), "varified", after = 0)
     return(x)
   } else {
     class(x) <- append(class(x), event_class, after = 0)
+    class(x) <- append(class(x), "varified", after = 0)
     return(x)
   }
 }
@@ -174,7 +177,7 @@ verify_range_numeric <- function(x = NULL) {
     mutate(
       range_error = case_when(
         .data$value > .data$range_max ~ 1L,
-        .data$value < .data$range_max ~ -1L,
+        .data$value < .data$range_min ~ -1L,
         TRUE ~ 0L
       )
     ) %>%
@@ -237,9 +240,10 @@ verify_range_string <- function(x = NULL) {
       .data$code_name == !!quo_codename,
       !is.null(.data$possible_values)
     ) %>%
-    nrow()
+    pull() %>%
+    unlist()
 
-  if (solutions == 1) {
+  if (!is.null(solutions)) {
 
     # This handles the majority of string enumerated cases
     possible_values <- qref %>%
@@ -869,99 +873,133 @@ verify_periodicity.string_2d <- function(x, los_table, ...) {
   return(x)
 }
 
-#' #' verify Event Plausibility - Coverage Checks (S3 Generic)
-#' #'
-#' #' Checks to ensure that long term data item contribution is consistent. This is
-#' #' because often back end cahnges occur in hospitals that silently disrupt the
-#' #' ETL process, and as such, some dataitems disappear without warning.
-#' #'
-#' #' @param x an extracted dataitem
-#' #'
-#' #' @return a table describing the coverage over a defined time window
-#' #' @export
-#' coverage <- function(x, ...) {
-#'   UseMethod("coverage", x)
-#' }
+#' verify Event Plausibility - Coverage Checks (S3 Generic)
 #'
-#' coverage.default <- function(x) {
-#'   rlang::abort("There are no methods defined for this class")
-#' }
+#' Checks to ensure that long term data item contribution is consistent. This is
+#' because often back end cahnges occur in hospitals that silently disrupt the
+#' ETL process, and as such, some dataitems disappear without warning.
 #'
-#' coverage_generic <- function(x, occupancy_tbl = NULL, cases_all_tbl = NULL) {
-#'   name_check <- dplyr::intersect(
-#'     names(x),
-#'     c("out_of_bounds", "range_error", "duplicate")
-#'   )
-#'   if (length(name_check != 3)) {
-#'     rlang::abort("You must supply a dataframe to `x` that contains columns with
-#'                  names `out_of_bounds`, `range_error` and `duplicate`")
-#'   }
-#'   x <- x %>%
-#'     filter(
-#'       .data$out_of_bounds == 0L | is.na(.data$out_of_bounds),
-#'       .data$range_error == 0L | is.na(data$range_error),
-#'       .data$duplicate == 0L | is.na(.data$duplicate)
-#'     ) %>%
-#'     mutate(date = lubridate::date(datetime)) %>%
-#'     select(site, date, value) %>%
-#'     group_by(site, date) %>%
-#'     tally() %>%
-#'     ungroup() %>%
-#'     dplyr::right_join(occupancy_tbl,
-#'                       by = c(
-#'                         "site" = "site",
-#'                         "date" = "date"
-#'                       )
-#'     ) %>%
-#'     dplyr::left_join(cases_all_tbl,
-#'                      by = c(
-#'                        "site" = "site",
-#'                        "year" = "year",
-#'                        "month" = "month",
-#'                        "week_of_month" = "week_of_month"
-#'                      )
-#'     ) %>%
-#'     dplyr::select(site, date, year, month, week_of_month, wday, count, episodes, patients, est_occupancy) %>%
-#'     dplyr::mutate(disparity = ifelse(is.na(count), NA, count / est_occupancy))
+#' @param x an extracted dataitem
 #'
-#'   class(x) <- c(class(x), "hic_coverage")
+#' @return a table describing the coverage over a defined time window
+#' @export
+coverage <- function(x, ...) {
+  UseMethod("coverage", x)
+}
+
+coverage.default <- function(x) {
+  rlang::abort("There are no methods defined for this class")
+}
+
+coverage.integer_1d <- function(x) {
+  x <- coverage_generic_1d(x)
+}
+
+coverage.string_1d <- function(x) {
+  x <- coverage_generic_1d(x)
+}
+
+coverage.real_1d <- function(x) {
+  x <- coverage_generic_1d(x)
+}
+
+coverage.date_1d <- function(x) {
+  x <- coverage_generic_1d(x)
+}
+
+coverage.time_1d <- function(x) {
+  x <- coverage_generic_1d(x)
+}
+
+coverage.datetime_1d <- function(x) {
+  x <- coverage_generic_1d(x)
+}
+
+coverage_generic_1d <- function(x, reference_tbl = NULL) {
+  name_check <- dplyr::intersect(
+    names(x),
+    c("out_of_bounds", "range_error", "duplicate")
+  )
+  if (length(name_check) != 3) {
+    rlang::abort("You must supply a dataframe to `x` that contains columns with
+                 names `out_of_bounds`, `range_error` and `duplicate`")
+  }
+
+  x <- x %>%
+    filter(
+      .data$out_of_bounds == 0L | is.na(.data$out_of_bounds),
+      .data$range_error == 0L | is.na(data$range_error),
+      .data$duplicate == 0L | is.na(.data$duplicate)
+    ) %>%
+    mutate(date = lubridate::date(datetime)) %>%
+    select(site, date, value) %>%
+    group_by(site, date) %>%
+    tally() %>%
+    ungroup() %>%
+    left_join(
+      reference_tbl,
+      by = c(
+        "site" = "site",
+        "date" = "date"
+        )
+    ) %>%
+    dplyr::left_join(cases_all_tbl,
+                     by = c(
+                       "site" = "site",
+                       "year" = "year",
+                       "month" = "month",
+                       "week_of_month" = "week_of_month"
+                     )
+    ) %>%
+    dplyr::select(site, date, year, month, week_of_month, wday, count, episodes, patients, est_occupancy) %>%
+    dplyr::mutate(disparity = ifelse(is.na(count), NA, count / est_occupancy))
+
+  class(x) <- c(class(x), "hic_coverage")
+
+  return(x)
+}
+
+coverage.integer_2d <- function(x) {
+  x <- coverage_generic_2d(x)
+}
+
+coverage.string_2d <- function(x) {
+  x <- coverage_generic_2d(x)
+}
+
+coverage.real_2d <- function(x) {
+  x <- coverage_generic_2d(x)
+}
+
+
+coverage_generic_2d <- function(x, reference_tbl = NULL) {
+
+}
+
+
+#' verify Completeness
 #'
-#'   return(x)
-#' }
+#' @param x an extracted dataitem that has passed through verification
 #'
+#' @return a tibble with summary information on dataitem completeness
+#' @export
 #'
-#' #' verify Completeness
-#' #'
-#' #' @param x
-#' #'
-#' #' @return a tibble with the following columns:
-#' #' \describe{
-#' #'   \item{event}{name of the CC-HIC event}
-#' #'   \item{site}{name of the BRC from which the event originates}
-#' #'   \item{count}{total count of validated events recieved}
-#' #'   \item{total}{total popululation}
-#' #'   \item{missingness}{1 - count/total}
-#' #' }
-#' #' @export
-#' #'
-#' #' @importFrom rlang .data
-#' #' @importFrom dplyr filter group_by summarise
-#' #'
-#' #' @examples
-#' #' verify_complete(df)
-#' verify_complete <- function(x) {
-#'   x <- x %>%
-#'     filter(
-#'       .data$range_error == 0 | is.na(.data$range_error),
-#'       .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
-#'       .data$duplicate == 0 | is.na(.data$duplicate)
-#'     ) %>%
-#'     group_by(.data$site) %>%
-#'     summarise(count = n()) %>%
-#'     dplyr::left_join(reference %>%
-#'                        group_by(site) %>%
-#'                        summarise(total = n()), by = "site") %>%
-#'     mutate(missingness = 1 - count / total)
-#'
-#'   return(x)
-#' }
+#' @importFrom rlang .data
+#' @importFrom dplyr filter group_by summarise left_join n
+verify_complete <- function(x, reference_tbl) {
+
+  reference <- reference_tbl %>%
+    group_by(.data$site) %>%
+    summarise(total = n())
+
+  x <- x %>%
+    filter(
+      .data$range_error == 0 | is.na(.data$range_error),
+      .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
+      .data$duplicate == 0 | is.na(.data$duplicate)
+    ) %>%
+    group_by(.data$site) %>%
+    summarise(count = n()) %>%
+    left_join(reference, by = "site") %>%
+    mutate(completeness = count / total)
+}

@@ -4,7 +4,7 @@
 \alias{verify_periodicity}
 \title{verify Event Plausibility - Periodicity Checks (S3 Generic)}
 \usage{
-verify_periodicity(x, los_table = NULL)
+verify_periodicity(x, ...)
 }
 \arguments{
 \item{x}{an extracted events table}

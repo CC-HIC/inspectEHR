@@ -65,6 +65,7 @@ verify_nhs <- function(nhs_numbers = NULL) {
 #'
 #' @examples
 #' generate_nhs()
+#' generate_nhs(5)
 generate_nhs <- function(size = 1) {
   nhs_numbers <- vector(mode = "character", length = size)
 
@@ -101,13 +102,16 @@ generate_nhs <- function(size = 1) {
 }
 
 
-
 #' Varify Post Code
 #'
 #' Varify that a particular string conforms to a UK Post Code. Note, this does
 #' not actually check a database (i.e. validation) to see if the post code
 #' exists. It only checks that the Post Code meets the correct technical
-#' specification for a postcode.
+#' specification for a postcode. There are two reasons why validation isn't a
+#' good fit for cc-hic. First, the use of an API invariably means internet
+#' access and sending our postcodes out of the secure system (bad). Second, the
+#' use of the royal mail database for this purpose isn't free and would make
+#' inspectEHR larger than is necessary.
 #'
 #' @param post_code character vector of post codes
 #'
@@ -128,6 +132,56 @@ verify_post_code <- function(post_code = NULL) {
   result <- grepl(pattern = test_pattern, x = post_code)
 
   return(result)
+}
+
+
+#' Generate Post Code
+#'
+#' Generate UK Post Codes. Note, this does not garuntee that the postcode
+#' exists, only that is corresponds to the correct functional form of a UK
+#' postcode.
+#'
+#' @param size number of post codes you wish to generate
+#'
+#' @return a character vector of length \code{size} of post codes
+#' @export
+#'
+#' @examples
+#' generate_post_code()
+#' generate_post_code(5)
+generate_post_code <- function(size = 1) {
+
+  # Outward Code
+  ## Area Code
+  area_codes <- c("AB", "AL", "B", "BA", "BB", "BD", "BH", "BL", "BN", "BR", "BS", "BT", "CA", "CB", "CF",
+  "CH", "CM", "CO", "CR", "CT", "CV", "CW", "DA", "DD", "DE", "DG", "DH", "DL", "DN", "DT",
+  "DY", "E", "EC", "EH", "EN", "EX", "FK", "FY", "G", "GL", "GU", "HA", "HD", "HG", "HP",
+  "HR", "HS", "HU", "HX", "IG", "IP", "IV", "KA", "KT", "KW", "KY", "L", "LA", "LD", "LE",
+  "LL", "LN", "LS", "LU", "M", "ME", "MK", "ML", "N", "NE", "NG", "NN", "NP", "NR", "NW",
+  "OL", "OX", "PA", "PE", "PH", "PL", "PO", "PR", "RG", "RH", "RM", "S", "SA", "SE", "SG",
+  "SK", "SL", "SM", "SN", "SO", "SP", "SR", "SS", "ST", "SW", "SY", "TA", "TD", "TF", "TN",
+  "TQ", "TR", "TS", "TW", "UB", "W", "WA", "WC", "WD", "WF", "WN", "WR", "WS", "WV", "YO",
+  "ZE")
+  pos_area <- sample(area_codes, size = size, replace = TRUE)
+
+  ## District Code
+  pos_dist <- case_when(
+    pos_area %in% c("BR", "FY", "HA", "HD", "HG", "HR", "HS", "HX",
+                      "JE", "LD", "SM", "SR", "WC", "WN", "ZE") ~ sample(1:9, size = 1),
+    pos_area %in% c("AB", "LL", "SO") ~ sample(11:99, size = 1),
+    pos_area %in% c("BL", "BS", "CM", "CR", "FY", "HA", "PR", "SL",
+                      "SS") ~ sample(0:9, size = 1),
+    TRUE ~ sample(0:99, size = 1)
+  )
+
+  # Inward Code
+  ## Sector Code
+  pos_sector <- sample(0:9, size = size, replace = TRUE)
+
+  ## Unit Code
+  pos_unit <- paste0(sample(LETTERS, size = size, replace = TRUE), sample(LETTERS, size = size, replace = TRUE))
+
+  post_code <- paste0(pos_area, pos_dist, " ", pos_sector, pos_unit)
 }
 
 

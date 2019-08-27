@@ -4,8 +4,7 @@
 \alias{create_calendar_template}
 \title{Calendar Template for Count Data}
 \usage{
-create_calendar_template(x = NULL, start_date = "2014-01-01",
-  end_date = "2018-01-01")
+create_calendar_template(x = NULL, date_boundaries = NULL)
 }
 \arguments{
 \item{x}{count data to be used in the calendar from

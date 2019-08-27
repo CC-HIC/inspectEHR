@@ -4,7 +4,7 @@
 \alias{extract}
 \title{Extract NHIC Events}
 \usage{
-extract(core_table = NULL, input = "NIHR_HIC_ICU_0557")
+extract(core_table = NULL, input = NULL)
 }
 \arguments{
 \item{core_table}{core table from make_core}

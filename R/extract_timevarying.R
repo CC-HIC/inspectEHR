@@ -1,4 +1,4 @@
-#' Reshape Timevarying Dateitems
+#' Extract & Reshape Timevarying Dateitems
 #'
 #' This is the workhorse function that transcribes 2d data from CC-HIC to a
 #' table with 1 column per dataitem (and any metadata if relevent) and 1 row per
@@ -11,12 +11,19 @@
 #' upon the chosen analysis, you may which to increase the cadance. 0.5 for
 #' example will produce a table with 1 row per 30 minutes per patient.
 #'
+#' Where you are extacting at a resolution lower than is recorded in the
+#' database, you can specify a summary function with the \code{overlap_method}
+#' argument. This argument takes a summary function as an argument, for example,
+#' mean and will apply this behaviour to all data items in the database. At
+#' present, this doesn't deal with: functions that act differently across
+#' different data types, or metadata.
+#'
 #' Choose what variables you want to pull out wisely. This function is actually
 #' quite efficient considering what it needs to do, but it can take a very long
-#' time if pulling out lots of data (24 hours or more). Consider optiming the
-#' database with indexes prior to using this function.
+#' time if pulling out lots of data. It is a strong recomendation that you
+#' optimise the database with indexes prior to using this function.
 #'
-#' It is perfectly possible for this table to produce negative time rows. If,
+#' It is perfectly possible for this function to produce negative time rows. If,
 #' for example a patient had a measure taken in the hours before they were
 #' admitted, then this would be added to the table with a negative time value.
 #' As a concrete example, if a patient had a sodium measured at 08:00, and they
@@ -25,6 +32,8 @@
 #' to determine how best they wish to account for this.
 #'
 #' @param connection a CC-HIC database connection
+#' @param episode_ids an integer vector of episode_ids or NULL. If NULL (the
+#'   default) then all episodes are extracted
 #' @param code_names a vector of CC-HIC codes names to be extracted
 #' @param chunk_size a chunking parameter to help speed up the function and
 #'   manage memory constaints
@@ -35,6 +44,9 @@
 #'   is chosen and the others are dropped. If cadance = "exact", then the EXACT
 #'   datetime will be used at the time column. This is likely to generate a
 #'   LARGE table, so use cautiously.
+#' @param overlap_method a summary function to adress the issue of extracting
+#'   data that is contributed at a higher resolution than your cadance. The
+#'   default behaviour is "distinct" which simply disgards any excess data.
 #'
 #' @return sparse tibble with hourly cadance as rows, and unique hic events as
 #'   columns
@@ -43,11 +55,25 @@
 #' @importFrom purrr map imap
 #' @importFrom lubridate now
 #' @importFrom praise praise
+#' @importFrom rlang inform
 #'
 #' @examples
-#' extract_timevarying(ctn, "NIHR_HIC_ICU_0108")
-extract_timevarying <- function(connection, code_names, rename = NULL, chunk_size = 5000, cadance = 1) {
+#' # DB Connection
+#' ctn <- connect(sqlite_file = "./data-raw/synthetic_db.sqlite3")
+#'
+#' # Extract Heart Rates for 5 episodes with default settings
+#' hr_default <- extract_timevarying(ctn, episode_ids = 13639:13643, code_names = "NIHR_HIC_ICU_0108")
+#' head(hr_default)
+#' # Extract Heart Rates for 5 episodes with custom settings
+#' hr_custom <- extract_timevarying(ctn, episode_ids = 13639:13643, code_names = "NIHR_HIC_ICU_0108", cadance = 2, overlap_method = mean)
+#' head(hr_custom)
+#' DBI::dbDisconnect(ctn)
+extract_timevarying <- function(connection, episode_ids = NULL, code_names, rename = NULL, chunk_size = 5000, cadance = 1, overlap_method = "distinct") {
   starting <- lubridate::now()
+
+  if (!is.null(episode_ids) && class(episode_ids) != "integer") {
+    rlang::abort("`episode_ids` must be given as NULL (the default) or an integer vector of episode ids")
+  }
 
   if (!(any(code_names %in% "NIHR_HIC_ICU_0411"))) {
     exons <- append(code_names, "NIHR_HIC_ICU_0411")
@@ -55,10 +81,24 @@ extract_timevarying <- function(connection, code_names, rename = NULL, chunk_siz
     exons <- code_names
   }
 
+  if (class(overlap_method) != "function") {
+    if (overlap_method != "distinct") {
+      rlang::abort("overlap method must equal `distinct` or be a summary function")
+    }
+  }
+
+  if (class(overlap_method) == "function") rlang::warn("metadata extraction is not yet supported with this feature")
+
   episode_groups <- dplyr::tbl(connection, "events") %>%
     select(episode_id) %>%
     distinct() %>%
-    collect() %>%
+    collect()
+
+  if (!is.null(episode_ids)) {
+    episode_groups <- filter(episode_groups, episode_id %in% episode_ids)
+  }
+
+  episode_groups <- episode_groups %>%
     mutate(group = as.integer(seq(n()) / chunk_size)) %>%
     split(., .$group) %>%
     map(function(epi_ids) {
@@ -73,7 +113,8 @@ extract_timevarying <- function(connection, code_names, rename = NULL, chunk_siz
         pull(), process_all,
       events = collect_events,
       metadata = collect(dplyr::tbl(connection, "variables")),
-      cadance = cadance
+      cadance = cadance,
+      overlap_method = overlap_method
       ) %>%
         bind_rows()
     }) %>%
@@ -96,14 +137,17 @@ extract_timevarying <- function(connection, code_names, rename = NULL, chunk_siz
   class(episode_groups) <- append(class(episode_groups), "2-dim", after = 0)
 
   elapsed_time <- signif(as.numeric(difftime(lubridate::now(), starting, units = "hour")), 2)
-  rlang::inform(paste(elapsed_time, "hours to process"))
-  praise::praise("${Exclamation}! ${EXCLAMATION}!-${EXCLAMATION}! How ${adjective} was that?!")
+  inform(paste(elapsed_time, "hours to process"))
+
+  if (requireNamespace("praise", quietly = TRUE)) {
+    praise("${Exclamation}! ${EXCLAMATION}!-${EXCLAMATION}! How ${adjective} was that?!")
+    }
 
   return(episode_groups)
 }
 
 
-process_all <- function(epi_id, events, metadata, cadance) {
+process_all <- function(epi_id, events, metadata, cadance, overlap_method) {
   pt <- events %>%
     filter(episode_id == epi_id)
 
@@ -143,7 +187,8 @@ process_all <- function(epi_id, events, metadata, cadance) {
       split(., .$code_name), process_episode,
     metadata = metadata,
     start_time = start_time,
-    cadance = cadance
+    cadance = cadance,
+    overlap_method = overlap_method
     ) %>%
       reduce(full_join, by = "r_diff_time", .init = tibble(r_diff_time = as.numeric(NULL))) %>%
       rename(time = r_diff_time) %>%
@@ -153,7 +198,7 @@ process_all <- function(epi_id, events, metadata, cadance) {
 }
 
 
-process_episode <- function(df, var_name, metadata, start_time, cadance) {
+process_episode <- function(df, var_name, metadata, start_time, cadance, overlap_method) {
   stopifnot(!is.na(df$datetime))
 
   prim_col <- metadata %>%
@@ -161,17 +206,28 @@ process_episode <- function(df, var_name, metadata, start_time, cadance) {
     select(primary_column) %>%
     pull()
 
+  qp <- enquo(prim_col)
+
   meta_names <- find_2d_meta(metadata, var_name)
 
-  tb_a <- df %>%
-    mutate(datetime = as.POSIXct(datetime)) %>%
-    mutate(diff_time = difftime(datetime, start_time, units = "hours")) %>%
-    mutate(r_diff_time = as.numeric(round_any(diff_time, cadance))) %>%
-    distinct(r_diff_time, .keep_all = TRUE) %>%
-    select(-event_id, -episode_id, -datetime, -code_name, -diff_time) %>%
-    rename(!!var_name := prim_col) %>%
-    select(r_diff_time, !!var_name, !!!meta_names)
-
+  if (class(overlap_method) != "function") {
+    tb_a <- df %>%
+      mutate(datetime = as.POSIXct(datetime)) %>%
+      mutate(diff_time = difftime(datetime, start_time, units = "hours")) %>%
+      mutate(r_diff_time = as.numeric(round_any(diff_time, cadance))) %>%
+      distinct(r_diff_time, .keep_all = TRUE) %>%
+      select(-event_id, -episode_id, -datetime, -code_name, -diff_time) %>%
+      rename(!!var_name := prim_col) %>%
+      select(r_diff_time, !!var_name, !!!meta_names)
+  } else {
+    tb_a <- df %>%
+      mutate(datetime = as.POSIXct(datetime)) %>%
+      mutate(diff_time = difftime(datetime, start_time, units = "hours")) %>%
+      mutate(r_diff_time = as.numeric(round_any(diff_time, cadance))) %>%
+      group_by(r_diff_time) %>%
+      summarise(overlap_col = overlap_method(.data[[prim_col]], na.rm = TRUE)) %>%
+      rename(!!var_name := overlap_col)
+  }
   if (length(meta_names) == 0) {
     return(tb_a)
   }

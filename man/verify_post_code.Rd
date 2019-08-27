@@ -16,7 +16,11 @@ a logical vector
 Varify that a particular string conforms to a UK Post Code. Note, this does
 not actually check a database (i.e. validation) to see if the post code
 exists. It only checks that the Post Code meets the correct technical
-specification for a postcode.
+specification for a postcode. There are two reasons why validation isn't a
+good fit for cc-hic. First, the use of an API invariably means internet
+access and sending our postcodes out of the secure system (bad). Second, the
+use of the royal mail database for this purpose isn't free and would make
+inspectEHR larger than is necessary.
 }
 \examples{
 varify_post_code("AL5 3HE")

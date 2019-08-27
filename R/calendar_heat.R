@@ -1,6 +1,7 @@
 #' Make a heat_cal object
 #'
 #' @param reference_table reference table produced from \code{\link{make_reference}}
+#' @param type either "event" or "admission"
 #' @param site character string of hospital site to plot
 #' @param start_date a starting date as character vector of format YYYY-MM-DD
 #' @param end_date an end date as character vector of format YYYY-MM-DD
@@ -15,16 +16,35 @@
 #' \dontrun{
 #' make_heatcal(ref, "UCL")
 #' }
-make_heatcal <- function(reference_table = NULL,
-                         type = NULL,
-                         site = NULL,
-                         start_date = "2014-01-01",
-                         end_date = "2019-01-01",
-                         max_limit = 25) {
+make_heatcal <- function(
+  reference_tbl = NULL,
+  dataitem_tbl = NULL,
+  site = NULL,
+  date_boundaries = NULL,
+  max_limit = NULL) {
 
-  heatcal <- reference_table %>%
-    daily_admssions(by_site = site) %>%
-    create_calendar_template(start_date = start_date, end_date = end_date)
+  if (class(reference_tbl)[1] != "tbl_ref") {
+    abort("You must supply a reference table. See `make_reference()`")
+  }
+
+  if (!is.null(dataitem_tbl)) {
+    type <- "events"
+    if (class(dataitem_tbl)[1] %in% preserved_classes) {
+      abort("You must supply an extracted table for this functionality. See `extract()`")
+    }
+  } else {
+    type <- "episodes"
+  }
+
+  if (type == "episodes") {
+    heatcal <- reference_tbl %>%
+      daily_admissions(by_site = site) %>%
+      create_calendar_template(date_boundaries = date_boundaries)
+  } else {
+    heatcal <- dataitem_tbl %>%
+      daily_events(reference = reference_tbl, by_site = site) %>%
+      create_calendar_template(date_boundaries = date_boundaries)
+  }
 
   calendar_grid <- heatcal %>%
     create_grid()
@@ -74,10 +94,15 @@ find_first_sunday <- function(x) {
 #' @importFrom lubridate floor_date ceiling_date ymd year month
 #' @importFrom dplyr tibble mutate left_join
 create_calendar_template <- function(x = NULL,
-                                     start_date = "2014-01-01",
-                                     end_date = "2018-01-01") {
-  first_date <- floor_date(ymd(start_date), unit = "years")
-  last_date <- ceiling_date(ymd(end_date), unit = "years") - 1
+                                     date_boundaries = NULL) {
+
+  if (is.null(date_boundaries)) {
+    first_date <- floor_date(min(x$date), unit = "years")
+    last_date <- ceiling_date(max(x$date), unit = "years") - 1
+  } else {
+    first_date <- floor_date(ymd(date_boundaries[1]), unit = "years")
+    last_date <- ceiling_date(ymd(date_boundaries[2]), unit = "years") - 1
+  }
 
   # days till first sunday for each year
   remaining <-
@@ -243,70 +268,4 @@ create_grid <- function(calendar_template = NULL) {
     )
 
   grid_lines <- rbind(rv, lv, th, bh) %>% distinct()
-}
-
-
-#' Plot Calendar Heatmap
-#'
-#' Builds the ggplot layers required to correctly display the calendar heatmap
-#'
-#' @param object a heat_cal object
-#'
-#' @importFrom ggplot2 ggplot geom_tile scale_fill_gradientn facet_grid
-#' theme_minimal theme element_blank element_text geom_segment aes labs
-#' ylab xlab coord_equal
-#' @importFrom scales viridis_pal
-autoplot.heat_cal <- function(object, ...) {
-
-  type <- attr(object, "type")
-  max_limit <- attr(object, "max")
-  title <- paste0("Admission Calendar Heatmap: ", attr(object, "site"))
-  grid_lines <- attr(object, "grid")
-
-  if (type == "episodes") {
-    guide_title <- "Admissions"
-  } else {
-    guide_title <- "Events"
-  }
-
-  object %>%
-    ggplot() +
-    geom_tile(
-      aes(x = week_of_year,
-          y = day_of_week,
-          fill = .data[[type]]),
-      colour = "#FFFFFF") +
-    facet_grid(year ~ .) +
-    theme_minimal() +
-    theme(
-      panel.grid.major = element_blank(),
-      plot.title = element_text(hjust = 0.5),
-      axis.text.x = element_blank(),
-      axis.title.y = element_blank(),
-      axis.title.x = element_blank()
-    ) +
-    geom_segment(aes(x = x_start, y = y_start, xend = x_end, yend = y_end),
-      colour = "black", size = 0.5, data = grid_lines
-    ) +
-    scale_fill_viridis_c(rescaler = function(x, to = c(0, 1), from = NULL) {
-      if_else(x < max_limit,
-        scales::rescale(x, to = to, from = c(min(x, na.rm = TRUE), max_limit)), 1
-      )
-    }, na.value = "grey60") +
-    labs(title = title) +
-    ylab(label = "Day of Week") +
-    xlab(label = "Month") +
-    guides(fill = guide_legend(
-      title = guide_title)) +
-    coord_equal()
-
-}
-
-#' @importFrom graphics plot
-plot.heat_cal <- function(x, display = TRUE, ...) {
-  if (display) {
-    print(autoplot(x, ...))
-  } else {
-    autoplot(x, ...)
-  }
 }

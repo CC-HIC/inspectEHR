@@ -19,4 +19,5 @@ functions.
 }
 \examples{
 generate_nhs()
+generate_nhs(5)
 }

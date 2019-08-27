@@ -187,7 +187,7 @@ dfl <- dfl %>%
       c(round(rgamma(1, 2), digits = 2), as.numeric(NA)),
       size = n(), replace = TRUE, prob = c(0.2, 0.8)
     ),
-    NIHR_HIC_ICU_0122 = sample(
+    NIHR_HIC_ICU_0126 = sample(
       c("E", "N", "T", as.character(NA)),
       size = n(), replace = TRUE, prob = c(0.1, 0.1, 0.1, 0.7)
     )
@@ -257,7 +257,7 @@ spells_l <- spells_l %>%
       c(round(rgamma(1, 2), digits = 2), as.numeric(NA)),
       size = n(), replace = TRUE, prob = c(0.2, 0.8)
     ),
-    NIHR_HIC_ICU_0122 = sample(
+    NIHR_HIC_ICU_0126 = sample(
       c("E", "N", "T", as.character(NA)),
       size = n(), replace = TRUE, prob = c(0.1, 0.1, 0.1, 0.7)
     )

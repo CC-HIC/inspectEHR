@@ -21,6 +21,3 @@ a tibble with HIC data for a specified variable
 This function extracts the correct column from the CC-HIC database
 depending upon what type of data is called for
 }
-\examples{
-extract_1d(core, input = "NIHR_HIC_ICU_0409", data_location = "integer")
-}

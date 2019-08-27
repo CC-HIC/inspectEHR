@@ -13,6 +13,3 @@ ks_test(x)
 Takes a distribution from a CC-HIC dataitem and returns
 the pairwise KS distance by site.
 }
-\examples{
-ks_test(heart_rates)
-}

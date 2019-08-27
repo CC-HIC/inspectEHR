@@ -15,12 +15,10 @@
 #'     \item{range_min}{the lower bound you want to set}
 #'     \item{range_max}{the upper bound you want to set}
 #'   }
-#' @return
+#' @return a table of the same dimentions as \code{tbl} but with values cleaned
 #' @export
-#'
-#' @examples
 clean <- function(tbl = NULL, dq_ref = NULL) {
-  tbl <- tbl %>% purrr::imap_dfc(.f = cleaning_helper, dq_ref = dq_ref)
+  tbl <- purrr::imap_dfc(tbl, .f = cleaning_helper, dq_ref = dq_ref)
 }
 
 cleaning_helper <- function(col_vec, col_name, dq_ref = NULL, action = "NA") {

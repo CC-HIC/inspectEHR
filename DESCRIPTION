@@ -1,10 +1,13 @@
 Package: inspectEHR
 Type: Package
-Title: Data Quality Reporting and Validation for CC-HIC
-Version: 0.5
-Author: Edward Palmer
+Title: Data Quality Reporting for CC-HIC
+Version: 0.5.9000
+Authors@R: c(person("Edward", "Palmer", role = c("aut", "cre"),
+    email = "edward.palmer@ucl.ac.uk", 
+    comment = "<https://orcid.org/0000-0002-8024-4616>"))
 Maintainer: Edward Palmer <edward.palmer@ucl.ac.uk>
 Description: This package helps to produce data quality reports for CC-HIC.
+    This consists of data wrangling, cleaning, verification and validation.
     There are a lot of helper functions that have been written to facilitate
     data wrangling and cleaning. These need to be separated and ported to
     cleanEHR in due course.
@@ -29,14 +32,14 @@ Imports:
     tidyr,
     hms,
     broom,
-    xml2,
-    praise
+    xml2
 RoxygenNote: 6.1.1
 Suggests:
     knitr,
     rmarkdown,
     testthat,
     covr,
+    praise,
     shiny
 VignetteBuilder: knitr
 URL: https://github.com/CC-HIC/inspectEHR

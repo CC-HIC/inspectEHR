@@ -18,6 +18,9 @@ conditions with the following column headings:
   \item{range_max}{the upper bound you want to set}
 }}
 }
+\value{
+a table of the same dimentions as \code{tbl} but with values cleaned
+}
 \description{
 This function takes an extracted table from either
 \code{\link{extract_demographics}} or \code{\link{extract_timevarying}} and

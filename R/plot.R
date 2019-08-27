@@ -1,412 +1,574 @@
-#' Plot NHIC Events
+#' Plot CC-HIC Data item eCDF
 #'
-#' Plots NHIC events in a predetermined way and output to the plot folder
-#' specified
 #'
-#' @param x flagged table
+#' @param x a varified data frame
+#' @param sites_col the HEX colour pallet for each site
+#' @param verify logical indicator if only verified values should be used
 #'
-#' @importFrom rlang .data
-#' @importFrom ggplot2 ggsave
-#' @export
-#'
-#' @return A tibble 1 row per event
-plot_hic <- function(x, output_folder = NULL, all_sites.col,
-                     start_date = "2014-01-01", end_date = "2019-01-01") {
-  if (is.null(output_folder)) stop("please supply a path name")
-
-  this_event <- attr(x, "code_name")
-
-  data_class <- qref %>%
-    dplyr::filter(.data$code_name == this_event) %>%
-    dplyr::select(.data$class) %>%
-    dplyr::pull()
-
-  data_type <- qref %>%
-    dplyr::filter(.data$code_name == this_event) %>%
-    dplyr::select(.data$primary_column) %>%
-    dplyr::pull()
-
-  if (nrow(x) != 0) {
-
-    ## We should not be outputting these values as they
-    ## are confidential - post codes etc.
-    if (!(this_event %in% paste0(
-      "NIHR_HIC_ICU_0", c(
-        "001", "002", "003", "004",
-        "005", "073", "076", "399",
-        "088", "912"
-      )
-    ))) {
-
-      # Picks out the correct main plot
-      primary_plot <- plot_default(
-        x,
-        code_name = this_event,
-        all_sites.col = all_sites.col
-      )
-
-      cowplot::ggsave(
-        plot = primary_plot,
-        filename = paste0(output_folder, "/", this_event, "_main.png"),
-        dpi = 300, width = 6, height = 4, units = "in"
-      )
-
-      # Picks out the correct full plot, warts and all.
-      full_plot <- plot_full(
-        x,
-        code_name = this_event,
-        all_sites.col = all_sites.col
-      )
-
-      cowplot::ggsave(
-        plot = full_plot,
-        filename = paste0(output_folder, "/", this_event, "_main_full.png"),
-        dpi = 300, width = 6, height = 4, units = "in"
-      )
-
-      # Check to see if there is a 2d component, and if so plot periodicity
-      if (any(grepl("2d", class(x)))) {
-        periodicity_plot <- plot_periodicity(x, this_event, all_sites.col)
-
-        cowplot::ggsave(
-          plot = periodicity_plot,
-          filename = paste0(output_folder, "/", this_event, "_periodicity.png"),
-          dpi = 300, width = 6, height = 4, units = "in"
-        )
-
-        # plots out the event on a calendar heatmap
-
-        # Capture so our axis are coordinated.
-        max_daily_events <- x %>%
-          mutate(date = lubridate::date(datetime)) %>%
-          group_by(site, date) %>%
-          tally() %>%
-          ungroup() %>%
-          select(n) %>%
-          pull()
-
-        max_daily_events <- max(max_daily_events, na.rm = TRUE)
-
-        for (i in seq_along(names(all_sites.col))) {
-          cal_temp <- event_occurrances(extracted_event = x, by_site = names(all_sites.col)[i]) %>%
-            create_calendar_template(start_date = start_date, end_date = end_date)
-
-          cal_grid <- create_grid(cal_temp)
-
-          cal_plot <- ggHeatCal_events(
-            cal_temp, cal_grid,
-            Title = paste(this_event, "coverage for", names(all_sites.col)[i]),
-            max_limit = max_daily_events
-          )
-
-          ggplot2::ggsave(
-            plot = cal_plot,
-            filename = paste0(output_folder, "/", this_event, "_covarage_", names(all_sites.col)[i], ".png"),
-            dpi = 300, width = 6, height = 4, units = "in"
-          )
-        }
-      }
-    }
-
-    if (data_type %in% c("integer", "real")) {
-      ks_t <- ks_test(x)
-      if (ks_t != "less than 2 groups") {
-        ks_out <- ks_plot(ks_t)
-        cowplot::ggsave(
-          plot = ks_out,
-          filename = paste0(output_folder, "/", this_event, "_ks.png"),
-          dpi = 300, units = "in", width = 6, height = 4
-        )
-      }
-    }
-  } else {
-    cat(
-      "\n",
-      this_event,
-      "contains no data and will be skipped",
-      "\n"
-    )
-  }
-}
-
-
-#' Default Plot
-#'
-#' Produce a default plot (eCDF or histogram) for a CC-HIC event code.
-#'
-#' @param x an extracted (using \code{\link{extract}}) and flagged (using \code{\link{flag_all}}) table
-#' @param code_name the code name of interest
-#' @param all_sites.col the HEX colour pallet for each site
-#'
-#' @return a default plot for a single hic code
-#' @export
-#'
-#' @importFrom rlang .data
+#' @importFrom rlang .data quo !!
+#' @importFrom stringr str_trunc
 #' @importFrom magrittr %>%
-#' @importFrom ggplot2 ggplot aes_string scale_fill_manual geom_density
-#' xlab ylab theme_minimal
-plot_default <- function(x, code_name, all_sites.col) {
-  if (code_name %in% categorical_hic) {
-    primary_plot <- plot_histogram_percent(x, code_name, all_sites.col)
-  } else {
-    primary_plot <- x %>%
-      dplyr::filter(
+#' @importFrom ggplot2 ggplot aes scale_colour_manual stat_ecdf xlab ylab theme_minimal ggtitle guides guide_legend
+plot_ecdf <- function(x, sites_col = NULL, verify = TRUE) {
+
+  value_title <- gsub("_", " ", attr(x, "code_name"))
+  subtitle <- str_trunc(
+    qref[qref$code_name == attr(x, "code_name"), "short_name", drop = TRUE],
+    40)
+  x_lab <- qref[qref$code_name == attr(x, "code_name"), "assumed_units", drop = TRUE]
+  if (is.na(x_lab)) x_lab <- "Units not defined"
+
+  if (is.null(sites_col)) {
+    sites_col <- viridis_pal()(length(unique(x$site)))
+  }
+
+  if (verify) {
+    x <- x %>%
+      filter(
         .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
         .data$duplicate == 0 | is.na(.data$duplicate),
         .data$range_error == 0 | is.na(.data$range_error)
-      ) %>%
-      ggplot2::ggplot(
-        ggplot2::aes_string(
-          x = "value",
-          colour = "site"
-        )
-      ) +
-      ggplot2::stat_ecdf() +
-      ggplot2::scale_colour_manual(values = all_sites.col) +
-      ggplot2::xlab(code_name) +
-      ggplot2::ylab("F(x)") +
-      ggplot2::theme_minimal()
+      )
   }
+  x <- x %>%
+    ggplot(aes(x = .data$value, colour = .data$site)) +
+    scale_colour_manual(values = sites_col) +
+    stat_ecdf() +
+    xlab(x_lab) +
+    ylab("F(x)") +
+    ggtitle(value_title, subtitle = subtitle) +
+    theme_cchic() +
+    guides(colour = guide_legend(title = "Site"))
 
-  return(primary_plot)
+  attr(x, "plot_type") <- "ecdf"
+  invisible(x)
 }
 
-
-
-#' Full Plot
-#'
-#' Plots the full distribution of a HIC event, regardless of any outliers or invalid data.
-#'
-#' @param x an extracted (\code{\link{extract}}) table
-#' @param code_name the CC-HIC codename of interest.
-#'
-#' @export
-#'
-#' @importFrom rlang .data
-#' @importFrom magrittr %>%
-#' @importFrom ggplot2 ggplot aes_string scale_fill_manual geom_density
-#' xlab ylab theme_minimal
-plot_full <- function(x, code_name, all_sites.col) {
-  if (code_name %in% categorical_hic) {
-    primary_plot <- plot_histogram_percent(x, code_name, all_sites.col)
-  } else {
-    primary_plot <- x %>%
-      ggplot2::ggplot(
-        ggplot2::aes_string(
-          x = "value",
-          colour = "site"
-        )
-      ) +
-      ggplot2::stat_ecdf() +
-      ggplot2::scale_colour_manual(values = all_sites.col) +
-      ggplot2::xlab(code_name) +
-      ggplot2::ylab("F(x)") +
-      ggplot2::theme_minimal()
-  }
-
-  return(primary_plot)
-}
 
 #' Plot Histogram
 #'
 #' Plot a histogram of a CC-HIC event, with each site normalised to 100%
 #'
-#' @param x an extracted (using \code{\link{extract}}) and flagged (using \code{\link{flag_all}}) table
-#' @param code_name the code name of interest
-#' @param all_sites.col the HEX colour pallet for each site
-#'
-#' @export
+#' @param x an extracted hic data item
+#' @param sites_col the HEX colour pallet for each site
+#' @param verify logical indicator to determin if only verified values should be used
 #'
 #' @importFrom rlang .data
 #' @importFrom magrittr %>%
 #' @importFrom tidyr complete
+#' @importFrom dplyr filter select group_by ungroup mutate summarise
 #' @importFrom scales percent_format
-#' @importFrom ggplot2 ggplot aes_string geom_bar scale_fill_manual
-#' scale_y_continuous xlab ylab theme_minimal aes
-plot_histogram_percent <- function(x, code_name, all_sites.col) {
-  perfect_plot <- x %>%
-    dplyr::filter(
-      .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
-      .data$duplicate == 0 | is.na(.data$duplicate),
-      .data$range_error == 0 | is.na(.data$range_error)
-    ) %>%
-    dplyr::select(.data$site, .data$value) %>%
-    dplyr::group_by(.data$site, .data$value) %>%
-    dplyr::count() %>%
-    dplyr::ungroup() %>%
-    dplyr::group_by(.data$site) %>%
-    dplyr::mutate(total = sum(n)) %>%
-    dplyr::ungroup() %>%
-    tidyr::complete(site, value) %>%
-    ggplot2::ggplot(
-      ggplot2::aes_string(
-        x = "value",
-        fill = "site"
-      )
-    ) +
-    ggplot2::geom_bar(
-      ggplot2::aes(y = n / total),
-      position = "dodge",
-      stat = "identity",
-      width = 0.8
-    ) +
-    ggplot2::scale_fill_manual(values = all_sites.col) +
-    ggplot2::scale_y_continuous(labels = scales::percent_format()) +
-    ggplot2::xlab(code_name) +
-    ggplot2::ylab("Percentage by BRC") +
-    ggplot2::theme_minimal()
+#' @importFrom ggplot2 ggplot aes geom_bar scale_fill_manual scale_y_continuous xlab ylab theme_minimal aes
+plot_hist <- function(x, sites_col = NULL, verify = TRUE) {
 
-  return(perfect_plot)
+  code_name <- attr(x, "code_name")
+
+  value_title <- gsub("_", " ", attr(x, "code_name"))
+  x_lab <- qref[qref$code_name == attr(x, "code_name"), "assumed_units"]
+  if (is.na(x_lab)) x_lab <- "Units not defined"
+
+  if (is.null(sites_col)) {
+    sites_col <- viridis_pal()(length(unique(x$site)))
+  }
+
+  if (verify) {
+    x <- x %>%
+      filter(
+        .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
+        .data$duplicate == 0 | is.na(.data$duplicate),
+        .data$range_error == 0 | is.na(.data$range_error)
+      )
+  }
+
+  x <- x %>%
+    select(.data$site, .data$value) %>%
+    group_by(.data$site, .data$value) %>%
+    summarise(n = n()) %>%
+    group_by(.data$site) %>%
+    mutate(total = sum(n)) %>%
+    ungroup() %>%
+    complete(site, value) %>%
+    ggplot(aes(x = factor(.data$value), fill = .data$site)) +
+    geom_bar(aes(y = .data$n / .data$total),
+             position = "dodge",
+             stat = "identity",
+             width = 0.8) +
+    scale_fill_manual(values = sites_col) +
+    scale_y_continuous(labels = percent_format()) +
+    xlab(x_lab) +
+    ylab("Percentage by Site") +
+    ggtitle(value_title) +
+    theme_cchic() +
+    guides(fill = guide_legend(title = "Site"))
+
+  attr(x, "plot_type") <- "hist"
+  invisible(x)
 }
 
 
 #' Plot periodicity
 #'
 #' Plot the periodicity for a CC-HIC event. This is the typical
-#' number of entries for the event per patient per 24 hours.
+#' number of entries for the event per patient per 24 hours. Please note,
+#' this can ONLY plot verified events, as the periodicity calculation is
+#' conditional on there being a well defined episode start and end.
 #'
-#' @param x an extracted (using \code{\link{extract}}) and flagged (using \code{\link{flag_all}}) table
-#' @param code_name the code name of interest
-#' @param all_sites.col the HEX colour pallet for each site
+#' @param x and extracted and verified dataitem
+#' @param sites_col the HEX colour pallet for each site
 #'
-#' @export
 #'
 #' @importFrom rlang .data
 #' @importFrom magrittr %>%
 #' @importFrom dplyr filter distinct
-#' @importFrom ggplot2 ggplot aes_string scale_fill_manual xlab ylab
+#' @importFrom ggplot2 ggplot aes scale_fill_manual xlab ylab
 #' theme_minimal geom_histogram
-plot_periodicity <- function(x, code_name, all_sites.col) {
-  periodicity_plot <- x %>%
-    dplyr::filter(
-      .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
-      .data$duplicate == 0 | is.na(.data$duplicate),
-      .data$range_error == 0 | is.na(.data$range_error)
-    ) %>%
-    dplyr::distinct(.data$site, .data$periodicity) %>%
-    dplyr::filter(.data$periodicity <= 48) %>%
-    ggplot2::ggplot(
-      ggplot2::aes_string(
-        x = "periodicity",
-        fill = "site"
-      )
-    ) +
-    ggplot2::scale_fill_manual(values = all_sites.col) +
-    ggplot2::geom_histogram() +
-    ggplot2::xlab(code_name) +
-    ggplot2::ylab("Population Density") +
-    ggplot2::theme_minimal()
+plot_periodicity <- function(x, sites_col = NULL, verify = TRUE) {
 
-  return(periodicity_plot)
+
+  value_title <- gsub("_", " ", attr(x, "code_name"))
+  subtitle <- "Dataitem periodicity"
+  x_lab <- "Typical events contributed per 24 hours"
+  if (is.na(x_lab)) x_lab <- "Units not defined"
+
+  if (is.null(sites_col)) {
+    sites_col <- viridis_pal()(length(unique(x$site)))
+  }
+
+  if (verify) {
+    x <- x %>%
+      filter(
+        .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
+        .data$duplicate == 0 | is.na(.data$duplicate),
+        .data$range_error == 0 | is.na(.data$range_error)
+      )
+  }
+  x <- x %>%
+    distinct(.data$site, .data$periodicity) %>%
+    filter(.data$periodicity <= 72) %>%
+    ggplot(aes(x = .data$periodicity, colour = .data$site)) +
+    scale_colour_manual(values = sites_col) +
+    stat_ecdf() +
+    xlab(x_lab) +
+    ylab("F(x)") +
+    ggtitle(value_title, subtitle = subtitle) +
+    theme_cchic() +
+    guides(colour = guide_legend(title = "Site"))
+
+  attr(x, "plot_type") <- "period"
+  invisible(x)
 }
 
 
-#' Plot Date
+#' Plot Kolmogorov-Smirnov Test
 #'
-#' Plot dates from CC-HIC.
 #'
-#' @param x an extracted (using \code{\link{extract}}) and flagged (using \code{\link{flag_all}}) table
-#' @param code_name the code name of interest
-#' @param all_sites.col the HEX colour pallet for each site
+#' Produces a plot of the KS distances between sites.
+#' This is quite hard coded at the moment, and so could be improved in a future version
+#'
+#' @param x an object from \code{ks_test}
 #'
 #' @export
 #'
 #' @importFrom rlang .data
 #' @importFrom magrittr %>%
-plot_date <- function(x, code_name, all_sites.col) {
-  date_plot <- x %>%
-    filter(
-      .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
-      .data$duplicate == 0 | is.na(.data$duplicate),
-      .data$range_error == 0 | is.na(.data$range_error)
-    ) %>%
-    ggplot(
-      aes_string(
-        x = "date",
-        fill = "site",
-        y = "value"
-      )
-    ) +
-    scale_fill_manual(values = all_sites.col) +
-    geom_line() +
-    xlab("date") +
-    ylab(code_name) +
-    theme_minimal()
+#' @importFrom dplyr tibble mutate select bind_rows mutate_at vars funs
+#' @importFrom ggplot2 aes geom_tile scale_fill_viridis_c theme_minimal coord_equal ylab xlab geom_text
+#' @importFrom scales viridis_pal
+plot_ks <- function(x, reference_tbl) {
 
-  return(date_plot)
+  value_title <- gsub("_", " ", attr(x, "code_name"))
+  subtitle <- "Dataitem Kolmogorov-Smirnov comparisons"
+
+  sites <- na.omit(unique(reference_tbl$site))
+  df <- select(x, .data$Site_A, .data$Site_B, .data$statistic)
+
+  ## Add in a manual KS distance from sites that are the same.
+  ## Adds a visual clue of ground zero.
+  df <- bind_rows(
+    df,
+    tibble(
+      Site_A = sites,
+      Site_B = sites,
+      statistic = 0
+    )
+  )
+
+  out <- df %>%
+    ggplot(aes(x = .data$Site_A, y = .data$Site_B)) +
+    geom_tile(aes(fill = .data$statistic)) +
+    scale_fill_viridis_c(limits = c(0, 1)) +
+    geom_text(aes(label = round(.data$statistic, 2)), colour = "white") +
+    coord_equal() +
+    ylab("Comparitor Site A") +
+    xlab("Comparitor Site B") +
+    guides(fill = guide_legend(title = "KS Distance")) +
+    theme_cchic() +
+    ggtitle(value_title, subtitle = subtitle)
+
+  return(out)
+}
+
+#' Plot Integer
+#'
+#' Plot String values from CC-HIC.
+#'
+#' @param x a varified data frame
+#' @param sites_col the HEX colour pallet for each site
+#'
+#'
+#' @importFrom rlang .data quo !!
+#' @importFrom magrittr %>%
+#' @importFrom ggplot2 ggplot aes scale_colour_manual stat_ecdf xlab ylab theme_minimal ggtitle guides guide_legend
+autoplot.integer_1d <- function(x, sites_col = NULL, verify = TRUE) {
+  code_name <- attr(x, "code_name")
+  if (code_name %in% categorical_hic) {
+    x <- plot_hist(x = x, sites_col = sites_col, verify = verify)
+  } else {
+    x <- plot_ecdf(x = x, sites_col = sites_col, verify = verify)
+  }
+}
+
+#' @importFrom ggplot2 autoplot
+plot.integer_1d <- function(x, display = TRUE, ...) {
+  if (nrow(x) == 0) {
+    rlang::warn("There is no data in this table...")
+  } else {
+  lst <- list()
+  if (display) {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+    print(lst[[plot_type]])
+  } else {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+  }
+  invisible(lst)
+  }
+}
+
+
+#' Plot Real Valued Dataitem
+#'
+#' Plot real valued dataitem from CC-HIC.
+#'
+#' @param x a varified data frame
+#' @param sites_col the HEX colour pallet for each site
+#' @param verify \code{logical} should you only plot verified values?
+#'
+#' @importFrom rlang .data quo !!
+#' @importFrom magrittr %>%
+#' @importFrom ggplot2 ggplot aes scale_colour_manual stat_ecdf xlab ylab theme_minimal ggtitle guides guide_legend
+autoplot.real_1d <- function(x, sites_col = NULL, verify = TRUE) {
+  x <- plot_ecdf(x = x, sites_col = sites_col, verify = verify)
+}
+
+#' @importFrom ggplot2 autoplot
+plot.real_1d <- function(x, display = TRUE, ...) {
+  if (nrow(x) == 0) {
+    rlang::warn("There is no data in this table...")
+  } else {
+  lst <- list()
+  if (display) {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+    print(lst[[plot_type]])
+  } else {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+  }
+  invisible(lst)
+  }
+}
+
+#' Plot String
+#'
+#' Plot String values from CC-HIC.
+#'
+#' @param x a varified data frame
+#' @param sites_col the HEX colour pallet for each site
+#'
+#'
+#' @importFrom rlang .data quo !!
+#' @importFrom magrittr %>%
+#' @importFrom ggplot2 ggplot aes scale_colour_manual stat_ecdf xlab ylab theme_minimal ggtitle guides guide_legend
+autoplot.string_1d <- function(x, sites_col = NULL, verify = TRUE) {
+  x <- plot_hist(x = x, sites_col = sites_col, verify = verify)
+}
+
+#' @importFrom ggplot2 autoplot
+plot.string_1d <- function(x, display = TRUE, ...) {
+  if (nrow(x) == 0) {
+    rlang::warn("There is no data in this table...")
+  } else {
+  lst <- list()
+  if (display) {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+    print(lst[[plot_type]])
+  } else {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+  }
+  invisible(lst)
+  }
 }
 
 
 #' Plot Datetime
 #'
-#' Plot datetimes from CC-HIC
+#' Plot datetime values from CC-HIC.
 #'
-#' @param x an extracted (using \code{\link{extract}}) and flagged (using \code{\link{flag_all}}) table
-#' @param code_name the code name of interest
-#' @param all_sites.col the HEX colour pallet for each site
+#' @param x a varified data frame
+#' @param sites_col the HEX colour pallet for each site
 #'
-#' @export
 #'
-#' @importFrom rlang .data
+#' @importFrom rlang .data quo !!
 #' @importFrom magrittr %>%
-plot_datetime <- function(x, code_name, all_sites.col) {
-  datetime_plot <- x %>%
-    filter(
-      .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
-      .data$duplicate == 0 | is.na(.data$duplicate),
-      .data$range_error == 0 | is.na(.data$range_error)
-    ) %>%
-    ggplot(
-      aes_string(
-        x = "datetime",
-        fill = "site",
-        y = "value"
-      )
-    ) +
-    scale_fill_manual(values = all_sites.col) +
-    geom_line() +
-    xlab("datetime") +
-    ylab(code_name) +
-    theme_minimal()
-
-  return(date_plot)
+#' @importFrom ggplot2 ggplot aes scale_colour_manual stat_ecdf xlab ylab theme_minimal ggtitle guides guide_legend
+autoplot.date_1d <- function(x, sites_col = NULL, verify = TRUE) {
+  x <- plot_ecdf(x = x, sites_col = sites_col, verify = verify)
 }
 
+#' @importFrom ggplot2 autoplot
+plot.date_1d <- function(x, display = TRUE, ...) {
+  if (nrow(x) == 0) {
+    rlang::warn("There is no data in this table...")
+  } else {
+  lst <- list()
+  if (display) {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+    print(lst[[plot_type]])
+  } else {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+  }
+  invisible(lst)
+  }
+}
+
+
+#' Plot Datetime
+#'
+#' Plot datetime values from CC-HIC.
+#'
+#' @param x a varified data frame
+#' @param sites_col the HEX colour pallet for each site
+#'
+#'
+#' @importFrom rlang .data quo !!
+#' @importFrom magrittr %>%
+#' @importFrom ggplot2 ggplot aes scale_colour_manual stat_ecdf xlab ylab theme_minimal ggtitle guides guide_legend
+autoplot.datetime_1d <- function(x, sites_col = NULL, verify = TRUE) {
+  x <- plot_ecdf(x = x, sites_col = sites_col, verify = verify)
+}
+
+#' @importFrom ggplot2 autoplot
+plot.datetime_1d <- function(x, display = TRUE, ...) {
+  if (nrow(x) == 0) {
+    rlang::warn("There is no data in this table...")
+  } else {
+  lst <- list()
+  if (display) {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+    print(lst[[plot_type]])
+  } else {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+  }
+  invisible(lst)
+  }
+}
 
 #' Plot Time
 #'
 #' Plot time values from CC-HIC
 #'
-#' @param x an extracted (using \code{\link{extract}}) and flagged (using \code{\link{flag_all}}) table
-#' @param code_name the code name of interest
-#' @param all_sites.col the HEX colour pallet for each site
+#' @param x a varified data frame
+#' @param sites_col the HEX colour pallet for each site
 #'
-#' @export
 #'
-#' @importFrom rlang .data
+#' @importFrom rlang .data quo !!
 #' @importFrom magrittr %>%
-plot_time <- function(x, code_name, all_sites.col) {
-  time_plot <- x %>%
-    filter(
-      .data$out_of_bounds == 0 | is.na(.data$out_of_bounds),
-      .data$duplicate == 0 | is.na(.data$duplicate),
-      .data$range_error == 0 | is.na(.data$range_error)
-    ) %>%
-    ggplot(
-      aes_string(
-        x = "time",
-        fill = "site",
-        y = "value"
-      )
-    ) +
-    scale_fill_manual(values = all_sites.col) +
-    geom_line() +
-    xlab("time") +
-    ylab(code_name) +
-    theme_minimal()
-
-  return(date_plot)
+#' @importFrom ggplot2 ggplot aes scale_colour_manual stat_ecdf xlab ylab theme_minimal ggtitle guides guide_legend
+autoplot.time_1d <- function(x, sites_col = NULL, verify = TRUE) {
+  x <- plot_ecdf(x = x, sites_col = sites_col, verify = verify)
 }
+
+#' @importFrom ggplot2 autoplot
+plot.time_1d <- function(x, display = TRUE, ...) {
+  if (nrow(x) == 0) {
+    rlang::warn("There is no data in this table...")
+  } else {
+  lst <- list()
+  if (display) {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+    print(lst[[plot_type]])
+  } else {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+  }
+  invisible(lst)
+  }
+}
+
+
+#' Plot String
+#'
+#' Plot String values from CC-HIC.
+#'
+#' @param x a varified data frame
+#' @param sites_col the HEX colour pallet for each site
+#'
+#'
+#' @importFrom rlang .data quo !!
+#' @importFrom magrittr %>%
+#' @importFrom ggplot2 ggplot aes scale_colour_manual stat_ecdf xlab ylab theme_minimal ggtitle guides guide_legend
+autoplot.string_2d <- function(x, sites_col = NULL, verify = TRUE) {
+  x <- plot_hist(x = x, sites_col = sites_col, verify = verify)
+}
+
+
+#' @importFrom ggplot2 autoplot
+plot.string_2d <- function(x, display = TRUE, periodicity = TRUE, ...) {
+  if (nrow(x) == 0) {
+    rlang::warn("There is no data in this table...")
+  } else {
+  lst <- list()
+  if (display) {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+    print(lst[[plot_type]])
+    if (periodicity) {
+      y <- plot_periodicity(x, ...)
+      plot_type <- attr(y, "plot_type")
+      lst[[plot_type]] <- y
+      print(lst[[plot_type]])
+    }
+  } else {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+    if (periodicity) {
+      y <- plot_periodicity(x, ...)
+      plot_type <- attr(y, "plot_type")
+      lst[[plot_type]] <- y
+    }
+  }
+  invisible(lst)
+  }
+}
+
+
+#' Plot Integer
+#'
+#' Plot integer values from CC-HIC
+#'
+#' @param x a varified data frame
+#' @param sites_col the HEX colour pallet for each site
+#'
+#'
+#' @importFrom rlang .data quo !!
+#' @importFrom magrittr %>%
+#' @importFrom ggplot2 ggplot aes scale_colour_manual stat_ecdf xlab ylab theme_minimal ggtitle guides guide_legend
+autoplot.integer_2d <- function(x, sites_col = NULL, verify = TRUE) {
+  x <- plot_ecdf(x = x, sites_col = sites_col, verify = verify)
+}
+
+#' @importFrom ggplot2 autoplot
+plot.integer_2d <- function(x, display = TRUE, periodicity = TRUE, ...) {
+  if (nrow(x) == 0) {
+    rlang::warn("There is no data in this table...")
+  } else {
+  lst <- list()
+  if (display) {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+    print(lst[[plot_type]])
+    if (periodicity) {
+      y <- plot_periodicity(x, ...)
+      plot_type <- attr(y, "plot_type")
+      lst[[plot_type]] <- y
+      print(lst[[plot_type]])
+    }
+  } else {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+    if (periodicity) {
+      y <- plot_periodicity(x, ...)
+      plot_type <- attr(y, "plot_type")
+      lst[[plot_type]] <- y
+    }
+  }
+  invisible(lst)
+  }
+}
+
+
+#' Plot Real
+#'
+#' Plot real values from CC-HIC
+#'
+#' @param x a varified data frame
+#' @param sites_col the HEX colour pallet for each site
+#'
+#'
+#' @importFrom rlang .data quo !!
+#' @importFrom magrittr %>%
+#' @importFrom ggplot2 ggplot aes scale_colour_manual stat_ecdf xlab ylab theme_minimal ggtitle guides guide_legend
+autoplot.real_2d <- function(x, sites_col = NULL, verify = TRUE) {
+  x <- plot_ecdf(x = x, sites_col = sites_col, verify = verify)
+}
+
+#' @importFrom ggplot2 autoplot
+plot.real_2d <- function(x, display = TRUE, periodicity = TRUE, ...) {
+  if (nrow(x) == 0) {
+    rlang::warn("There is no data in this table...")
+  } else {
+  lst <- list()
+  if (display) {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+    print(lst[[plot_type]])
+    if (periodicity) {
+      y <- plot_periodicity(x, ...)
+      plot_type <- attr(y, "plot_type")
+      lst[[plot_type]] <- y
+      print(lst[[plot_type]])
+    }
+  } else {
+    y <- autoplot(x, ...)
+    plot_type <- attr(y, "plot_type")
+    lst[[plot_type]] <- y
+    if (periodicity) {
+      y <- plot_periodicity(x, ...)
+      plot_type <- attr(y, "plot_type")
+      lst[[plot_type]] <- y
+    }
+  }
+  invisible(lst)
+  }
+}
+
+
 
 
 # Retired occupancy plot
@@ -473,3 +635,97 @@ plot_time <- function(x, code_name, all_sites.col) {
 # }
 #
 # rm(i)
+
+#' Plot Calendar Heatmap
+#'
+#' Builds the ggplot layers required to correctly display the calendar heatmap
+#'
+#' @param object a heat_cal object
+#'
+#' @importFrom ggplot2 ggplot geom_tile scale_fill_gradientn facet_grid
+#' theme_minimal theme element_blank element_text geom_segment aes labs
+#' ylab xlab coord_equal
+#' @importFrom scales viridis_pal
+autoplot.heat_cal <- function(object, ...) {
+
+  type <- attr(object, "type")
+  max_limit <- attr(object, "max")
+  title <- paste0("Calendar Heatmap: ", attr(object, "site"))
+  grid_lines <- attr(object, "grid")
+
+  if (is.null(max_limit)) max_limit <- max(object[type], na.rm = TRUE)
+
+  if (type == "episodes") {
+    guide_title <- "# admit"
+    subtitle <- "Admission profile"
+  } else {
+    guide_title <- "# event"
+    subtitle <- "Data submission profile"
+  }
+
+  object %>%
+    ggplot() +
+    geom_tile(aes(
+      x = week_of_year,
+      y = day_of_week,
+      fill = .data[[type]]),
+      colour = "#FFFFFF") +
+    facet_grid(year ~ .) +
+    theme_minimal() +
+    theme(panel.grid.major = element_blank(),
+          #plot.title = element_text(hjust = 0.5),
+          axis.text.x = element_blank(),
+          axis.title.y = element_blank(),
+          axis.title.x = element_blank()
+    ) +
+    geom_segment(aes(x = x_start, y = y_start,
+                     xend = x_end, yend = y_end),
+                 colour = "black", size = 0.5,
+                 lineend = "round", linejoin = "round",
+                 data = grid_lines
+    ) +
+    scale_fill_viridis_c(
+      rescaler = function(x, to = c(0, 1), from = NULL) {
+        if_else(
+          x <= max_limit,
+          scales::rescale(x, to = to, from = c(min(x, na.rm = TRUE), max_limit)), 1
+      )}, na.value = "grey60") +
+    labs(title = title, subtitle = subtitle) +
+    ylab(label = "Day of Week") +
+    xlab(label = "Month") +
+    guides(fill = guide_legend(
+      title = guide_title)) +
+    coord_equal()
+
+}
+
+#' @importFrom ggplot2 autoplot
+plot.heat_cal <- function(x, display = TRUE, ...) {
+  if (display) {
+    print(autoplot(x, ...))
+  } else {
+    autoplot(x, ...)
+  }
+}
+
+
+#' CC-HIC ggplot2 Theme
+#'
+#' @param ... arguments to pass to \code{theme}
+#'
+#' @export
+#'
+#' @importFrom ggplot2 %+replace% theme theme_bw element_blank
+theme_cchic <- function(...) {
+  pct <- theme_bw(base_family = "sans", base_size = 11) %+replace%
+    theme(
+      legend.background = element_blank(),
+      legend.key = element_blank(),
+      panel.background = element_blank(),
+      panel.border = element_blank(),
+      strip.background = element_blank(),
+      plot.background = element_blank(),
+      axis.line = element_blank(),
+      panel.grid = element_blank()
+    )
+}

@@ -4,21 +4,23 @@
 \alias{make_heatcal}
 \title{Make a heat_cal object}
 \usage{
-make_heatcal(reference_table = NULL, type = NULL, site = NULL,
-  start_date = "2014-01-01", end_date = "2019-01-01", max_limit = 25)
+make_heatcal(reference_tbl = NULL, dataitem_tbl = NULL, site = NULL,
+  date_boundaries = NULL, max_limit = NULL)
 }
 \arguments{
-\item{reference_table}{reference table produced from \code{\link{make_reference}}}
-
 \item{site}{character string of hospital site to plot}
-
-\item{start_date}{a starting date as character vector of format YYYY-MM-DD}
-
-\item{end_date}{an end date as character vector of format YYYY-MM-DD}
 
 \item{max_limit}{the upper bound for determining colour scale. This is useful
 if you have extreme outliers to enable good constrast over the range of
 interest}
+
+\item{reference_table}{reference table produced from \code{\link{make_reference}}}
+
+\item{type}{either "event" or "admission"}
+
+\item{start_date}{a starting date as character vector of format YYYY-MM-DD}
+
+\item{end_date}{an end date as character vector of format YYYY-MM-DD}
 }
 \value{
 an object of class heat_cal

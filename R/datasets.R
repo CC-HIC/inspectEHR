@@ -1,19 +1,21 @@
-#' QREF - Data Quality reference file for CC-HIC. Version 1
+#' Data quality reference table for CC-HIC. Version 1.1
 #'
-#' A dataset containing useful metadata of each event within CC-HIC
+#' A dataset containing useful metadata of each dataitem in CC-HIC
 #'
-#' @format A tibble with 255 rows and 11 variables:
+#' @format A \code{tibble} with 255 rows and 11 variables:
 #' \describe{
-#'   \item{code_name}{}
-#'   \item{short_name}{}
-#'   \item{long_name}{}
-#'   \item{primary_column}{}
-#'   \item{type}{}
-#'   \item{class}{}
-#'   \item{range_min}{}
-#'   \item{range_max}{}
-#'   \item{ref_lower}{}
-#'   \item{ref_upper}{}
-#'   \item{assumed_units}{}
+#'   \item{code_name}{the NIHR_HIC_ICU number}
+#'   \item{short_name}{a short name}
+#'   \item{long_name}{a longer name}
+#'   \item{primary_column}{the primary column used for data storage in the events table of the cc-hic database}
+#'   \item{type}{1d/2d}
+#'   \item{class}{hic data class}
+#'   \item{range_min}{a lower boundary for a normal physiological value}
+#'   \item{range_max}{an upper boundary for a normal physiological value}
+#'   \item{ref_lower}{a lower boundary for a possible value}
+#'   \item{ref_upper}{an upper boundary for a possible value}
+#'   \item{assumed_units}{the assumed units}
+#'   \item{notes}{any other notes}
+#'   \item{possible_values}{a list column with possible values the dataitem can take}
 #' }
 "qref"
