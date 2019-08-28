@@ -25,14 +25,14 @@ Imports:
     magrittr,
     rlang (>= 0.4.0),
     RPostgres,
+    RSQLite,
     purrr,
     scales,
     stringr,
     tibble,
     tidyr,
     hms,
-    broom,
-    xml2
+    broom
 RoxygenNote: 6.1.1
 Suggests:
     knitr,
