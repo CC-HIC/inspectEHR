@@ -10,9 +10,6 @@
 #' @importFrom dplyr group_by summarise n_distinct
 #' @importFrom magrittr %>%
 #' @importFrom lubridate day month year
-#'
-#' @examples
-#' weekly_admissions(distinct_episodes)
 weekly_admissions <- function(distinct_episodes = NULL) {
   admissions <- distinct_episodes %>%
     dplyr::mutate(
@@ -38,9 +35,6 @@ weekly_admissions <- function(distinct_episodes = NULL) {
 #' @importFrom dplyr group_by summarise n_distinct
 #' @importFrom magrittr %>%
 #' @importFrom lubridate day month year wday
-#'
-#' @examples
-#' report_cases_daily(unique_cases)
 report_cases_daily <- function(unique_cases_tbl = NULL) {
   cases <- unique_cases_tbl %>%
     mutate(
@@ -91,9 +85,6 @@ daily_admissions <- function(reference = NULL, by_site = NULL) {
 #'
 #' @return a tibble with the number of unique episodes admitted for a given day
 #' @export
-#'
-#' @examples
-#' event_occurrances(x, by_site == "UCL")
 event_occurrances <- function(extracted_event = NULL, by_site = "UCL") {
   occurances <- extracted_event %>%
     filter(site == by_site) %>%
@@ -119,9 +110,6 @@ event_occurrances <- function(extracted_event = NULL, by_site = "UCL") {
 #'
 #' @return a tibble with unique episodes and patients reported by ICU
 #' @export
-#'
-#' @examples
-#' unit_admissions(events, reference)
 unit_admissions <- function(events_table = NULL, reference_table = NULL) {
   unit_numbers <- events_table %>%
     dplyr::filter(code_name == "NIHR_HIC_ICU_0002") %>%
@@ -185,16 +173,14 @@ unit_admissions <- function(events_table = NULL, reference_table = NULL) {
 #'
 #' @importFrom rlang abort
 #' @importFrom dplyr setdiff
-#'
-#' @examples
-#' epi_length(ctn)
+#' @importFrom tidyselect ends_with
 characterise_episodes <- function(connection = NULL) {
 
   if (is.null(connection)) {
     rlang::abort("connection must be supplied")
   }
 
-  df_extract <- tribble(
+  df_extract <- tibble::tribble(
     ~codes, ~names,
     "NIHR_HIC_ICU_0411", "epi_start_dttm",
     "NIHR_HIC_ICU_0412", "src_end_dttm",
@@ -238,132 +224,140 @@ characterise_episodes <- function(connection = NULL) {
 df <- df %>%
   mutate(
     death_dttm = if_else(
-      !is.na(death_date) & !is.na(death_time),
-      paste(format(death_date), format(death_time)), as.character(NA)
+      !is.na(.data$death_date) & !is.na(.data$death_time),
+      paste(
+        format(.data$death_date),
+        format(.data$death_time)), as.character(NA)
     )
   ) %>%
   mutate(death_dttm = if_else(
-    !is.na(death_dttm),
-    lubridate::ymd_hms(death_dttm),
+    !is.na(.data$death_dttm),
+    lubridate::ymd_hms(.data$death_dttm),
     as.POSIXct(NA))) %>%
   mutate(
     bsd_dttm = if_else(
-      !is.na(bsd_date) & !is.na(bsd_time),
-      paste(format(bsd_date), format(bsd_time)), as.character(NA)
+      !is.na(.data$bsd_date) & !is.na(.data$bsd_time),
+      paste(format(.data$bsd_date),
+            format(.data$bsd_time)), as.character(NA)
     )
   ) %>%
   mutate(
     bsd_dttm = if_else(
-      !is.na(bsd_dttm),
-      lubridate::ymd_hms(bsd_dttm),
+      !is.na(.data$bsd_dttm),
+      lubridate::ymd_hms(.data$bsd_dttm),
       as.POSIXct(NA))) %>%
   mutate(
     body_dttm = if_else(
-      !is.na(body_date) & !is.na(body_time),
-      paste(format(body_date), format(body_time)), as.character(NA)
+      !is.na(.data$body_date) & !is.na(.data$body_time),
+      paste(format(.data$body_date),
+            format(.data$body_time)), as.character(NA)
     )
   ) %>%
   mutate(
     body_dttm = if_else(
-      !is.na(body_dttm),
-      lubridate::ymd_hms(body_dttm), as.POSIXct(NA)))
+      !is.na(.data$body_dttm),
+      lubridate::ymd_hms(.data$body_dttm), as.POSIXct(NA)))
 
   df <- df %>%
-    select(-tidyselect::ends_with("date"), -tidyselect::ends_with("time")) %>%
+    select(-ends_with("date"), -ends_with("time")) %>%
     mutate(nhs_validation = if_else(
-      verify_nhs(nhs), 1L, 0L
+      verify_nhs(.data$nhs), 1L, 0L
     ))
 
-  invalid_records <- df %>% filter(nhs_validation == 0) %>%
-    select(episode_id) %>%
+  invalid_records <- df %>% filter(.data$nhs_validation == 0) %>%
+    select(.data$episode_id) %>%
     mutate(reason = "invalid nhs number")
 
   df <- df %>%
-    filter(nhs_validation == 1) %>%
-    select(-nhs_validation)
+    filter(.data$nhs_validation == 1) %>%
+    select(-.data$nhs_validation)
 
   invalid_records <- df %>%
-    filter(outcome == "E") %>%
-    select(episode_id) %>%
+    filter(.data$outcome == "E") %>%
+    select(.data$episode_id) %>%
     mutate(reason = "open episode") %>%
     bind_rows(invalid_records)
 
-  df <- df %>% filter(outcome != "E")
+  df <- df %>% filter(.data$outcome != "E")
 
   ## Discharged alive and no src end date is invalid
   ## Disacharge alive, with an end date, automatically VALID
 
   df <- df %>%
-    dplyr::mutate(
-      epi_end_dttm = dplyr::case_when(
-        outcome == "A" & is.na(src_end_dttm) ~ as.POSIXct(NA),
-        outcome == "A" & !is.na(src_end_dttm) ~ src_end_dttm,
-        outcome == "D" & !is.na(death_dttm) & bsd == 0 | is.na(bsd) ~ death_dttm,
-        outcome == "D" & bsd == 1 & !is.na(death_dttm) ~ bsd_dttm,
-        TRUE ~ as.POSIXct(NA)
+    mutate(
+      epi_end_dttm = case_when(
+        .data$outcome == "A" & is.na(.data$src_end_dttm) ~ as.POSIXct(NA),
+        .data$outcome == "A" & !is.na(.data$src_end_dttm)
+          ~ .data$src_end_dttm,
+        .data$outcome == "D" & !is.na(.data$death_dttm) & .data$bsd == 0 | is.na(.data$bsd)
+          ~ .data$death_dttm,
+        .data$outcome == "D" & bsd == 1 & !is.na(.data$death_dttm)
+          ~ .data$bsd_dttm,
+  TRUE ~ as.POSIXct(NA)
       )
     )
 
   broken_timings <- df %>%
-    filter(is.na(epi_end_dttm) | epi_end_dttm < epi_start_dttm) %>%
-    select(-epi_end_dttm)
+    filter(is.na(.data$epi_end_dttm) | .data$epi_end_dttm < .data$epi_start_dttm) %>%
+    select(-.data$epi_end_dttm)
 
   if (nrow(broken_timings) > 0) {
     recover_timings <- tbl(ctn, "events") %>%
-      filter(episode_id %in% !!broken_timings$episode_id,
+      filter(.data$episode_id %in% !!broken_timings$episode_id,
              code_name %in% c("NIHR_HIC_ICU_0108", "NIHR_HIC_ICU_0129")) %>%
-      select(episode_id, datetime) %>%
+      select(.data$episode_id, .data$datetime) %>%
       collect() %>%
-      group_by(episode_id) %>%
-      summarise(epi_end_dttm = max(datetime)) %>%
-      filter(!is.na(epi_end_dttm)) %>%
+      group_by(.data$episode_id) %>%
+      summarise(epi_end_dttm = max(.data$datetime)) %>%
+      filter(!is.na(.data$epi_end_dttm)) %>%
       left_join(broken_timings, ., by = "episode_id")
 
     df <- df %>%
-      filter(!(episode_id %in% broken_timings$episode_id)) %>%
+      filter(!(.data$episode_id %in% broken_timings$episode_id)) %>%
       bind_rows(recover_timings)
 
     invalid_records <- df %>%
-      filter(is.na(epi_end_dttm)) %>%
-      select(episode_id) %>%
+      filter(is.na(.data$epi_end_dttm)) %>%
+      select(.data$episode_id) %>%
       mutate(reason = "no end datetime") %>%
       bind_rows(invalid_records)
 
     invalid_records <- df %>%
-      filter(!is.na(epi_end_dttm)) %>%
-      filter(epi_end_dttm < epi_start_dttm) %>%
-      select(episode_id) %>%
+      filter(!is.na(.data$epi_end_dttm)) %>%
+      filter(.data$epi_end_dttm < .data$epi_start_dttm) %>%
+      select(.data$episode_id) %>%
       mutate(reason = "end time prior to admission") %>%
       bind_rows(invalid_records)
 
     df <- df %>%
-      filter(!is.na(epi_end_dttm)) %>%
-      filter(epi_end_dttm >= epi_start_dttm)
+      filter(!is.na(.data$epi_end_dttm)) %>%
+      filter(.data$epi_end_dttm >= .data$epi_start_dttm)
   }
 
   duplicate_start <- df %>%
     ungroup() %>%
-    distinct(nhs, epi_start_dttm, .keep_all = TRUE) %>%
-    select(episode_id) %>%
+    distinct(.data$nhs, .data$epi_start_dttm, .keep_all = TRUE) %>%
+    select(.data$episode_id) %>%
     anti_join(df, by = "episode_id") %>%
-    select(episode_id) %>%
+    select(.data$episode_id) %>%
     mutate(reason = "duplicate start datetime")
 
   duplicate_end <- df %>%
     ungroup() %>%
-    distinct(nhs, epi_start_dttm, .keep_all = TRUE) %>%
-    select(episode_id) %>%
+    distinct(.data$nhs, .data$epi_start_dttm, .keep_all = TRUE) %>%
+    select(.data$episode_id) %>%
     anti_join(df, by = "episode_id") %>%
-    select(episode_id) %>%
+    select(.data$episode_id) %>%
     mutate(reason = "duplicate end datetime")
 
   overlapping <- df %>%
-    group_by(nhs) %>%
-    arrange(nhs, epi_start_dttm) %>%
-    mutate(time_out = difftime(epi_start_dttm, lag(epi_end_dttm))) %>%
+    group_by(.data$nhs) %>%
+    arrange(.data$nhs, .data$epi_start_dttm) %>%
+    mutate(time_out = difftime(
+      .data$epi_start_dttm, lag(.data$epi_end_dttm))) %>%
     ungroup() %>%
-    filter(time_out < 0) %>%
-    select(episode_id) %>%
+    filter(.data$time_out < 0) %>%
+    select(.data$episode_id) %>%
     mutate(reason = "overlapping episode")
 
   invalid_records <- bind_rows(
@@ -374,18 +368,22 @@ df <- df %>%
   )
 
   df <- df %>%
-    select(episode_id, nhs, epi_start_dttm, epi_end_dttm, outcome) %>%
-    rename(nhs_number = nhs) %>%
+    select(
+      .data$episode_id, .data$nhs, .data$epi_start_dttm,
+      .data$epi_end_dttm, .data$outcome) %>%
+    rename(nhs_number = .data$nhs) %>%
     anti_join(invalid_records, by = "episode_id") %>%
-    arrange(nhs_number, epi_start_dttm) %>%
-    mutate(los_days = as.numeric(difftime(epi_end_dttm, epi_start_dttm, units = "hours"))/24)
+    arrange(.data$nhs_number, .data$epi_start_dttm) %>%
+    mutate(los_days = as.numeric(
+      difftime(
+        .data$epi_end_dttm, .data$epi_start_dttm, units = "hours"))/24)
 
   df <- left_join(
     tbl(connection, "episodes"),
     tbl(connection, "provenance"),
     by = c("provenance" = "file_id")
     ) %>%
-    select(episode_id, site) %>%
+    select(.data$episode_id, .data$site) %>%
     collect() %>%
     left_join(df, ., by = "episode_id")
 
@@ -410,21 +408,22 @@ df <- df %>%
 #'
 #' @return a table with episodes reconciled as spells
 #' @export
-#'
-#' @examples
-#' characterise_spells(episodes, episodes)
 characterise_spells <- function(df = NULL, minutes = 30) {
   df %>%
-    arrange(nhs_number, epi_start_dttm) %>%
-    group_by(nhs_number) %>%
-    mutate(time_out = epi_start_dttm[-1] %>%
-      difftime(epi_end_dttm[-length(epi_end_dttm)], units = "mins") %>%
+    arrange(.data$nhs_number, .data$epi_start_dttm) %>%
+    group_by(.data$nhs_number) %>%
+    mutate(time_out = .data$epi_start_dttm[-1] %>%
+      difftime(
+        .data$epi_end_dttm[-length(.data$epi_end_dttm)], units = "mins") %>%
       as.integer() %>%
       c(NA)) %>%
-    mutate(new_spell = if_else(lag(time_out) > minutes | is.na(lag(time_out)), TRUE, FALSE)) %>%
+    mutate(new_spell = if_else(
+      lag(.data$time_out) > minutes | is.na(lag(.data$time_out)),
+      TRUE, FALSE)) %>%
     ungroup() %>%
-    mutate(spell_id = cumsum(new_spell)) %>%
-    select(spell_id, episode_id, nhs_number, site, epi_start_dttm, epi_end_dttm, los_days)
+    mutate(spell_id = cumsum(.data$new_spell)) %>%
+    select(.data$spell_id, .data$episode_id, .data$nhs_number, .data$site,
+           .data$epi_start_dttm, .data$epi_end_dttm, .data$los_days)
 }
 
 
@@ -454,9 +453,6 @@ characterise_spells <- function(df = NULL, minutes = 30) {
 #' @export
 #'
 #' @importFrom rlang .data sym
-#'
-#' @examples
-#' resolve_date_time(df, death_date, death_time)
 resolve_date_time <- function(df = NULL,
                               date_code = NULL,
                               time_code = NULL) {
@@ -490,9 +486,6 @@ resolve_date_time <- function(df = NULL,
 #' @return a tibble containing summary information for validation at episode
 #'   level
 #' @export
-#'
-#' @examples
-#' episode_validity(episode_length)
 episode_varacity <- function(df) {
 
   attr(df, "invalid_records") %>%

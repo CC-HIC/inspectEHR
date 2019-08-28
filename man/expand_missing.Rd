@@ -9,7 +9,8 @@ expand_missing(df, cadance = 1)
 \arguments{
 \item{df}{a dense time series table produced from extract_timevarying}
 
-\item{cadance}{the cadance by which you want to expand the table (default = 1 hour)}
+\item{cadance}{the cadance by which you want to expand the table
+(default = 1 hour)}
 }
 \value{
 a sparse time series table

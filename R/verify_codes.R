@@ -18,7 +18,9 @@
 #' @examples
 #' validate_nhs("6744424270") # expect TRUE
 verify_nhs <- function(nhs_numbers = NULL) {
-  if (class(nhs_numbers) != "character") rlang::abort("Please enter NHS Numbers as characters")
+  if (class(nhs_numbers) != "character") {
+    rlang::abort("Please enter NHS Numbers as characters")
+  }
 
   response <- vector(mode = "logical", length = length(nhs_numbers))
   nhs <- as.character(nhs_numbers)
@@ -153,21 +155,30 @@ generate_post_code <- function(size = 1) {
 
   # Outward Code
   ## Area Code
-  area_codes <- c("AB", "AL", "B", "BA", "BB", "BD", "BH", "BL", "BN", "BR", "BS", "BT", "CA", "CB", "CF",
-  "CH", "CM", "CO", "CR", "CT", "CV", "CW", "DA", "DD", "DE", "DG", "DH", "DL", "DN", "DT",
-  "DY", "E", "EC", "EH", "EN", "EX", "FK", "FY", "G", "GL", "GU", "HA", "HD", "HG", "HP",
-  "HR", "HS", "HU", "HX", "IG", "IP", "IV", "KA", "KT", "KW", "KY", "L", "LA", "LD", "LE",
-  "LL", "LN", "LS", "LU", "M", "ME", "MK", "ML", "N", "NE", "NG", "NN", "NP", "NR", "NW",
-  "OL", "OX", "PA", "PE", "PH", "PL", "PO", "PR", "RG", "RH", "RM", "S", "SA", "SE", "SG",
-  "SK", "SL", "SM", "SN", "SO", "SP", "SR", "SS", "ST", "SW", "SY", "TA", "TD", "TF", "TN",
-  "TQ", "TR", "TS", "TW", "UB", "W", "WA", "WC", "WD", "WF", "WN", "WR", "WS", "WV", "YO",
+  area_codes <- c("AB", "AL", "B", "BA", "BB", "BD", "BH", "BL", "BN",
+                  "BR", "BS", "BT", "CA", "CB", "CF",
+  "CH", "CM", "CO", "CR", "CT", "CV", "CW", "DA", "DD", "DE", "DG", "DH",
+  "DL", "DN", "DT",
+  "DY", "E", "EC", "EH", "EN", "EX", "FK", "FY", "G", "GL", "GU", "HA",
+  "HD", "HG", "HP",
+  "HR", "HS", "HU", "HX", "IG", "IP", "IV", "KA", "KT", "KW", "KY", "L",
+  "LA", "LD", "LE",
+  "LL", "LN", "LS", "LU", "M", "ME", "MK", "ML", "N", "NE", "NG", "NN",
+  "NP", "NR", "NW",
+  "OL", "OX", "PA", "PE", "PH", "PL", "PO", "PR", "RG", "RH", "RM", "S",
+  "SA", "SE", "SG",
+  "SK", "SL", "SM", "SN", "SO", "SP", "SR", "SS", "ST", "SW", "SY", "TA",
+  "TD", "TF", "TN",
+  "TQ", "TR", "TS", "TW", "UB", "W", "WA", "WC", "WD", "WF", "WN", "WR",
+  "WS", "WV", "YO",
   "ZE")
   pos_area <- sample(area_codes, size = size, replace = TRUE)
 
   ## District Code
   pos_dist <- case_when(
-    pos_area %in% c("BR", "FY", "HA", "HD", "HG", "HR", "HS", "HX",
-                      "JE", "LD", "SM", "SR", "WC", "WN", "ZE") ~ sample(1:9, size = 1),
+    pos_area %in% c(
+      "BR", "FY", "HA", "HD", "HG", "HR", "HS", "HX",
+      "JE", "LD", "SM", "SR", "WC", "WN", "ZE") ~ sample(1:9, size = 1),
     pos_area %in% c("AB", "LL", "SO") ~ sample(11:99, size = 1),
     pos_area %in% c("BL", "BS", "CM", "CR", "FY", "HA", "PR", "SL",
                       "SS") ~ sample(0:9, size = 1),
@@ -179,7 +190,10 @@ generate_post_code <- function(size = 1) {
   pos_sector <- sample(0:9, size = size, replace = TRUE)
 
   ## Unit Code
-  pos_unit <- paste0(sample(LETTERS, size = size, replace = TRUE), sample(LETTERS, size = size, replace = TRUE))
+  pos_unit <- paste0(
+    sample(
+      LETTERS, size = size, replace = TRUE),
+    sample(LETTERS, size = size, replace = TRUE))
 
   post_code <- paste0(pos_area, pos_dist, " ", pos_sector, pos_unit)
 }
@@ -208,7 +222,9 @@ generate_post_code <- function(size = 1) {
 #' varify_icnarc("1.6.4.20.16") # not strictly correct, but parsable
 #' varify_icnarc("01-6-04.20.16") # annoying, but parsable
 verify_icnarc <- function(icnarc_code = NULL) {
-  if (class(icnarc_code) != "character") rlang::abort("Please enter ICNARC code as characters")
+  if (class(icnarc_code) != "character") {
+    rlang::abort("Please enter ICNARC code as characters")
+  }
   icnarc <- str_split(icnarc_code, pattern = "[.|/-]") %>%
     map(as.integer) %>%
     map(function(x) {

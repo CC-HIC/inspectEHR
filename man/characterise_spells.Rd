@@ -24,6 +24,3 @@ the minutes argument.
 This only evaluates episodes that have already been flagged as valid by the
 \code{\link{characterise_episodes}} function.
 }
-\examples{
-characterise_spells(episodes, episodes)
-}

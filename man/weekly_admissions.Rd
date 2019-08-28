@@ -16,6 +16,3 @@ a summary containing patient and episode numbers
 Shows the number of admissions to each each in terms of patients and episodes
 stratified in weeks
 }
-\examples{
-weekly_admissions(distinct_episodes)
-}

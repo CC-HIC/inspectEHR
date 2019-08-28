@@ -21,6 +21,3 @@ site. This is dependent on accurate parsing of the xml schema for hic code
 see a comprehensive list of acual cases, see the
 \code{\link{weekly_admissions}} function.
 }
-\examples{
-unit_admissions(events, reference)
-}

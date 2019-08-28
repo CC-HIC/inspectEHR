@@ -20,14 +20,19 @@
 #'
 #' @return A tibble of 1d data
 #' @examples
-#' hic_codes <- c("NIHR_HIC_ICU_0409")
-#' new_labels <- c("apache_score")
+#' db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+#' ctn <- connect(sqlite_file = db_path)
+#' hic_codes <- "NIHR_HIC_ICU_0409"
+#' new_labels <- "apache_score"
 #' extract_demographics(ctn, hic_codes, new_labels)
-extract_demographics <- function(connection = NULL, episode_ids = NULL, code_names = NULL, rename = NULL) {
+extract_demographics <- function(connection = NULL, episode_ids = NULL,
+                                 code_names = NULL, rename = NULL) {
   stopifnot(!any(is.null(connection), is.null(code_names)))
 
   if (!is.null(episode_ids) && class(episode_ids) != "integer") {
-    rlang::abort("`episode_ids` must be given as NULL (the default) or an integer vector of episode ids")
+    rlang::abort(
+      "`episode_ids` must be given as NULL (the default) or an
+      integer vector of episode ids")
   }
 
   tbls <- retrieve_tables(connection)
@@ -46,17 +51,21 @@ extract_demographics <- function(connection = NULL, episode_ids = NULL, code_nam
   extract_codes <- all_demographic_codes[all_demographic_codes %in% code_names]
 
   if (length(extract_codes) != length(code_names)) {
-    rlang::warn("You are trying to extract non-1d data. Consider using `extract_timevarying()`")
+    rlang::warn(
+      "You are trying to extract non-1d data.
+      Consider using `extract_timevarying()`")
   }
 
   if (is.null(episode_ids)) {
     tb_base <- tbls[["events"]] %>%
-      select(episode_id, code_name, integer, string, real, date, time, datetime) %>%
+      select(episode_id, code_name, integer, string, real, date, time,
+             datetime) %>%
       filter(code_name %in% extract_codes) %>%
       collect()
   } else {
     tb_base <- tbls[["events"]] %>%
-      select(episode_id, code_name, integer, string, real, date, time, datetime) %>%
+      select(episode_id, code_name, integer, string, real, date, time,
+             datetime) %>%
       filter(code_name %in% extract_codes,
              episode_id %in% episode_ids) %>%
       collect()
@@ -70,7 +79,8 @@ extract_demographics <- function(connection = NULL, episode_ids = NULL, code_nam
   tb_segments <- vector(mode = "list", length = length(complete_fields))
 
   for (i in seq_along(complete_fields)) {
-    tb_segments[[i]] <- extract_demographics_helper(tb_base, complete_fields[i], demographics)
+    tb_segments[[i]] <- extract_demographics_helper(
+      tb_base, complete_fields[i], demographics)
   }
 
   db_1 <- purrr::reduce(
@@ -81,7 +91,8 @@ extract_demographics <- function(connection = NULL, episode_ids = NULL, code_nam
 
   if (!is.null(rename)) {
     replacement_names <- rename[match(names(db_1), code_names)]
-    names(db_1) <- if_else(is.na(replacement_names), names(db_1), replacement_names)
+    names(db_1) <- if_else(
+      is.na(replacement_names), names(db_1), replacement_names)
   }
 
   if (is.null(rename)) {

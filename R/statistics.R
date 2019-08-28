@@ -49,7 +49,7 @@ ks_test <- function(x) {
     length = base::ncol(site_pairs)
   )
 
-  for (i in 1:ncol(site_pairs)) {
+  for (i in seq_along(site_pairs)) {
     ks_list[[i]] <- ks.test(
       x = x %>%
         filter(.data$site == site_pairs[, i][1]) %>%
@@ -111,7 +111,7 @@ cross_entropy <- function(x){
     length = base::ncol(site_pairs)
   )
 
-  for (i in 1:ncol(site_pairs)) {
+  for (i in seq_along(site_pairs)) {
     xe_list[[i]] <- xe(
       u = x %>%
         filter(.data$site == site_pairs[, i][1]) %>%
@@ -149,7 +149,7 @@ cross_entropy <- function(x){
 xe <- function(u, v) {
   if (length(u) != length(v)) abort("`u` and `v` must be of the same length")
   x <- 0
-  for (i in 1:length(u)){
+  for (i in seq_len(u)){
     x <- x + (u[i] * log(v[i]))
   }
   return(-x)

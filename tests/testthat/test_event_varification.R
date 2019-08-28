@@ -1,7 +1,8 @@
 context("Varify Events")
 library(inspectEHR)
 
-ctn <- connect(sqlite_file = "../../data-raw/synthetic_db.sqlite3")
+db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+ctn <- connect(sqlite_file = db_pth)
 core <- make_core(ctn)
 # episode_length <- characterise_episodes(ctn)
 # verified_episodes <- verify_episodes(episode_length)

@@ -16,6 +16,3 @@ a tibble containing summary information for validation at episode
 \description{
 Provides an overview of the reasons for episode invalidation
 }
-\examples{
-episode_validity(episode_length)
-}

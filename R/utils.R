@@ -90,7 +90,8 @@ make_reference <- function(connection) {
   episodes <- dplyr::tbl(connection, "episodes")
   provenance <- dplyr::tbl(connection, "provenance")
 
-  reference <- left_join(episodes, provenance, by = c("provenance" = "file_id")) %>%
+  reference <- left_join(
+    episodes, provenance, by = c("provenance" = "file_id")) %>%
     select(episode_id, nhs_number, start_date, site)
 
   # Accounts for lack of datetime type in SQLite

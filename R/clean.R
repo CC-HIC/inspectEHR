@@ -76,7 +76,8 @@ cleaning_helper <- function(col_vec, col_name, dq_ref = NULL, action = "NA") {
     before <- col_vec
     if (class(type_change) == "character") {
       rlang::inform(
-        paste0("limit action is not defined for: ", col_name, ". using NA instead")
+        paste0(
+          "limit action is not defined for: ", col_name, ". using NA instead")
       )
       pos_vales <- qref %>%
         filter(code_name == col_name) %>%
@@ -99,6 +100,13 @@ cleaning_helper <- function(col_vec, col_name, dq_ref = NULL, action = "NA") {
 
 }
 
+#' Clean Column
+#'
+#' @param df table to clean
+#' @param col_name column name to clean
+#' @param action action of the cleaner
+#'
+#' @importFrom rlang :=
 clean_column <- function(df, col_name, action = "NA") {
 
   dataitem_check <- nrow(qref[qref$code_name == col_name,])
@@ -132,7 +140,7 @@ clean_column <- function(df, col_name, action = "NA") {
     if (action == "NA") {
       df <- df %>%
         mutate(!!quo_name := if_else(
-          .data[[col_name]] < rng["range_min"] | .data[[col_name]] > rng["range_max"],
+  .data[[col_name]] < rng["range_min"] | .data[[col_name]] > rng["range_max"],
           type_change, .data[[col_name]]))
 
     } else if (action == "limits") {

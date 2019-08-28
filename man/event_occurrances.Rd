@@ -18,6 +18,3 @@ a tibble with the number of unique episodes admitted for a given day
 Calculates the number of event occurances for each calendar day, stratified
 by site. Days with 0 event submissions are not listed
 }
-\examples{
-event_occurrances(x, by_site == "UCL")
-}

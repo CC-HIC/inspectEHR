@@ -14,8 +14,10 @@
 #' @export
 #'
 #' @examples
-#' extract(core)
-#' extract(core, input = "NIHR_HIC_ICU_0557")
+#' db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+#' ctn <- connect(sqlite_file = db_path)
+#' make_core(ctn)
+#' extract(core, input = "NIHR_HIC_ICU_0073")
 extract <- function(core_table = NULL, input = NULL) {
 
   if (is.null(core_table)) abort("You must include the core table")
@@ -51,7 +53,6 @@ extract <- function(core_table = NULL, input = NULL) {
 #' variable
 #'
 #' @return a tibble with HIC data for a specified variable
-#' @export
 #'
 #' @importFrom rlang .data !! sym enquo
 #' @importFrom magrittr %>%
@@ -102,13 +103,9 @@ extract_1d <- function(core_table = NULL, input = NULL, data_location = NULL) {
 #' variable
 #'
 #' @return a long table with 1 row per event from the CC-HIC database
-#' @export
 #'
 #' @importFrom rlang .data !! sym enquo
 #' @importFrom magrittr %>%
-#'
-#' @examples
-#' extract_2d(core, input = "NIHR_HIC_ICU_0108", data_location = "integer")
 extract_2d <- function(core_table = NULL, input = NULL, data_location = NULL) {
 
   quo_column <- rlang::enquo(data_location)

@@ -3,7 +3,7 @@
 #' @export launchApp
 #'
 #' @return shiny application object
-#' @import shiny
+#' @importFrom shiny shinyApp
 #'
 #' @examples
 #' \dontrun{launchApp()}

@@ -11,13 +11,14 @@ Description: This package helps to produce data quality reports for CC-HIC.
     There are a lot of helper functions that have been written to facilitate
     data wrangling and cleaning. These need to be separated and ported to
     cleanEHR in due course.
-License: GNU General Public License v3.0
+License: GPL-3
 Depends: R (>= 3.5.0)
 Encoding: UTF-8
 LazyData: true
 Imports:
     DBI,
     dplyr (>= 0.8.0),
+    tidyselect,
     dbplyr,
     ggplot2,
     glue,
@@ -32,15 +33,15 @@ Imports:
     tibble,
     tidyr,
     hms,
-    broom
+    broom,
+    praise,
+    shiny
 RoxygenNote: 6.1.1
 Suggests:
     knitr,
     rmarkdown,
     testthat,
-    covr,
-    praise,
-    shiny
+    covr
 VignetteBuilder: knitr
 URL: https://github.com/CC-HIC/inspectEHR
 BugReports: https://github.com/CC-HIC/inspectEHR

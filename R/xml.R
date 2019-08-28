@@ -66,7 +66,6 @@
 #' #' @return a tibble with summary details of errors
 #' #' @export
 #' #'
-#' #' @import dplyr
 #' #'
 #' #' @examples
 #' #' error_summary(xml_validation)

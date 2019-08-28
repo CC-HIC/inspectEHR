@@ -9,9 +9,14 @@
 #' @return a metadata table
 #'
 #' @examples
-#' makeDict(collect(tbls[["variables"]]))
+#' db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+#' ctn <- connect(sqlite_file = db_path)
+#' make_dict(collect(tbl(ctn, "variables")))
+#' DBI::dbDisconnect()
 make_dict <- function(metadata = NULL) {
-  if (is.null(metadata)) stop("You need to provide a metadata (variables) table")
+  if (is.null(metadata)) {
+    stop("You need to provide a metadata (variables) table")
+  }
 
   data_columns <- metadata %>%
     dplyr::select(-code_name, -long_name, -primary_column) %>%

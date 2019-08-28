@@ -59,7 +59,8 @@
 #'
 #' @examples
 #' # DB Connection
-#' ctn <- connect(sqlite_file = "./data-raw/synthetic_db.sqlite3")
+#' db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+#' ctn <- connect(sqlite_file = db_path)
 #'
 #' # Extract Heart Rates for 5 episodes with default settings
 #' hr_default <- extract_timevarying(ctn, episode_ids = 13639:13643, code_names = "NIHR_HIC_ICU_0108")
@@ -68,11 +69,14 @@
 #' hr_custom <- extract_timevarying(ctn, episode_ids = 13639:13643, code_names = "NIHR_HIC_ICU_0108", cadance = 2, overlap_method = mean)
 #' head(hr_custom)
 #' DBI::dbDisconnect(ctn)
-extract_timevarying <- function(connection, episode_ids = NULL, code_names, rename = NULL, chunk_size = 5000, cadance = 1, overlap_method = "distinct") {
+extract_timevarying <- function(connection, episode_ids = NULL, code_names,
+                                rename = NULL, chunk_size = 5000, cadance = 1,
+                                overlap_method = "distinct") {
   starting <- lubridate::now()
 
   if (!is.null(episode_ids) && class(episode_ids) != "integer") {
-    rlang::abort("`episode_ids` must be given as NULL (the default) or an integer vector of episode ids")
+    rlang::abort("`episode_ids` must be given as NULL (the default) or an
+                 integer vector of episode ids")
   }
 
   if (!(any(code_names %in% "NIHR_HIC_ICU_0411"))) {
@@ -83,11 +87,14 @@ extract_timevarying <- function(connection, episode_ids = NULL, code_names, rena
 
   if (class(overlap_method) != "function") {
     if (overlap_method != "distinct") {
-      rlang::abort("overlap method must equal `distinct` or be a summary function")
+      rlang::abort(
+        "overlap method must equal `distinct` or be a summary function")
     }
   }
 
-  if (class(overlap_method) == "function") rlang::warn("metadata extraction is not yet supported with this feature")
+  if (class(overlap_method) == "function") {
+  rlang::warn("metadata extraction is not yet supported with this feature")
+  }
 
   episode_groups <- dplyr::tbl(connection, "events") %>%
     select(episode_id) %>%
@@ -122,7 +129,8 @@ extract_timevarying <- function(connection, episode_ids = NULL, code_names, rena
 
   if (!is.null(rename)) {
     replacement_names <- rename[match(names(episode_groups), code_names)]
-    names(episode_groups) <- if_else(is.na(replacement_names), names(episode_groups), replacement_names)
+    names(episode_groups) <- if_else(
+      is.na(replacement_names), names(episode_groups), replacement_names)
   }
 
   if (is.null(rename)) {
@@ -136,11 +144,15 @@ extract_timevarying <- function(connection, episode_ids = NULL, code_names, rena
   attr(episode_groups, "lookups") <- lookups
   class(episode_groups) <- append(class(episode_groups), "2-dim", after = 0)
 
-  elapsed_time <- signif(as.numeric(difftime(lubridate::now(), starting, units = "hour")), 2)
+  elapsed_time <- signif(
+    as.numeric(
+      difftime(
+        lubridate::now(), starting, units = "hour")), 2)
   inform(paste(elapsed_time, "hours to process"))
 
   if (requireNamespace("praise", quietly = TRUE)) {
-    praise("${Exclamation}! ${EXCLAMATION}!-${EXCLAMATION}! How ${adjective} was that?!")
+    praise(
+ "${Exclamation}! ${EXCLAMATION}!-${EXCLAMATION}! How ${adjective} was that?!")
     }
 
   return(episode_groups)
@@ -165,7 +177,9 @@ process_all <- function(epi_id, events, metadata, cadance, overlap_method) {
     metadata = metadata,
     start_time = start_time
     ) %>%
-      reduce(full_join, by = "r_diff_time", .init = tibble(r_diff_time = as.numeric(NULL))) %>%
+      reduce(
+        full_join, by = "r_diff_time",
+        .init = tibble(r_diff_time = as.numeric(NULL))) %>%
       rename(time = r_diff_time) %>%
       mutate(episode_id = epi_id) %>%
       arrange(time)
@@ -176,7 +190,8 @@ process_all <- function(epi_id, events, metadata, cadance, overlap_method) {
       split(., .$code_name), process_episode_timestamp,
     metadata = metadata
     ) %>%
-      reduce(full_join, by = "time_stamp", .init = tibble(time_stamp = lubridate::ymd_hms(NULL))) %>%
+      reduce(full_join, by = "time_stamp",
+             .init = tibble(time_stamp = lubridate::ymd_hms(NULL))) %>%
       rename(time = time_stamp) %>%
       mutate(episode_id = epi_id) %>%
       arrange(time)
@@ -190,7 +205,8 @@ process_all <- function(epi_id, events, metadata, cadance, overlap_method) {
     cadance = cadance,
     overlap_method = overlap_method
     ) %>%
-      reduce(full_join, by = "r_diff_time", .init = tibble(r_diff_time = as.numeric(NULL))) %>%
+      reduce(full_join, by = "r_diff_time",
+             .init = tibble(r_diff_time = as.numeric(NULL))) %>%
       rename(time = r_diff_time) %>%
       mutate(episode_id = epi_id) %>%
       arrange(time)
@@ -198,7 +214,8 @@ process_all <- function(epi_id, events, metadata, cadance, overlap_method) {
 }
 
 
-process_episode <- function(df, var_name, metadata, start_time, cadance, overlap_method) {
+process_episode <- function(df, var_name, metadata, start_time, cadance,
+                            overlap_method) {
   stopifnot(!is.na(df$datetime))
 
   prim_col <- metadata %>%
@@ -225,28 +242,31 @@ process_episode <- function(df, var_name, metadata, start_time, cadance, overlap
       mutate(diff_time = difftime(datetime, start_time, units = "hours")) %>%
       mutate(r_diff_time = as.numeric(round_any(diff_time, cadance))) %>%
       group_by(r_diff_time) %>%
-      summarise(overlap_col = overlap_method(.data[[prim_col]], na.rm = TRUE)) %>%
+      summarise(
+        overlap_col = overlap_method(.data[[prim_col]], na.rm = TRUE)) %>%
       rename(!!var_name := overlap_col)
   }
   if (length(meta_names) == 0) {
     return(tb_a)
   }
 
-  names(meta_names) <- paste(var_name, "meta", 1:length(meta_names), sep = ".")
+  names(meta_names) <- paste(var_name, "meta", seq_along(meta_names), sep = ".")
   rename(tb_a, !!!meta_names)
 }
 
 
 #' Process episode exactly
 #'
-#' Process a single episode from the CC-HIC databse into a rectangular table with
-#' a time column corresponding to the exact period (in hours) from admission.
+#' Process a single episode from the CC-HIC databse into a rectangular table
+#' with a time column corresponding to the exact period (in hours) from
+#' admission.
 #'
-#' @param df a dataframe containing all episode information (It is unlikely that this
-#' will be accessed directly)
+#' @param df a dataframe containing all episode information (It is unlikely that
+#'   this will be accessed directly)
 #' @param var_name the CC-HIC codename for the current variable being processed
 #' @param metadata the CC-HIC metadata table
-#' @param start_time the episode start time (or whatever other anchor you wish to use)
+#' @param start_time the episode start time (or whatever other anchor you wish
+#'   to use)
 process_episode_exact <- function(df, var_name, metadata, start_time) {
   stopifnot(!is.na(df$datetime))
 
@@ -259,7 +279,10 @@ process_episode_exact <- function(df, var_name, metadata, start_time) {
 
   tb_a <- df %>%
     mutate(datetime = as.POSIXct(datetime, origin = "1970-01-01 00:00:00")) %>%
-    mutate(r_diff_time = as.numeric(difftime(datetime, start_time, units = "hours"))) %>%
+    mutate(
+      r_diff_time = as.numeric(
+        difftime(
+          datetime, start_time, units = "hours"))) %>%
     distinct(r_diff_time, .keep_all = TRUE) %>%
     select(-event_id, -episode_id, -datetime, -code_name) %>%
     rename(!!var_name := prim_col) %>%
@@ -269,7 +292,7 @@ process_episode_exact <- function(df, var_name, metadata, start_time) {
     return(tb_a)
   }
 
-  names(meta_names) <- paste(var_name, "meta", 1:length(meta_names), sep = ".")
+  names(meta_names) <- paste(var_name, "meta", seq_along(meta_names), sep = ".")
   rename(tb_a, !!!meta_names)
 }
 
@@ -277,12 +300,13 @@ process_episode_exact <- function(df, var_name, metadata, start_time) {
 #' Process episode with a timestamp
 #'
 #' Process a single episode into a rectangular table with a timestamp column
-#' instead of the usual difftime since admission. The timestamp column corresponds
-#' to the exact timestamp of the event of interest. This is particularly useful for
-#' when you need to combine episodes into spells. Take care around times of clock change.
+#' instead of the usual difftime since admission. The timestamp column
+#' corresponds to the exact timestamp of the event of interest. This is
+#' particularly useful for when you need to combine episodes into spells. Take
+#' care around times of clock change.
 #'
-#' @param df a dataframe containing all episode information (It is unlikely that this
-#' will be accessed directly)
+#' @param df a dataframe containing all episode information (It is unlikely that
+#'   this will be accessed directly)
 #' @param var_name the CC-HIC codename for the current variable being processed
 #' @param metadata the CC-HIC metadata table
 process_episode_timestamp <- function(df, var_name, metadata) {
@@ -296,7 +320,9 @@ process_episode_timestamp <- function(df, var_name, metadata) {
   meta_names <- find_2d_meta(metadata, var_name)
 
   tb_a <- df %>%
-    mutate(time_stamp = as.POSIXct(datetime, origin = "1970-01-01 00:00:00")) %>%
+    mutate(
+      time_stamp = as.POSIXct(
+        datetime, origin = "1970-01-01 00:00:00")) %>%
     select(-event_id, -episode_id, -code_name, -datetime) %>%
     rename(!!var_name := prim_col) %>%
     select(time_stamp, !!var_name, !!!meta_names)
@@ -305,7 +331,7 @@ process_episode_timestamp <- function(df, var_name, metadata) {
     return(tb_a)
   }
 
-  names(meta_names) <- paste(var_name, "meta", 1:length(meta_names), sep = ".")
+  names(meta_names) <- paste(var_name, "meta", seq_along(meta_names), sep = ".")
   rename(tb_a, !!!meta_names)
 }
 
@@ -353,13 +379,11 @@ find_2d_meta <- function(metadata, c_name) {
 #' that expect a regular cadance to the table.
 #'
 #' @param df a dense time series table produced from extract_timevarying
-#' @param cadance the cadance by which you want to expand the table (default = 1 hour)
+#' @param cadance the cadance by which you want to expand the table
+#'   (default = 1 hour)
 #'
 #' @return a sparse time series table
 #' @export
-#'
-#' @examples
-#' expand_missing(tb_1)
 expand_missing <- function(df, cadance = 1) {
   df %>%
     select(episode_id, time) %>%

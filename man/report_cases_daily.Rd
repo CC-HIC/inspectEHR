@@ -15,6 +15,3 @@ breakdown of unique daily cases
 \description{
 Reports Case Numbers according to day
 }
-\examples{
-report_cases_daily(unique_cases)
-}

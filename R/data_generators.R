@@ -1,7 +1,8 @@
 # Creates a dictionary for site codes
 
 site_reference <- dplyr::tibble(
-  unit_code = c("D20N", "D20", "K32", "V47", "H09", "Z89", "C90", "Q13", "S28", "F42", "F54", "Q70", "Q70W", "R42"),
+  unit_code = c("D20N", "D20", "K32", "V47", "H09", "Z89",
+                "C90", "Q13", "S28", "F42", "F54", "Q70", "Q70W", "R42"),
   site_code = c(
     rep("RGT", 2),
     rep("GSTT??", 4),

@@ -50,6 +50,3 @@ the following situations:
 Checks are taken to ensure that episodes are non-overlapping, though they can
 run immediately from one to the next.
 }
-\examples{
-epi_length(ctn)
-}

@@ -250,10 +250,12 @@ report <- function(database = NULL,
       # Now. But we do need a better way to represent these items
 
       for (s in seq_along(all_sites)) {
-        hc <- make_heatcal(reference_tbl = reference, dataitem_tbl = df, site = all_sites[s])
+        hc <- make_heatcal(
+          reference_tbl = reference, dataitem_tbl = df, site = all_sites[s])
         hc_plot <- plot(hc, display = FALSE)
         ggsave(hc_plot, filename = glue(
-          "{output_folder}plots/{hic_codes[i]}/{hic_codes[i]}_heatcal_{all_sites[s]}.svg"
+          "{output_folder}plots/{hic_codes[i]}/
+          {hic_codes[i]}_heatcal_{all_sites[s]}.svg"
         ))
       }
 
@@ -273,7 +275,7 @@ report <- function(database = NULL,
         purrr::imap(plots,
           ~ ggsave(.x,
                    filename = glue(
-                     "{output_folder}plots/{hic_codes[i]}/{hic_codes[i]}_{.y}.svg"
+           "{output_folder}plots/{hic_codes[i]}/{hic_codes[i]}_{.y}.svg"
                      )
                    )
           )

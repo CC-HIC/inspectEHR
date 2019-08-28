@@ -7,8 +7,8 @@
 process_episode_timestamp(df, var_name, metadata)
 }
 \arguments{
-\item{df}{a dataframe containing all episode information (It is unlikely that this
-will be accessed directly)}
+\item{df}{a dataframe containing all episode information (It is unlikely that
+this will be accessed directly)}
 
 \item{var_name}{the CC-HIC codename for the current variable being processed}
 
@@ -16,7 +16,8 @@ will be accessed directly)}
 }
 \description{
 Process a single episode into a rectangular table with a timestamp column
-instead of the usual difftime since admission. The timestamp column corresponds
-to the exact timestamp of the event of interest. This is particularly useful for
-when you need to combine episodes into spells. Take care around times of clock change.
+instead of the usual difftime since admission. The timestamp column
+corresponds to the exact timestamp of the event of interest. This is
+particularly useful for when you need to combine episodes into spells. Take
+care around times of clock change.
 }

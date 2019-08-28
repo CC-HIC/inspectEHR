@@ -941,10 +941,14 @@ coverage_generic_1d <- function(x, reference_tbl = NULL) {
 
   base_calendar <- reference_tbl %>%
     group_by(site) %>%
-    summarise(start = lubridate::as_date(lubridate::floor_date(min(start_date), unit = "month")),
-              end = lubridate::as_date(lubridate::ceiling_date(max(start_date), unit = "month")-1)) %>%
+    summarise(
+      start = lubridate::as_date(
+        lubridate::floor_date(min(start_date), unit = "month")),
+      end = lubridate::as_date(
+        lubridate::ceiling_date(max(start_date), unit = "month")-1)) %>%
     tidyr::nest(start, end, .key = "date") %>%
-    mutate(date = purrr::map(date, ~ seq.Date(.x$start, .x$end, by = "day"))) %>%
+    mutate(
+      date = purrr::map(date, ~ seq.Date(.x$start, .x$end, by = "day"))) %>%
     unnest(date)
 
   out <- left_join(base_calendar, base_events, by = c("site", "date")) %>%
@@ -994,10 +998,14 @@ coverage_generic_2d <- function(x, reference_tbl = NULL) {
 
   base_calendar <- reference_tbl %>%
     group_by(site) %>%
-    summarise(start = lubridate::as_date(lubridate::floor_date(min(start_date), unit = "month")),
-              end = lubridate::as_date(lubridate::ceiling_date(max(start_date), unit = "month")-1)) %>%
+    summarise(
+      start = lubridate::as_date(
+        lubridate::floor_date(min(start_date), unit = "month")),
+      end = lubridate::as_date(
+        lubridate::ceiling_date(max(start_date), unit = "month")-1)) %>%
     tidyr::nest(start, end, .key = "date") %>%
-    mutate(date = purrr::map(date, ~ seq.Date(.x$start, .x$end, by = "day"))) %>%
+    mutate(
+      date = purrr::map(date, ~ seq.Date(.x$start, .x$end, by = "day"))) %>%
     unnest(date)
 
   out <- left_join(base_calendar, base_events, by = c("site", "date")) %>%

@@ -33,6 +33,3 @@ date and time pairings that denote a singular event:
 If a date or time component is missing, nothing is returned as the datetime
 cannot be accurately formed.
 }
-\examples{
-resolve_date_time(df, death_date, death_time)
-}

@@ -7,16 +7,18 @@
 process_episode_exact(df, var_name, metadata, start_time)
 }
 \arguments{
-\item{df}{a dataframe containing all episode information (It is unlikely that this
-will be accessed directly)}
+\item{df}{a dataframe containing all episode information (It is unlikely that
+this will be accessed directly)}
 
 \item{var_name}{the CC-HIC codename for the current variable being processed}
 
 \item{metadata}{the CC-HIC metadata table}
 
-\item{start_time}{the episode start time (or whatever other anchor you wish to use)}
+\item{start_time}{the episode start time (or whatever other anchor you wish
+to use)}
 }
 \description{
-Process a single episode from the CC-HIC databse into a rectangular table with
-a time column corresponding to the exact period (in hours) from admission.
+Process a single episode from the CC-HIC databse into a rectangular table
+with a time column corresponding to the exact period (in hours) from
+admission.
 }

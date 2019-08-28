@@ -18,7 +18,8 @@ test_that("ICNARC codes of a variety of formats are verified correctly", {
   expect_true(verify_icnarc("01-01-01-01-01"))
 })
 
-test_that("incorrect ICNARC codes of a variety of formats are rejected correctly", {
+test_that("incorrect ICNARC codes of a variety
+          of formats are rejected correctly", {
   expect_false(verify_icnarc("1.1.1.."))
   expect_false(verify_icnarc("1.1.1.NA.NA"))
   expect_false(verify_icnarc("lemon"))
@@ -37,8 +38,10 @@ test_that("incorrect data types are handled", {
 test_that("nhs numbers validate correctly", {
   expect_equal(verify_nhs("6744424270"), TRUE)
   expect_equal(verify_nhs(c("6744424270", "2925091350")), c(TRUE, TRUE))
-  expect_equal(verify_nhs(c("6744424270", "0083041737", "2401060723")), c(TRUE, TRUE, TRUE))
+  expect_equal(verify_nhs(c("6744424270", "0083041737", "2401060723")),
+               c(TRUE, TRUE, TRUE))
   expect_equal(verify_nhs("1234567890"), FALSE)
   expect_equal(verify_nhs(c("6744424270", "1234567890")), c(TRUE, FALSE))
-  expect_equal(verify_nhs(c("6744424270", "0083041737", "1234567890")), c(TRUE, TRUE, FALSE))
+  expect_equal(verify_nhs(c("6744424270", "0083041737", "1234567890")),
+               c(TRUE, TRUE, FALSE))
 })

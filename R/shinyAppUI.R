@@ -1,7 +1,8 @@
 #' Shiny app server object
 #'
+#' Will need to import shiny when using this
+#'
 #' @importFrom graphics hist
-#' @import shiny
 # shinyAppUI <- fluidPage(
 # # create the shiny application user interface
 #

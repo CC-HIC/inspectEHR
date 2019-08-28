@@ -30,7 +30,8 @@ make_heatcal <- function(
   if (!is.null(dataitem_tbl)) {
     type <- "events"
     if (class(dataitem_tbl)[1] %in% preserved_classes) {
-      abort("You must supply an extracted table for this functionality. See `extract()`")
+      abort("You must supply an extracted table for this functionality. \n
+            See `extract()`")
     }
   } else {
     type <- "episodes"
@@ -69,7 +70,7 @@ make_heatcal <- function(
 #' @importFrom lubridate floor_date wday days
 find_first_sunday <- function(x) {
   first <- floor_date(x, "month")
-  dow <- sapply(seq(0, 6), function(x) wday(first + days(x)))
+  dow <- vapply(seq(0, 6), function(x) wday(first + days(x)))
   first_sunday <- first + days(which(dow == 1) - 1)
 }
 
@@ -115,7 +116,7 @@ create_calendar_template <- function(x = NULL,
     ) %>%
     mutate(
       first_sundays = as.Date(
-        sapply(years, find_first_sunday),
+        vapply(years, find_first_sunday),
         origin = "1970/01/01"
       ),
       remaining_days = as.integer(first_sundays - years),

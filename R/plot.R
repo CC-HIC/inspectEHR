@@ -15,7 +15,8 @@ plot_ecdf <- function(x, sites_col = NULL, verify = TRUE) {
   subtitle <- str_trunc(
     qref[qref$code_name == attr(x, "code_name"), "short_name", drop = TRUE],
     40)
-  x_lab <- qref[qref$code_name == attr(x, "code_name"), "assumed_units", drop = TRUE]
+  x_lab <- qref[qref$code_name == attr(x, "code_name"), "assumed_units",
+                drop = TRUE]
   if (is.na(x_lab)) x_lab <- "Units not defined"
 
   if (is.null(sites_col)) {
@@ -646,6 +647,7 @@ plot.real_2d <- function(x, display = TRUE, periodicity = TRUE, ...) {
 #' theme_minimal theme element_blank element_text geom_segment aes labs
 #' ylab xlab coord_equal
 #' @importFrom scales viridis_pal
+#' @importFrom rlang .data
 autoplot.heat_cal <- function(object, ...) {
 
   type <- attr(object, "type")
@@ -666,29 +668,30 @@ autoplot.heat_cal <- function(object, ...) {
   object %>%
     ggplot() +
     geom_tile(aes(
-      x = week_of_year,
-      y = day_of_week,
+      x = .data$week_of_year,
+      y = .data$day_of_week,
       fill = .data[[type]]),
       colour = "#FFFFFF") +
-    facet_grid(year ~ .) +
+    facet_grid(.data$year ~ .) +
     theme_minimal() +
     theme(panel.grid.major = element_blank(),
-          #plot.title = element_text(hjust = 0.5),
           axis.text.x = element_blank(),
           axis.title.y = element_blank(),
           axis.title.x = element_blank()
     ) +
-    geom_segment(aes(x = x_start, y = y_start,
-                     xend = x_end, yend = y_end),
-                 colour = "black", size = 0.5,
-                 lineend = "round", linejoin = "round",
-                 data = grid_lines
+    geom_segment(
+      aes(x = .data$x_start, y = .data$y_start,
+          xend = .data$x_end, yend = .data$y_end),
+      colour = "black", size = 0.5,
+      lineend = "round", linejoin = "round",
+      data = grid_lines
     ) +
     scale_fill_viridis_c(
       rescaler = function(x, to = c(0, 1), from = NULL) {
         if_else(
           x <= max_limit,
-          scales::rescale(x, to = to, from = c(min(x, na.rm = TRUE), max_limit)), 1
+          scales::rescale(
+            x, to = to, from = c(min(x, na.rm = TRUE), max_limit)), 1
       )}, na.value = "grey60") +
     labs(title = title, subtitle = subtitle) +
     ylab(label = "Day of Week") +
