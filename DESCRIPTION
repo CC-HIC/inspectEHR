@@ -11,7 +11,7 @@ Description: This package helps to produce data quality reports for CC-HIC.
     There are a lot of helper functions that have been written to facilitate
     data wrangling and cleaning. These need to be separated and ported to
     cleanEHR in due course.
-Depends: R (>= 3.4.3)
+Depends: R
 License: GNU General Public License v3.0
 Encoding: UTF-8
 LazyData: true
