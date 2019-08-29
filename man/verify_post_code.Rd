@@ -2,7 +2,7 @@
 % Please edit documentation in R/verify_codes.R
 \name{verify_post_code}
 \alias{verify_post_code}
-\title{Varify Post Code}
+\title{Verify Post Code}
 \usage{
 verify_post_code(post_code = NULL)
 }
@@ -13,7 +13,7 @@ verify_post_code(post_code = NULL)
 a logical vector
 }
 \description{
-Varify that a particular string conforms to a UK Post Code. Note, this does
+Verify that a particular string conforms to a UK Post Code. Note, this does
 not actually check a database (i.e. validation) to see if the post code
 exists. It only checks that the Post Code meets the correct technical
 specification for a postcode. There are two reasons why validation isn't a
@@ -23,5 +23,5 @@ use of the royal mail database for this purpose isn't free and would make
 inspectEHR larger than is necessary.
 }
 \examples{
-varify_post_code("AL5 3HE")
+verify_post_code("AL5 3HE")
 }

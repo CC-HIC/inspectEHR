@@ -1,23 +1,33 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-inspectEHR <a href='https://cc-hic.github.io/inspectEHR/'><img src='man/figures/logo.png' align="right" height="139" /></a>
-===========================================================================================================================
+
+# inspectEHR <a href='https://cc-hic.github.io/inspectEHR/'><img src='man/figures/logo.png' align="right" height="139" /></a>
 
 <!-- badges: start -->
+
 <!-- badges: end -->
-Overview
---------
 
-inspectEHR is a data wrangling, cleaning and reporting tool for CC-HIC. It is designed to run with the CC-HIC EAV table structure (which at present exists in PostgreSQL and SQLite flavours). We are about to undergo a major rewrite to a OHDSI CDM version 6, so this package will be in flux. Once these functions have been ported across and tested, we will aim to submit to CRAN. Please see the `R` vignettes for further details on how to use the package to perform the most common data wrangling tasks:
+## Overview
 
--   `extract_demographics()` produces a table for time invariant variables
--   `extract_timevarying()` produces a table for longitudinal variables
--   `clean()` cleans the above tables according to pre-defined standards.
--   `report()` produces a data quality report (note, being fixed for IDHS usage)
--   `shiny_report()` starts an interactive shiny session for the data quality reports (under development)
+inspectEHR is a data wrangling, cleaning and reporting tool for CC-HIC.
+It is designed to run against the CC-HIC EAV table structure (which at
+present exists in PostgreSQL and SQLite flavours). We are about to
+undergo a major rewrite to a OHDSI CDM version 6, so this package will
+be in flux. Once these functions have been ported across and tested, we
+will aim to submit to CRAN. Please see the `R` vignettes for further
+details on how to use the package to perform the most common tasks:
 
-Installation
-------------
+  - `extract_demographics()` produces a table for time invariant
+    variables
+  - `extract_timevarying()` produces a table for longitudinal variables
+  - `clean()` cleans the above tables according to pre-defined
+    standards.
+  - `report()` produces a data quality report (note, being fixed for
+    IDHS usage)
+  - `shiny_report()` starts an interactive shiny session for the data
+    quality reports (under development)
+
+## Installation
 
 ``` r
 # install directly from github with
@@ -25,36 +35,43 @@ library(devtools)
 install_github("cc-hic/inspectEHR")
 ```
 
-A copy should already be installed into the group library for the CC-HIC team inside the UCL safe haven. If you are having problems with this, please contact me directly.
+A copy should already be installed into the group library for the CC-HIC
+team inside the UCL safe haven. If you are having problems with this,
+please contact me directly.
 
-Usage
------
+## Usage
 
-A synthetic database ships with inspectEHR for you to explore. Actual values are essentially garbage, but everything is internally consistent.
+A synthetic database with 1000 patients ships with inspectEHR for you to
+explore. Actual values are garbage, but everything is internally
+consistent. The code to produce a more comprehensive synthetic test
+database is found in `data-raw/write_synthetic_data.R`. We have skimmmed
+off the first 1000 patients so as to not make the synehtic database
+combersome.
 
 ``` r
 library(inspectEHR); library(dbplyr)
 
 # Synthetic database ships with inspectEHR
-ctn <- connect(sqlite_file = "./data-raw/synthetic_db.sqlite3")
+db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+ctn <- connect(sqlite_file = db_pth)
 
 # Extract static variables. Rename on the fly.
 dtb <- extract_demographics(
   connection = ctn,
-  code_names = c("NIHR_HIC_ICU_0017"),
-  rename = c("height")
+  episode_ids = 13639:13643,
+  code_names = c("NIHR_HIC_ICU_0017", "NIHR_HIC_ICU_0019"),
+  rename = c("height", "weight")
 )
 
 head(dtb)
-#> # A tibble: 6 x 2
+#> # A tibble: 5 x 2
 #>   episode_id height
 #>        <int>  <dbl>
-#> 1          1   152.
-#> 2          2   185.
-#> 3          3   167.
-#> 4          4   168.
-#> 5          5   139.
-#> # … with 1 more row
+#> 1      13639   150.
+#> 2      13640   173.
+#> 3      13641   143.
+#> 4      13642   156.
+#> 5      13643   168.
 
 # Extract time varying variables. Rename on the fly.
 # Pull out to any arbitrary temporal resolution and custom define the
@@ -63,75 +80,132 @@ ltb <- extract_timevarying(
   connection = ctn,
   code_names =  "NIHR_HIC_ICU_0108", rename = "hr"
 )
-#> [1] "0.0049 hours to process"
 
 head(ltb)
 #> # A tibble: 6 x 3
 #>    time    hr episode_id
 #>   <dbl> <int>      <int>
-#> 1     0    85          1
-#> 2     1    71          1
-#> 3     2    95          1
-#> 4     3    82          1
-#> 5     4    72          1
+#> 1     0    69      13626
+#> 2     1    93      13626
+#> 3     2    86      13626
+#> 4     3    93      13626
+#> 5     4    63      13626
 #> # … with 1 more row
 ```
 
-Getting help
-------------
+## Getting help
 
-If you find a bug, please file a minimal reproducible example on [github](https://github.com/cc-hic/inspectEHR/issues).
+If you find a bug, please file a minimal reproducible example on
+[github](https://github.com/cc-hic/inspectEHR/issues).
 
-Reporting Data Quality Issues
------------------------------
+## Reporting Data Quality Issues
 
-Please submit an issue and tag it with "data quality". Data quality issues are often related to site in specific. If this is the case, please also tag the site.
+Please submit an issue and tag it with “data quality”. Data quality
+issues are often related to a specific site. If this is the case, please
+also tag the site.
 
-Data Quality Rules
-------------------
+## Data Quality Rules
 
-The data quality rules are largely based upon standards set by OHDSI<sup>1</sup>, and Khan et al.<sup>2</sup>. The CC-HIC currently uses an episode centric model. As such, many of the data quality checks are based around this way of thinking. As we move to OMOP (a patient centric model) many of these will change accordingly.
+The data quality rules are largely based upon standards set by
+OHDSI<sup>1</sup>, and the consensus guidelines by Khan et
+al.<sup>2</sup>. The CC-HIC currently uses an episode centric model. As
+such, many of the data quality checks are based around this way of
+thinking. As we move to OMOP (a patient centric model) many of these
+will change accordingly. General conventions follow that:
 
-### Episode Characterisation
+  - Verification refers to an intenal check of the data, possibly
+    against a data specification or domain knowledge.
+  - Validation refers to an external check of the data, against a
+    secondary resource that is known to be trusted.
 
--   Internal consistency check of episode
--   Each episode has a unique identifier
--   Each episode has a start date
--   Each episode has an end date defined by one of:
-    -   End of episode date time (often administrative in nature and used with caution)
-    -   On unit death date time from any means
-    -   Death
-    -   Brain stem Death
-    -   "Body Removal": strongly suggesting death
-    -   The last measured bedside physiological result (HR and SpO2)
+### Episode Verification
 
-Records that are flagged as "open" are dropped.
+  - Internal consistency check of episode
+      - Each episode has a unique identifier
+      - Each episode has a start date
+      - Each episode has an end date defined by one of:
+          - End of episode date time (often administrative in nature and
+            used with caution)
+          - On unit death date time from any means
+              - Death
+              - Brain stem Death (BSD)
+              - “Body Removal”: strongly suggesting death
+          - The last measured bedside physiological result (HR and SpO2)
+      - Death (other than BSD) cannot occur before the last caputre of a
+        direct physiological measure (e.g. a heart rate, or a blood
+        pressure), but could occur before the return of a lab measure
+        (e.g. a CRP or a pathology result)
+      - Records that are flagged as “open” are dropped.
 
-### Event Characterisation
+### Event/Value Verification
 
--   Events occur within their episode (within a reasonable buffer time)
--   Events fall within range validation checks
--   Events are not duplicates
--   Events are contributed over time in consistent manner
+  - Value conformance: data conforms to accepted type and formatting
+    constraints
+  - Relational conformance: unique keys are not duplicated and there are
+    no orphaned rows in the database
+  - Computational conformance: calculated and contributed values agree
+    with oneanother
+      - e.g. BMI (derived from height and weight) in plausible range and
+        agree with a contributed BMI
+      - e.g. APACHE in plausible range and agree with a contributed
+        APACHE
+  - Completeness: contributed data items match local capability
+    (i.e. missingness only occurs when the data doesn’t exist)
+  - Plausibility:
+      - Uniqueness plausibility: descriptions of singular events/objects
+        are not duplicated
+      - Atemporal plausibility:
+          - Events occur within their episode (within a reasonable
+            buffer time)
+          - Events fall within an accepted range, follow the expected
+            distribution and agree with internal/local knowledge
+          - Distributions for independent measures of the same fact are
+            in agreement:
+              - e.g. Systolic \> MAP \> Diastolic
+              - e.g. blood gas sodium and lab sodium
+              - e.g. menorrhagia diagnosis only linked to female sex
+          - Repeated measures of the same event show the expected
+            variability
+      - Temporal plausibility:
+          - Observed values, and sequences of values that represent
+            state transitions, correspond to an expected temporal
+            property:
+              - e.g. Hosp Admission -\> ICU Admission -\> ICU Discharge
+                -\> Hosp Discharge
+          - Value density over time are consistent with local
+            expectations
+              - e.g. busy and quiet periods are reflected in the data
 
-### Event Restrictions
+### Event Validation
 
--   Co-occurrence events:
-    -   Systolic &gt; MAP &gt; Diastolic
-    -   BMI (derived from height and weight) in plausible range
-    -   Organ support days cannot exceed episode duration
+The same principles listed above can be retested under a validation
+framework. That is to seak an external resource to validate the values
+in question. An aim is to check the data against the ICNARC reports,
+which will allows for some external validation against a gold standard
+resource. At present, the validation that is performed is to compaire
+all sites against each other. In this sense, each site is used as a
+validation check against the others. Distrepancies should either be due
+to systemic errors, or differences in casemix.
 
-### Statistical Evaluations
+## Synthetic Database
 
--   Events that are known to follow a particular distribution, conform to this distribution.
--   Kolmogorov-Smirnov testing checks for major distributional deviation between contributing sites. Deviations are often either due to a data quality issue, or a major shift in case mix.
+There is a copy of the CC-HIC database located in
+`data-raw/synthetic_db.sqlite3`. This is a structurally sound copy of
+the real database, but entirely hand crafted (so there is no patient
+data here). It is quite sparse at present, but I will add more variables
+as time goes on. For now, it acts as a test database to make sure
+inspectEHR works as it
+    should.
 
-Synthetic Database
-------------------
-
-There is a copy of the CC-HIC database located in `data-raw/synthetic_db.sqlite3`. This is a structurally sound copy of the real database, but entirely hand crafted (so there is no patient data here). It's quite sparse at present, but I will add more variables as time goes on. For now, it acts as a test database to make sure inspectEHR works as it should.
-
-------------------------------------------------------------------------
+-----
 
 1.  <https://www.ohdsi.org/analytic-tools/achilles-for-data-characterization/>
-2.  Kahn, Michael G.; Callahan, Tiffany J.; Barnard, Juliana; Bauck, Alan E.; Brown, Jeff; Davidson, Bruce N.; Estiri, Hossein; Goerg, Carsten; Holve, Erin; Johnson, Steven G.; Liaw, Siaw-Teng; Hamilton-Lopez, Marianne; Meeker, Daniella; Ong, Toan C.; Ryan, Patrick; Shang, Ning; Weiskopf, Nicole G.; Weng, Chunhua; Zozus, Meredith N.; and Schilling, Lisa (2016) "A Harmonized Data Quality Assessment Terminology and Framework for the Secondary Use of Electronic Health Record Data," eGEMs (Generating Evidence & Methods to improve patient outcomes): Vol. 4: Iss. 1, Article 18.
+2.  Kahn, Michael G.; Callahan, Tiffany J.; Barnard, Juliana; Bauck,
+    Alan E.; Brown, Jeff; Davidson, Bruce N.; Estiri, Hossein; Goerg,
+    Carsten; Holve, Erin; Johnson, Steven G.; Liaw, Siaw-Teng;
+    Hamilton-Lopez, Marianne; Meeker, Daniella; Ong, Toan C.; Ryan,
+    Patrick; Shang, Ning; Weiskopf, Nicole G.; Weng, Chunhua; Zozus,
+    Meredith N.; and Schilling, Lisa (2016) “A Harmonized Data Quality
+    Assessment Terminology and Framework for the Secondary Use of
+    Electronic Health Record Data,” eGEMs (Generating Evidence & Methods
+    to improve patient outcomes): Vol. 4: Iss. 1, Article 18.

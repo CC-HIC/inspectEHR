@@ -74,7 +74,7 @@ extract_demographics <- function(connection = NULL, episode_ids = NULL,
 
   complete_fields <- tb_base %>%
     select(-episode_id, -code_name) %>%
-    select_if(function(x) !(all(is.na(x)))) %>%
+    dplyr::select_if(function(x) !(all(is.na(x)))) %>%
     names()
 
   tb_segments <- vector(mode = "list", length = length(complete_fields))

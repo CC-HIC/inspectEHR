@@ -16,7 +16,7 @@
 #' @importFrom rlang abort
 #'
 #' @examples
-#' validate_nhs("6744424270") # expect TRUE
+#' verify_nhs("6744424270") # expect TRUE
 verify_nhs <- function(nhs_numbers = NULL) {
   if (class(nhs_numbers) != "character") {
     rlang::abort("Please enter NHS Numbers as characters")
@@ -123,7 +123,7 @@ generate_nhs <- function(size = 1) {
 #' @export
 #'
 #' @examples
-#' varify_post_code("AL5 3HE")
+#' verify_post_code("AL5 3HE")
 verify_post_code <- function(post_code = NULL) {
   test_pattern <- paste0(
     "^((([A-Za-z][0-9]{1,2})|",
@@ -220,9 +220,9 @@ generate_post_code <- function(size = 1) {
 #' @importFrom purrr map
 #'
 #' @examples
-#' varify_icnarc("01.06.04.20.16") # correctly formatted
-#' varify_icnarc("1.6.4.20.16") # not strictly correct, but parsable
-#' varify_icnarc("01-6-04.20.16") # annoying, but parsable
+#' verify_icnarc("01.06.04.20.16") # correctly formatted
+#' verify_icnarc("1.6.4.20.16") # not strictly correct, but parsable
+#' verify_icnarc("01-6-04.20.16") # annoying, but parsable
 verify_icnarc <- function(icnarc_code = NULL) {
   if (class(icnarc_code) != "character") {
     rlang::abort("Please enter ICNARC code as characters")

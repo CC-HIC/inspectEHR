@@ -45,12 +45,13 @@ ctn <- connect(sqlite_file = db_pth)
 ## Pre-requisites
 core <- make_core(ctn)
 episode_length <- characterise_episodes(ctn)
+ve <- verify_episodes(episode_length)
 
 ## Data item extraction
 hr <- extract(core, input = "NIHR_HIC_ICU_0108")
 
 ## Full varification
-vhr <- verify_events(hr, episode_length)
+vhr <- verify_events(hr, ve)
 head(vhr)
 DBI::dbDisconnect(ctn)
 }

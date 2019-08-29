@@ -38,12 +38,13 @@
 #' ## Pre-requisites
 #' core <- make_core(ctn)
 #' episode_length <- characterise_episodes(ctn)
+#' ve <- verify_episodes(episode_length)
 #'
 #' ## Data item extraction
 #' hr <- extract(core, input = "NIHR_HIC_ICU_0108")
 #'
 #' ## Full varification
-#' vhr <- verify_events(hr, episode_length)
+#' vhr <- verify_events(hr, ve)
 #' head(vhr)
 #' DBI::dbDisconnect(ctn)
 verify_events <- function(x, los_table = NULL) {
@@ -158,6 +159,7 @@ verify_range <- function(x = NULL) {
   UseMethod("verify_range", x)
 }
 
+#' @export
 #' @importFrom rlang abort
 verify_range.default <- function(...) {
   rlang::abort("There are no methods defined for this data type")
@@ -169,7 +171,7 @@ verify_range.default <- function(...) {
 #' The generic function for numeric type range verification.
 #'
 #' @param x an extracted table
-#'
+#' @export
 #' @importFrom magrittr %>%
 #' @importFrom dplyr left_join mutate case_when select
 #' @importFrom rlang .data
@@ -186,7 +188,7 @@ verify_range_numeric <- function(x = NULL) {
     select(.data$event_id, .data$range_error)
 }
 
-
+#' @export
 verify_range.real_2d <- function(x = NULL) {
   x <- verify_range_numeric(x)
   if (!("real_2d" %in% class(x))) {
@@ -195,7 +197,7 @@ verify_range.real_2d <- function(x = NULL) {
   return(x)
 }
 
-
+#' @export
 verify_range.real_1d <- function(x = NULL) {
   x <- verify_range_numeric(x)
   if (!("real_1d" %in% class(x))) {
@@ -204,7 +206,7 @@ verify_range.real_1d <- function(x = NULL) {
   return(x)
 }
 
-
+#' @export
 verify_range.integer_2d <- function(x = NULL) {
   x <- verify_range_numeric(x)
   if (!("integer_2d" %in% class(x))) {
@@ -213,7 +215,7 @@ verify_range.integer_2d <- function(x = NULL) {
   return(x)
 }
 
-
+#' @export
 verify_range.integer_1d <- function(x = NULL) {
   x <- verify_range_numeric(x)
   if (!("integer_1d" %in% class(x))) {
@@ -227,7 +229,7 @@ verify_range.integer_1d <- function(x = NULL) {
 #' The generic function for string type range verification.
 #'
 #' @param x an extracted table
-#'
+#' @export
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data !! enquo
 #' @importFrom tidyr unnest
@@ -340,7 +342,7 @@ verify_range_string <- function(x = NULL) {
   return(x)
 }
 
-
+#' @export
 verify_range.string_2d <- function(x = NULL) {
   x <- verify_range_string(x)
   if (!("string_2d" %in% class(x))) {
@@ -349,7 +351,7 @@ verify_range.string_2d <- function(x = NULL) {
   return(x)
 }
 
-
+#' @export
 verify_range.string_1d <- function(x = NULL) {
   x <- verify_range_string(x)
   if (!("string_1d" %in% class(x))) {
@@ -366,7 +368,7 @@ verify_range.string_1d <- function(x = NULL) {
 #' before 1900-01-01, which seems reasonable.
 #'
 #' @param x an extracted table
-#'
+#' @export
 #' @importFrom rlang .data
 #' @importFrom magrittr %>%
 #' @importFrom dplyr case_when mutate select
@@ -390,13 +392,12 @@ verify_range.date_1d <- function(x = NULL) {
   return(x)
 }
 
-
 #' Range Checks - Times
 #'
 #' Verifies that all times are between 00:00:00 and 23:59:59
 #'
 #' @param x an extracted table
-#'
+#' @export
 #' @importFrom rlang .data
 #' @importFrom magrittr %>%
 #' @importFrom dplyr case_when mutate select
@@ -428,7 +429,7 @@ verify_range.time_1d <- function(x = NULL) {
 #' before 1900-01-01 00:00:00, which seems reasonable.
 #'
 #' @param x an extracted table
-#'
+#' @export
 #' @importFrom rlang .data
 #' @importFrom magrittr %>%
 #' @importFrom dplyr case_when mutate select
@@ -495,6 +496,7 @@ verify_bounds <- function(x, ...) {
   UseMethod("verify_bounds", x)
 }
 
+#' @export
 #' @importFrom rlang abort
 verify_bounds.default <- function(...) {
   rlang::abort("There are no methods defined for this data type")
@@ -506,7 +508,7 @@ verify_bounds.default <- function(...) {
 #' @param x an extracted nhic event table
 #' @param los_table episode length table
 #' @param hours the number of hours you allow before and after an episode
-#'
+#' @export
 #' @return a two column tibble with event id and boundary status
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
@@ -538,7 +540,7 @@ verify_bounds_2d <- function(x = NULL, los_table = NULL, hours = 24) {
   return(x)
 }
 
-
+#' @export
 verify_bounds.real_2d <- function(x, los_table, ...) {
   x <- verify_bounds_2d(x, los_table = los_table)
   if (!("real_2d" %in% class(x))) {
@@ -547,7 +549,7 @@ verify_bounds.real_2d <- function(x, los_table, ...) {
   return(x)
 }
 
-#' @method verify_bounds integer_2d
+#' @export
 verify_bounds.integer_2d <- function(x, los_table, ...) {
   x <- verify_bounds_2d(x, los_table = los_table)
   if (!("integer_2d" %in% class(x))) {
@@ -556,7 +558,7 @@ verify_bounds.integer_2d <- function(x, los_table, ...) {
   return(x)
 }
 
-
+#' @export
 verify_bounds.string_2d <- function(x, los_table, ...) {
   x <- verify_bounds_2d(x, los_table = los_table)
   if (!("string_2d" %in% class(x))) {
@@ -609,12 +611,13 @@ verify_duplicate <- function(x, exact = TRUE) {
   UseMethod("verify_duplicate", x)
 }
 
-
+#' @export
 #' @importFrom rlang abort
 verify_duplicate.default <- function(...) {
   rlang::abort("There are no methods defined for this data type")
 }
 
+#' @export
 #' @importFrom dplyr ungroup distinct mutate select right_join mutate_at if_else
 #' @importFrom rlang .data
 #' @importFrom lubridate round_date
@@ -661,7 +664,7 @@ verify_duplicate_2d <- function(x = NULL, exact = TRUE) {
   }
 }
 
-
+#' @export
 verify_duplicate.real_2d <- function(x = NULL, ...) {
   x <- verify_duplicate_2d(x, ...)
   if (!("real_2d" %in% class(x))) {
@@ -670,7 +673,7 @@ verify_duplicate.real_2d <- function(x = NULL, ...) {
   return(x)
 }
 
-
+#' @export
 verify_duplicate.integer_2d <- function(x = NULL, ...) {
   x <- verify_duplicate_2d(x, ...)
   if (!("integer_2d" %in% class(x))) {
@@ -680,7 +683,7 @@ verify_duplicate.integer_2d <- function(x = NULL, ...) {
 }
 
 
-
+#' @export
 verify_duplicate.string_2d <- function(x = NULL, ...) {
   x <- verify_duplicate_2d(x, ...)
   if (!("string_2d" %in% class(x))) {
@@ -689,7 +692,7 @@ verify_duplicate.string_2d <- function(x = NULL, ...) {
   return(x)
 }
 
-
+#' @export
 verify_duplicate_1d <- function(x = NULL) {
   x <- x %>%
     ungroup() %>%
@@ -710,7 +713,7 @@ verify_duplicate_1d <- function(x = NULL) {
   return(x)
 }
 
-
+#' @export
 verify_duplicate.real_1d <- function(x = NULL) {
   x <- verify_duplicate_1d(x)
   if (!("real_1d" %in% class(x))) {
@@ -719,7 +722,7 @@ verify_duplicate.real_1d <- function(x = NULL) {
   return(x)
 }
 
-
+#' @export
 verify_duplicate.integer_1d <- function(x = NULL) {
   x <- verify_duplicate_1d(x)
   if (!("integer_1d" %in% class(x))) {
@@ -728,7 +731,7 @@ verify_duplicate.integer_1d <- function(x = NULL) {
   return(x)
 }
 
-
+#' @export
 verify_duplicate.string_1d <- function(x = NULL) {
   x <- verify_duplicate_1d(x)
   if (!("string_1d" %in% class(x))) {
@@ -737,7 +740,7 @@ verify_duplicate.string_1d <- function(x = NULL) {
   return(x)
 }
 
-
+#' @export
 verify_duplicate.datetime_1d <- function(x = NULL) {
   x <- verify_duplicate_1d(x)
   if (!("datetime_1d" %in% class(x))) {
@@ -746,7 +749,7 @@ verify_duplicate.datetime_1d <- function(x = NULL) {
   return(x)
 }
 
-
+#' @export
 verify_duplicate.date_1d <- function(x = NULL) {
   x <- verify_duplicate_1d(x)
   if (!("date_1d" %in% class(x))) {
@@ -755,7 +758,7 @@ verify_duplicate.date_1d <- function(x = NULL) {
   return(x)
 }
 
-
+#' @export
 verify_duplicate.time_1d <- function(x = NULL) {
   x <- verify_duplicate_1d(x)
   if (!("time_1d" %in% class(x))) {
@@ -787,7 +790,7 @@ verify_periodicity <- function(x, ...) {
   UseMethod("verify_periodicity", x)
 }
 
-
+#' @export
 verify_periodicity.default <- function(...) {
   rlang::abort("There are no default methods for this class")
 }
@@ -799,7 +802,7 @@ verify_periodicity.default <- function(...) {
 #' @param los_table episode length table
 #'
 #' @return a mutated tibble from x including a periodicity column
-#'
+#' @export
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @importFrom dplyr intersect filter select group_by left_join mutate right_join tally
@@ -852,7 +855,7 @@ verify_periodicity_generic <- function(x, los_table) {
     ))
 }
 
-
+#' @export
 verify_periodicity.real_2d <- function(x, los_table, ...) {
   x <- verify_periodicity_generic(x, los_table = los_table)
   if (!("real_2d" %in% class(x))) {
@@ -861,7 +864,7 @@ verify_periodicity.real_2d <- function(x, los_table, ...) {
   return(x)
 }
 
-
+#' @export
 verify_periodicity.integer_2d <- function(x, los_table, ...) {
   x <- verify_periodicity_generic(x, los_table = los_table)
   if (!("integer_2d" %in% class(x))) {
@@ -870,7 +873,7 @@ verify_periodicity.integer_2d <- function(x, los_table, ...) {
   return(x)
 }
 
-
+#' @export
 verify_periodicity.string_2d <- function(x, los_table, ...) {
   x <- verify_periodicity_generic(x, los_table = los_table)
   if (!("string_2d" %in% class(x))) {
@@ -893,34 +896,42 @@ coverage <- function(x, ...) {
   UseMethod("coverage", x)
 }
 
+#' @export
 coverage.default <- function(x, ...) {
   rlang::abort("There are no methods defined for this class")
 }
 
+#' @export
 coverage.integer_1d <- function(x, reference_tbl) {
   x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
 }
 
+#' @export
 coverage.string_1d <- function(x, reference_tbl) {
   x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
 }
 
+#' @export
 coverage.real_1d <- function(x, reference_tbl) {
   x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
 }
 
+#' @export
 coverage.date_1d <- function(x, reference_tbl) {
   x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
 }
 
+#' @export
 coverage.time_1d <- function(x, reference_tbl) {
   x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
 }
 
+#' @export
 coverage.datetime_1d <- function(x, reference_tbl) {
   x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
 }
 
+#' @export
 coverage_generic_1d <- function(x, reference_tbl = NULL) {
   name_check <- dplyr::intersect(
     names(x),
@@ -968,19 +979,22 @@ coverage_generic_1d <- function(x, reference_tbl = NULL) {
   return(out)
 }
 
+#' @export
 coverage.integer_2d <- function(x, reference_tbl) {
   x <- coverage_generic_2d(x, reference_tbl = reference_tbl)
 }
 
+#' @export
 coverage.string_2d <- function(x, reference_tbl) {
   x <- coverage_generic_2d(x, reference_tbl = reference_tbl)
 }
 
+#' @export
 coverage.real_2d <- function(x, reference_tbl) {
   x <- coverage_generic_2d(x, reference_tbl = reference_tbl)
 }
 
-
+#' @export
 coverage_generic_2d <- function(x, reference_tbl = NULL) {
   name_check <- dplyr::intersect(
     names(x),

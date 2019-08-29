@@ -22,7 +22,7 @@ Leading zeros in each level are not necessary. Acceptable separators are:
 .,|/-
 }
 \examples{
-varify_icnarc("01.06.04.20.16") # correctly formatted
-varify_icnarc("1.6.4.20.16") # not strictly correct, but parsable
-varify_icnarc("01-6-04.20.16") # annoying, but parsable
+verify_icnarc("01.06.04.20.16") # correctly formatted
+verify_icnarc("1.6.4.20.16") # not strictly correct, but parsable
+verify_icnarc("01-6-04.20.16") # annoying, but parsable
 }

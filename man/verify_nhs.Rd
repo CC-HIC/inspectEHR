@@ -2,7 +2,7 @@
 % Please edit documentation in R/verify_codes.R
 \name{verify_nhs}
 \alias{verify_nhs}
-\title{Varify NHS Numbers}
+\title{Verify NHS Numbers}
 \usage{
 verify_nhs(nhs_numbers = NULL)
 }
@@ -23,5 +23,5 @@ Please enter the NHS number as characters (i.e. "6744424270" and not
 6744424270). Remove all formatting, including spaces and dashes.
 }
 \examples{
-validate_nhs("6744424270") # expect TRUE
+verify_nhs("6744424270") # expect TRUE
 }
