@@ -15,9 +15,10 @@
 #'
 #' @examples
 #' db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
-#' ctn <- connect(sqlite_file = db_path)
-#' make_core(ctn)
+#' ctn <- connect(sqlite_file = db_pth)
+#' core <- make_core(ctn)
 #' extract(core, input = "NIHR_HIC_ICU_0073")
+#' DBI::dbDisconnect(ctn)
 extract <- function(core_table = NULL, input = NULL) {
 
   if (is.null(core_table)) abort("You must include the core table")

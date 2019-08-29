@@ -28,8 +28,3 @@ an object of class heat_cal
 \description{
 Make a heat_cal object
 }
-\examples{
-\dontrun{
-make_heatcal(ref, "UCL")
-}
-}

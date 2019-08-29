@@ -27,6 +27,8 @@ a database object connection
 Establishes a connection to the database
 }
 \examples{
-ctn <- connect(sqlite_file = "path/to/file.sqlite3")
-ctn <- connect(database = "hic", username = "abdce", password = "qwerty")
+db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+ctn <- connect(sqlite_file = db_pth)
+class(ctn)
+DBI::dbDisconnect(ctn)
 }

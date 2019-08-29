@@ -12,7 +12,7 @@
 #' @export
 #'
 #' @importFrom dplyr collect select mutate filter inner_join full_join if_else
-#'   summarise_all
+#'   summarise_all select_if
 #' @importFrom tidyr spread
 #' @importFrom tibble as_tibble
 #' @importFrom purrr reduce
@@ -21,10 +21,11 @@
 #' @return A tibble of 1d data
 #' @examples
 #' db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
-#' ctn <- connect(sqlite_file = db_path)
+#' ctn <- connect(sqlite_file = db_pth)
 #' hic_codes <- "NIHR_HIC_ICU_0409"
 #' new_labels <- "apache_score"
-#' extract_demographics(ctn, hic_codes, new_labels)
+#' extract_demographics(ctn, episode_ids = 13639:13643, hic_codes, new_labels)
+#' DBI::dbDisconnect(ctn)
 extract_demographics <- function(connection = NULL, episode_ids = NULL,
                                  code_names = NULL, rename = NULL) {
   stopifnot(!any(is.null(connection), is.null(code_names)))

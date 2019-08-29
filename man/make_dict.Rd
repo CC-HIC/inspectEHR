@@ -18,5 +18,8 @@ describing whether the data is 1d (i.e. only measured once) or 2d (i.e "time
 varying")
 }
 \examples{
-makeDict(collect(tbls[["variables"]]))
+db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+ctn <- connect(sqlite_file = db_pth)
+make_dict(dplyr::collect(dplyr::tbl(ctn, "variables")))
+DBI::dbDisconnect(ctn)
 }

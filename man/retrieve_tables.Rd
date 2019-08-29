@@ -17,8 +17,10 @@ Places all tables from the database connection in a list. This makes use of the 
 in dplyr extremely easy.
 }
 \examples{
-\dontrun{
+db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+ctn <- connect(sqlite_file = db_pth)
+core <- make_core(ctn)
 tbls <- retrieve_tables(ctn)
 tbls[["events"]] # the events table
-}
+DBI::dbDisconnect(ctn)
 }

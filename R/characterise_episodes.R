@@ -172,7 +172,7 @@ unit_admissions <- function(events_table = NULL, reference_table = NULL) {
 #' @export
 #'
 #' @importFrom rlang abort
-#' @importFrom dplyr setdiff
+#' @importFrom dplyr setdiff tbl
 #' @importFrom tidyselect ends_with
 characterise_episodes <- function(connection = NULL) {
 

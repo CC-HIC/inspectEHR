@@ -11,8 +11,10 @@
 #' @export
 #'
 #' @examples
-#' ctn <- connect(sqlite_file = "path/to/file.sqlite3")
-#' ctn <- connect(database = "hic", username = "abdce", password = "qwerty")
+#' db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+#' ctn <- connect(sqlite_file = db_pth)
+#' class(ctn)
+#' DBI::dbDisconnect(ctn)
 connect <- function(database = NULL,
                     host = "localhost",
                     port = 5432,
@@ -54,10 +56,12 @@ connect <- function(database = NULL,
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+#' ctn <- connect(sqlite_file = db_pth)
+#' core <- make_core(ctn)
 #' tbls <- retrieve_tables(ctn)
 #' tbls[["events"]] # the events table
-#' }
+#' DBI::dbDisconnect(ctn)
 retrieve_tables <- function(connection) {
   if (missing(connection)) {
     stop("a connection must be provided")
@@ -85,7 +89,11 @@ retrieve_tables <- function(connection) {
 #' @export
 #'
 #' @examples
-#' make_reference(ctn)
+#' db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+#' ctn <- connect(sqlite_file = db_pth)
+#' ref <- make_reference(ctn)
+#' head(ref)
+#' DBI::dbDisconnect(ctn)
 make_reference <- function(connection) {
   episodes <- dplyr::tbl(connection, "episodes")
   provenance <- dplyr::tbl(connection, "provenance")
@@ -120,7 +128,11 @@ make_reference <- function(connection) {
 #' @export
 #'
 #' @examples
-#' make_core(ctn)
+#' db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+#' ctn <- connect(sqlite_file = db_pth)
+#' core <- make_core(ctn)
+#' head(core)
+#' DBI::dbDisconnect(ctn)
 make_core <- function(connection) {
   events <- dplyr::tbl(connection, "events")
   episodes <- dplyr::tbl(connection, "episodes")

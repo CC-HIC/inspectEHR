@@ -6,6 +6,10 @@ test_that("legitimate postcodes varify correctly", {
   expect_true(verify_post_code("BH20 6EE"))
 })
 
+test_that("multiple post codes are parsed correctly", {
+  expect_equal(verify_post_code(c("M20 2LL", "AL5 3HE")), c(TRUE, TRUE))
+})
+
 test_that("incorrect postcodes are rejected correctly", {
   expect_false(verify_post_code("sdf 32f"))
   expect_false(verify_post_code("hippo"))

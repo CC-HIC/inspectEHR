@@ -26,12 +26,6 @@
 #' @importFrom scales viridis_pal
 #'
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' report(sqlite_file = "./data-raw/synthetic_db.sqlite3",
-#'        output_folder = "./outputs")
-#' }
 report <- function(database = NULL,
                    username = NULL,
                    password = NULL,

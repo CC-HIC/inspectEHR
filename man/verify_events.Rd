@@ -39,7 +39,8 @@ unify this procedure.
 }
 \examples{
 ## DB Connection
-ctn <- connect(sqlite_file = "./data-raw/synthetic_db.sqlite3")
+db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+ctn <- connect(sqlite_file = db_pth)
 
 ## Pre-requisites
 core <- make_core(ctn)

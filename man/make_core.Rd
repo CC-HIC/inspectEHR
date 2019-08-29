@@ -18,5 +18,9 @@ names for most data extraction tasks. No work is done till the function is
 explicitly called.
 }
 \examples{
-make_core(ctn)
+db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+ctn <- connect(sqlite_file = db_pth)
+core <- make_core(ctn)
+head(core)
+DBI::dbDisconnect(ctn)
 }

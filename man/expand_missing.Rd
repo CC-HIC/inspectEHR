@@ -22,6 +22,3 @@ This function serves to expand the table and fill missing rows with NAs.
 This is useful when working with most time-series aware stats packages
 that expect a regular cadance to the table.
 }
-\examples{
-expand_missing(tb_1)
-}

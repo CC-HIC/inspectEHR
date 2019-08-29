@@ -1,4 +1,4 @@
-#' Varify NHS Numbers
+#' Verify NHS Numbers
 #'
 #' This function will varify nhs numbers according to the checksum process
 #' outlined by UK Government Data Standards Catalogue (GDSC), Version 2.0,
@@ -66,8 +66,10 @@ verify_nhs <- function(nhs_numbers = NULL) {
 #' @export
 #'
 #' @examples
-#' generate_nhs()
-#' generate_nhs(5)
+#' nhs_1 <- generate_nhs()
+#' print(nhs_1)
+#' nhs_5 <- generate_nhs(5)
+#' print(nhs_5)
 generate_nhs <- function(size = 1) {
   nhs_numbers <- vector(mode = "character", length = size)
 
@@ -104,9 +106,9 @@ generate_nhs <- function(size = 1) {
 }
 
 
-#' Varify Post Code
+#' Verify Post Code
 #'
-#' Varify that a particular string conforms to a UK Post Code. Note, this does
+#' Verify that a particular string conforms to a UK Post Code. Note, this does
 #' not actually check a database (i.e. validation) to see if the post code
 #' exists. It only checks that the Post Code meets the correct technical
 #' specification for a postcode. There are two reasons why validation isn't a

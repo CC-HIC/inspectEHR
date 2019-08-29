@@ -7,12 +7,13 @@
 #' @param metadata a collected metadata table
 #'
 #' @return a metadata table
+#' @export
 #'
 #' @examples
 #' db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
-#' ctn <- connect(sqlite_file = db_path)
-#' make_dict(collect(tbl(ctn, "variables")))
-#' DBI::dbDisconnect()
+#' ctn <- connect(sqlite_file = db_pth)
+#' make_dict(dplyr::collect(dplyr::tbl(ctn, "variables")))
+#' DBI::dbDisconnect(ctn)
 make_dict <- function(metadata = NULL) {
   if (is.null(metadata)) {
     stop("You need to provide a metadata (variables) table")

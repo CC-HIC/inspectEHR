@@ -34,9 +34,3 @@ time!
 \details{
 Specify the output folder in \code{output_folder}.
 }
-\examples{
-\dontrun{
-report(sqlite_file = "./data-raw/synthetic_db.sqlite3",
-       output_folder = "./outputs")
-}
-}

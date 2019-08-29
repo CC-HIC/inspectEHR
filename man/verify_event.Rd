@@ -17,6 +17,3 @@ a character vector with event IDs for validated episodes
 \description{
 Validates a CC-HIC event. This should be applied after event flagging has taken place
 }
-\examples{
-validate_field(core, reference, "NIHR_HIC_ICU_0108", qref, episode_length)
-}

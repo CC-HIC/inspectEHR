@@ -9,8 +9,6 @@
 #' @importFrom rlang .data
 #' @importFrom dplyr group_by summarise full_join n if_else
 #' @importFrom tidyr gather
-#' @examples
-#' summary(x)
 summarise_verification <- function(verified, stats, coverage, reference) {
   dl <- vector(mode = "list", length = 4)
   names(dl) <- c("error_checks", "stats", "completeness", "coverage")

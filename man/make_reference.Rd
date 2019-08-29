@@ -17,5 +17,9 @@ Makes the reference table used my many functions in this package.
 This is part of the basic setup.
 }
 \examples{
-make_reference(ctn)
+db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+ctn <- connect(sqlite_file = db_pth)
+ref <- make_reference(ctn)
+head(ref)
+DBI::dbDisconnect(ctn)
 }

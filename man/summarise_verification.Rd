@@ -14,6 +14,3 @@ summarise_verification(verified, stats, coverage, reference)
 \description{
 Collate and Summarise Verification Information
 }
-\examples{
-summary(x)
-}

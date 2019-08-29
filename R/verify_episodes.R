@@ -22,12 +22,6 @@
 #' @importFrom dplyr mutate group_by summarise left_join right_join n_distinct
 #' distinct tibble bind_rows pull
 #' @importFrom lubridate date year month wday
-#'
-#' @examples
-#' ctn <- connect(sqlite_file = "./data-raw/synthetic_db.sqlite3")
-#' episode_length <- characterise_episodes(ctn)
-#' verified_episodes <- verify_episodes(episode_length)
-#' head(verified_episodes)
 verify_episodes <- function(episode_length = NULL,
                             threshold = 10) {
 
@@ -150,9 +144,6 @@ verify_episodes <- function(episode_length = NULL,
 #' @export
 #'
 #' @importFrom rlang !! .data
-#'
-#' @examples
-#' validate_field(core, reference, "NIHR_HIC_ICU_0108", qref, episode_length)
 verify_event <- function(validated_episodes = NULL, flagged_events = NULL) {
   x <- flagged_events %>%
     dplyr::filter(

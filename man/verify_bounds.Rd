@@ -30,7 +30,8 @@ contributes from more than one episode, and then duplicated across episodes.
 }
 \examples{
 ## DB Connection
-ctn <- connect(sqlite_file = "./data-raw/synthetic_db.sqlite3")
+db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+ctn <- connect(sqlite_file = db_pth)
 
 ## Pre-requisites
 core <- make_core(ctn)
@@ -40,7 +41,7 @@ episodes <- characterise_episodes(ctn)
 hr <- extract(core, input = "NIHR_HIC_ICU_0108")
 
 ## verify Boundary Conditions
-vhr <- verify_bounds(hr, episodes)
+vhr <- verify_bounds(hr, los_table = episodes)
 head(vhr)
 DBI::dbDisconnect(ctn)
 }

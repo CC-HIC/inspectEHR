@@ -24,7 +24,10 @@ optionally a vector of labels to rename the codes) and returns a table with 1
 row per patient and 1 column per data item.
 }
 \examples{
-hic_codes <- c("NIHR_HIC_ICU_0409")
-new_labels <- c("apache_score")
-extract_demographics(ctn, hic_codes, new_labels)
+db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+ctn <- connect(sqlite_file = db_pth)
+hic_codes <- "NIHR_HIC_ICU_0409"
+new_labels <- "apache_score"
+extract_demographics(ctn, episode_ids = 13639:13643, hic_codes, new_labels)
+DBI::dbDisconnect(ctn)
 }

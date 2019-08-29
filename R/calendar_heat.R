@@ -11,11 +11,6 @@
 #'
 #' @return an object of class heat_cal
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' make_heatcal(ref, "UCL")
-#' }
 make_heatcal <- function(
   reference_tbl = NULL,
   dataitem_tbl = NULL,

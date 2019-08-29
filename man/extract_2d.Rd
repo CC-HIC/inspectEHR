@@ -22,6 +22,3 @@ This function extracts the correct column from the CC-HIC database
 depending upon what type of data is called for. It additionally pulls
 out the datetime column, which accompanies any data for this class
 }
-\examples{
-extract_2d(core, input = "NIHR_HIC_ICU_0108", data_location = "integer")
-}

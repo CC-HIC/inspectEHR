@@ -32,7 +32,8 @@
 #'
 #' @examples
 #' ## DB Connection
-#' ctn <- connect(sqlite_file = "./data-raw/synthetic_db.sqlite3")
+#' db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+#' ctn <- connect(sqlite_file = db_pth)
 #'
 #' ## Pre-requisites
 #' core <- make_core(ctn)
@@ -137,7 +138,8 @@ verify_events <- function(x, los_table = NULL) {
 #'
 #' @examples
 #' ## DB Connection
-#' ctn <- connect(sqlite_file = "./data-raw/synthetic_db.sqlite3")
+#' db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+#' ctn <- connect(sqlite_file = db_pth)
 #'
 #' ## Pre-requisites
 #' core <- make_core(ctn)
@@ -475,7 +477,8 @@ verify_range.datetime_1d <- function(x = NULL) {
 #'
 #' @examples
 #' ## DB Connection
-#' ctn <- connect(sqlite_file = "./data-raw/synthetic_db.sqlite3")
+#' db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+#' ctn <- connect(sqlite_file = db_pth)
 #'
 #' ## Pre-requisites
 #' core <- make_core(ctn)
@@ -485,7 +488,7 @@ verify_range.datetime_1d <- function(x = NULL) {
 #' hr <- extract(core, input = "NIHR_HIC_ICU_0108")
 #'
 #' ## verify Boundary Conditions
-#' vhr <- verify_bounds(hr, episodes)
+#' vhr <- verify_bounds(hr, los_table = episodes)
 #' head(vhr)
 #' DBI::dbDisconnect(ctn)
 verify_bounds <- function(x, ...) {
@@ -544,6 +547,7 @@ verify_bounds.real_2d <- function(x, los_table, ...) {
   return(x)
 }
 
+#' @method verify_bounds integer_2d
 verify_bounds.integer_2d <- function(x, los_table, ...) {
   x <- verify_bounds_2d(x, los_table = los_table)
   if (!("integer_2d" %in% class(x))) {
@@ -588,7 +592,8 @@ verify_bounds.string_2d <- function(x, los_table, ...) {
 #'
 #' @examples
 #' ## DB Connection
-#' ctn <- connect(sqlite_file = "./data-raw/synthetic_db.sqlite3")
+#' db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+#' ctn <- connect(sqlite_file = db_pth)
 #'
 #' ## Pre-requisites
 #' core <- make_core(ctn)

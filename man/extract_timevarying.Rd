@@ -70,7 +70,8 @@ to determine how best they wish to account for this.
 }
 \examples{
 # DB Connection
-ctn <- connect(sqlite_file = "./data-raw/synthetic_db.sqlite3")
+db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+ctn <- connect(sqlite_file = db_pth)
 
 # Extract Heart Rates for 5 episodes with default settings
 hr_default <- extract_timevarying(ctn, episode_ids = 13639:13643, code_names = "NIHR_HIC_ICU_0108")

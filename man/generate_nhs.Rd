@@ -18,6 +18,8 @@ This is useful when generating synthetic patients or testing the varification
 functions.
 }
 \examples{
-generate_nhs()
-generate_nhs(5)
+nhs_1 <- generate_nhs()
+print(nhs_1)
+nhs_5 <- generate_nhs(5)
+print(nhs_5)
 }

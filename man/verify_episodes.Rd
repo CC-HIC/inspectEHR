@@ -29,9 +29,3 @@ only episodes that have a logical consistency in non-sparse months. The
 analyst should consider if the denominator for the number of study months
 should be changed following the use of this function.
 }
-\examples{
-ctn <- connect(sqlite_file = "./data-raw/synthetic_db.sqlite3")
-episode_length <- characterise_episodes(ctn)
-verified_episodes <- verify_episodes(episode_length)
-head(verified_episodes)
-}

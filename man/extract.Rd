@@ -20,6 +20,9 @@ further processing. This is essentially the creator method for
 the S3 classes associated with the inspectEHR package
 }
 \examples{
-extract(core)
-extract(core, input = "NIHR_HIC_ICU_0557")
+db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+ctn <- connect(sqlite_file = db_pth)
+core <- make_core(ctn)
+extract(core, input = "NIHR_HIC_ICU_0073")
+DBI::dbDisconnect(ctn)
 }
