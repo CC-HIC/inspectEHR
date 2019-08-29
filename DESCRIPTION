@@ -2,10 +2,10 @@ Package: inspectEHR
 Type: Package
 Title: Data Quality Reporting for CC-HIC
 Version: 0.5.9000
-Authors@R: c(person("Edward", "Palmer", role = c("aut", "cre"),
-    email = "edward.palmer@ucl.ac.uk", 
-    comment = "<https://orcid.org/0000-0002-8024-4616>"))
-Maintainer: Edward Palmer <edward.palmer@ucl.ac.uk>
+Authors@R: c(
+    person("Edward", "Palmer", role = c("aut", "cre"), email = "edward.palmer@ucl.ac.uk", 
+    comment = c(ORCID = "0000-0002-8024-4616"))
+    )
 Description: This package helps to produce data quality reports for CC-HIC.
     This consists of data wrangling, cleaning, verification and validation.
     There are a lot of helper functions that have been written to facilitate

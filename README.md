@@ -5,6 +5,8 @@
 
 <!-- badges: start -->
 
+[![Build
+Status](https://travis-ci.org/CC-HIC/inspectEHR.svg?branch=master)](https://travis-ci.org/CC-HIC/inspectEHR)
 <!-- badges: end -->
 
 ## Overview
@@ -74,23 +76,47 @@ head(dtb)
 #> 5      13643   168.
 
 # Extract time varying variables. Rename on the fly.
-# Pull out to any arbitrary temporal resolution and custom define the
-# behaviour for information recorded at resolution higher than you are sampling
 ltb <- extract_timevarying(
-  connection = ctn,
-  code_names =  "NIHR_HIC_ICU_0108", rename = "hr"
-)
+  ctn,
+  episode_ids = 13639:13643,
+  code_names = "NIHR_HIC_ICU_0108",
+  rename = "hr")
 
 head(ltb)
 #> # A tibble: 6 x 3
 #>    time    hr episode_id
 #>   <dbl> <int>      <int>
-#> 1     0    69      13626
-#> 2     1    93      13626
-#> 3     2    86      13626
-#> 4     3    93      13626
-#> 5     4    63      13626
+#> 1     0    99      13639
+#> 2     1    84      13639
+#> 3     2   102      13639
+#> 4     3    95      13639
+#> 5     4    69      13639
 #> # … with 1 more row
+
+# Pull out to any arbitrary temporal resolution and custom define the
+# behaviour for information recorded at resolution higher than you are sampling
+
+ltb_2 <- extract_timevarying(
+  ctn,
+  episode_ids = 13639:13643,
+  code_names = "NIHR_HIC_ICU_0108",
+  rename = "hr",
+  cadance = 2, # 1 row every 2 hours
+  overlap_method = mean # use mean to downsample to our 2 hour cadence
+  )
+#> Warning: metadata extraction is not yet supported with this feature
+
+head(ltb_2)
+#> # A tibble: 6 x 3
+#>    time    hr episode_id
+#>   <dbl> <dbl>      <int>
+#> 1     0  91.5      13639
+#> 2     2 102        13639
+#> 3     4  80        13639
+#> 4     6  90        13639
+#> 5     8  90.7      13639
+#> # … with 1 more row
+DBI::dbDisconnect(ctn)
 ```
 
 ## Getting help

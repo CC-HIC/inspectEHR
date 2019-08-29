@@ -17,6 +17,7 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 # inspectEHR <a href='https://cc-hic.github.io/inspectEHR/'><img src='man/figures/logo.png' align="right" height="139" /></a>
 
 <!-- badges: start -->
+[![Build Status](https://travis-ci.org/CC-HIC/inspectEHR.svg?branch=master)](https://travis-ci.org/CC-HIC/inspectEHR)
 <!-- badges: end -->
 
 ## Overview
@@ -61,14 +62,28 @@ dtb <- extract_demographics(
 head(dtb)
 
 # Extract time varying variables. Rename on the fly.
-# Pull out to any arbitrary temporal resolution and custom define the
-# behaviour for information recorded at resolution higher than you are sampling
 ltb <- extract_timevarying(
-  connection = ctn,
-  code_names =  "NIHR_HIC_ICU_0108", rename = "hr"
-)
+  ctn,
+  episode_ids = 13639:13643,
+  code_names = "NIHR_HIC_ICU_0108",
+  rename = "hr")
 
 head(ltb)
+
+# Pull out to any arbitrary temporal resolution and custom define the
+# behaviour for information recorded at resolution higher than you are sampling
+
+ltb_2 <- extract_timevarying(
+  ctn,
+  episode_ids = 13639:13643,
+  code_names = "NIHR_HIC_ICU_0108",
+  rename = "hr",
+  cadance = 2, # 1 row every 2 hours
+  overlap_method = mean # use mean to downsample to our 2 hour cadence
+  )
+
+head(ltb_2)
+DBI::dbDisconnect(ctn)
 ```
 
 ## Getting help
