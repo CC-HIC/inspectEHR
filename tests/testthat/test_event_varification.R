@@ -6,6 +6,7 @@ ctn <- connect(sqlite_file = db_pth)
 core <- make_core(ctn)
 # episode_length <- characterise_episodes(ctn)
 # verified_episodes <- verify_episodes(episode_length)
+DBI::dbDisconnect(ctn)
 
 ## Testing 1 of each datatype present in the test DB
 str_1d <- extract(core, input = "NIHR_HIC_ICU_0073") # string-1d
