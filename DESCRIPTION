@@ -12,14 +12,15 @@ Description: This package helps to produce data quality reports for CC-HIC.
     data wrangling and cleaning. These need to be separated and ported to
     cleanEHR in due course.
 License: GPL-3
-Depends: R (>= 3.5.0)
+Depends:
+    R (>= 3.5.0),
+    dbplyr
 Encoding: UTF-8
 LazyData: true
 Imports:
     DBI,
     dplyr (>= 0.8.0),
     tidyselect,
-    dbplyr,
     ggplot2,
     glue,
     lubridate,
