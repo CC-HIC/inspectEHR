@@ -51,7 +51,8 @@ connect <- function(database = NULL,
 #'
 #' @param connection an sql connection
 #'
-#' @importFrom dplyr db_list_tables
+#' @importFrom DBI dbListTables
+#' @importFrom dplyr tbl
 #'
 #' @return a list containing pointers to tables within the sql connection.
 #' @export
@@ -68,7 +69,7 @@ retrieve_tables <- function(connection) {
     stop("a connection must be provided")
   }
 
-  all_tables <- dplyr::db_list_tables(connection)
+  all_tables <- DBI::dbListTables(connection)
   tbl_list <- list()
 
   for (i in seq_along(all_tables)) {
