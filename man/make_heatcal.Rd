@@ -8,19 +8,20 @@ make_heatcal(reference_tbl = NULL, dataitem_tbl = NULL, site = NULL,
   date_boundaries = NULL, max_limit = NULL)
 }
 \arguments{
+\item{reference_tbl}{reference table produced from \code{\link{make_reference}}}
+
+\item{dataitem_tbl}{an extracted dataitem from \code{\link{extract}}}
+
 \item{site}{character string of hospital site to plot}
+
+\item{date_boundaries}{character vector of format YYYY-MM-DD (or something
+that is parsable by \code{lubridate::ymd}) defining the start and end
+dates of the calendar. If nothing is supplied, this is derrived from the
+data}
 
 \item{max_limit}{the upper bound for determining colour scale. This is useful
 if you have extreme outliers to enable good constrast over the range of
 interest}
-
-\item{reference_table}{reference table produced from \code{\link{make_reference}}}
-
-\item{type}{either "event" or "admission"}
-
-\item{start_date}{a starting date as character vector of format YYYY-MM-DD}
-
-\item{end_date}{an end date as character vector of format YYYY-MM-DD}
 }
 \value{
 an object of class heat_cal

@@ -11,7 +11,7 @@ plot_ecdf(x, sites_col = NULL, verify = TRUE)
 
 \item{sites_col}{the HEX colour pallet for each site}
 
-\item{verify}{logical indicator if only verified values should be used}
+\item{verify}{\code{logical} if use only verified data}
 }
 \description{
 Plot CC-HIC Data item eCDF

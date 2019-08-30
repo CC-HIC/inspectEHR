@@ -141,13 +141,16 @@ extract_2d <- function(core_table = NULL, input = NULL, data_location = NULL) {
   return(x)
 }
 
+
 modify_datetime <- function(x) {
   x <- mutate(x, value = lubridate::ymd_hms(.data$value))
 }
 
+
 modify_date <- function(x) {
   x <- mutate(x, value = lubridate::as_date(.data$value))
 }
+
 
 modify_time <- function(x) {
   x <- mutate(x, value = hms::as_hms(.data$value))

@@ -12,13 +12,14 @@ connect(database = NULL, host = "localhost", port = 5432,
 
 \item{host}{db host: typically "localhost"}
 
+\item{port}{db port number}
+
 \item{username}{db username}
 
 \item{password}{db password}
 
-\item{system}{choice of either "postgres" or "sqlite" depending upon your backend}
-
-\item{file}{filename as character vector if using an sqlite db}
+\item{sqlite_file}{filename as character vector if using an sqlite db (in
+which case this is the only argument that needs to be supplied)}
 }
 \value{
 a database object connection

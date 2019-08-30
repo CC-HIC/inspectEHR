@@ -1,16 +1,18 @@
 #' Make a heat_cal object
 #'
-#' @param reference_table reference table produced from \code{\link{make_reference}}
-#' @param type either "event" or "admission"
+#' @param reference_tbl reference table produced from \code{\link{make_reference}}
+#' @param dataitem_tbl an extracted dataitem from \code{\link{extract}}
 #' @param site character string of hospital site to plot
-#' @param start_date a starting date as character vector of format YYYY-MM-DD
-#' @param end_date an end date as character vector of format YYYY-MM-DD
+#' @param date_boundaries character vector of format YYYY-MM-DD (or something
+#'   that is parsable by \code{lubridate::ymd}) defining the start and end
+#'   dates of the calendar. If nothing is supplied, this is derrived from the
+#'   data
 #' @param max_limit the upper bound for determining colour scale. This is useful
 #'   if you have extreme outliers to enable good constrast over the range of
 #'   interest
+#' @export
 #'
 #' @return an object of class heat_cal
-#' @export
 make_heatcal <- function(
   reference_tbl = NULL,
   dataitem_tbl = NULL,
@@ -74,18 +76,21 @@ find_first_sunday <- function(x) {
 #'
 #' Creates the basic template for a heatmap calendar in ggplot when using count
 #' data. The calendar will automatically expand the date contrains to full
-#' years. Can be supplied the output from \code{\link{daily_admssions}}.
+#' years. Can be supplied the output from \code{\link{daily_admissions}}.
 #'
-#' @param start_date a starting date as character vector of format YYYY-MM-DD
-#' @param end_date an end date as character vector of format YYYY-MM-DD
 #' @param x count data to be used in the calendar from
-#'   \code{\link{daily_admssions}}
+#'   \code{\link{daily_admissions}}
 #'   \describe{
 #'     \item{date}{date column formatted to a POSIX date}
 #'     \item{count_column}{counting column of integer type}
 #'   }
+#' @param date_boundaries character vector of format YYYY-MM-DD (or something
+#'   that is parsable by \code{lubridate::ymd}) defining the start and end
+#'   dates of the calendar. If nothing is supplied, this is derrived from the
+#'   data
 #'
 #' @return a tibble with correct week alignments for a calendar heatmap
+#' @export
 #'
 #' @importFrom lubridate floor_date ceiling_date ymd year month
 #' @importFrom dplyr tibble mutate left_join
@@ -111,11 +116,11 @@ create_calendar_template <- function(x = NULL,
     ) %>%
     mutate(
       first_sundays = as.Date(
-        vapply(years, find_first_sunday),
+        vapply(.data$years, find_first_sunday),
         origin = "1970/01/01"
       ),
-      remaining_days = as.integer(first_sundays - years),
-      year = year(years)
+      remaining_days = as.integer(.data$first_sundays - .data$years),
+      year = year(.data$years)
     )
 
   calendar <- tibble(
@@ -169,98 +174,99 @@ create_calendar_template <- function(x = NULL,
 create_grid <- function(calendar_template = NULL) {
 
   template <- calendar_template %>%
-    select(date, year, week_of_year, day_of_week, month)
+    select(.data$date, .data$year, .data$week_of_year,
+           .data$day_of_week, .data$month)
 
   # Right Vertical
   rv <- template %>%
     mutate(
-      x_start = ifelse(
-        lead(month, 7) != month |
-          is.na(lead(month, 7)),
-        week_of_year + 0.5,
-        NA
+      x_start = if_else(
+        lead(.data$month, 7) != .data$month |
+          is.na(lead(.data$month, 7)),
+        .data$week_of_year + 0.5,
+        as.double(NA)
       ),
-      y_start = ifelse(
-        lead(month, 7) != month |
-          is.na(lead(month, 7)),
-        as.double(day_of_week) + 0.5,
-        NA
+      y_start = if_else(
+        lead(.data$month, 7) != .data$month |
+          is.na(lead(.data$month, 7)),
+        as.double(.data$day_of_week) + 0.5,
+        as.double(NA)
       )
     ) %>%
     na.omit() %>%
-    select(year, x_start, y_start) %>%
+    select(.data$year, .data$x_start, .data$y_start) %>%
     mutate(
-      x_end = x_start,
-      y_end = y_start - 1
+      x_end = .data$x_start,
+      y_end = .data$y_start - 1
     )
 
   # Left Vertical
   lv <- template %>%
     mutate(
-      x_start = ifelse(lag(month, 7) != month |
-        is.na(lag(month, 7)), week_of_year - 0.5, NA),
-      y_start = ifelse(
-        lag(month, 7) != month |
-          is.na(lag(month, 7)),
+      x_start = if_else(lag(.data$month, 7) != .data$month |
+        is.na(lag(.data$month, 7)), .data$week_of_year - 0.5, as.double(NA)),
+      y_start = if_else(
+        lag(.data$month, 7) != .data$month |
+          is.na(lag(.data$month, 7)),
         as.double(day_of_week) + 0.5,
-        NA
+        as.double(NA)
       )
     ) %>%
     na.omit() %>%
-    select(year, x_start, y_start) %>%
+    select(.data$year, .data$x_start, .data$y_start) %>%
     mutate(
-      x_end = x_start,
-      y_end = y_start - 1
+      x_end = .data$x_start,
+      y_end = .data$y_start - 1
     )
 
   # Top Horizontal
   th <- template %>%
     mutate(
-      x_start = ifelse(
-        lead(month, 1) != month |
-          lead(week_of_year, 1) != week_of_year |
-          is.na(lead(week_of_year)),
+      x_start = if_else(
+        lead(.data$month, 1) != .data$month |
+          lead(.data$week_of_year, 1) != .data$week_of_year |
+          is.na(lead(.data$week_of_year)),
         week_of_year - 0.5,
-        NA
+        as.double(NA)
       ),
-      y_start = ifelse(
-        lead(month, 1) != month |
-          lead(week_of_year, 1) != week_of_year |
-          is.na(lead(week_of_year)),
-        as.double(day_of_week) + 0.5,
-        NA
+      y_start = if_else(
+        lead(.data$month, 1) != .data$month |
+          lead(.data$week_of_year, 1) != .data$week_of_year |
+          is.na(lead(.data$week_of_year)),
+        as.double(.data$day_of_week) + 0.5,
+        as.double(NA)
       )
     ) %>%
     na.omit() %>%
-    select(year, x_start, y_start) %>%
+    select(.data$year, .data$x_start, .data$y_start) %>%
     mutate(
-      x_end = x_start + 1,
-      y_end = y_start
+      x_end = .data$x_start + 1,
+      y_end = .data$y_start
     )
 
   # Bottom Horizontal
   bh <- template %>%
     mutate(
-      x_start = ifelse(
-        lag(month, 1) != month |
-          lag(week_of_year, 1) != week_of_year |
-          is.na(lag(week_of_year, 1)),
-        week_of_year - 0.5,
-        NA
+      x_start = if_else(
+        lag(.data$month, 1) != .data$month |
+          lag(.data$week_of_year, 1) != .data$week_of_year |
+          is.na(lag(.data$week_of_year, 1)),
+        .data$week_of_year - 0.5,
+        as.double(NA)
       ),
-      y_start = ifelse(
-        lag(month, 1) != month |
-          lag(week_of_year, 1) != week_of_year |
-          is.na(lag(week_of_year, 1)),
-        as.double(day_of_week) - 0.5,
-        NA
+      y_start = if_else(
+        lag(.data$month, 1) != .data$month |
+          lag(.data$week_of_year, 1) != .data$week_of_year |
+          is.na(lag(.data$week_of_year, 1)),
+        as.double(.data$day_of_week) - 0.5,
+        as.double(NA)
       )
     ) %>%
     na.omit() %>%
-    select(year, x_start, y_start) %>%
+    select(.data$year, .data$x_start, .data$y_start) %>%
     mutate(
-      x_end = x_start + 1,
-      y_end = y_start
+      x_end = .data$x_start + 1,
+      y_end = .data$y_start
     )
 
   grid_lines <- rbind(rv, lv, th, bh) %>% distinct()

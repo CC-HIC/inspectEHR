@@ -60,10 +60,10 @@ cleaning_helper <- function(col_vec, col_name, dq_ref = NULL, action = "NA") {
     before <- sum(is.na(col_vec))
     if (class(type_change) == "character") {
       pos_vales <- qref %>%
-        filter(code_name == col_name) %>%
-        select(possible_values) %>%
-        unnest %>%
-        pull
+        filter(.data$code_name == col_name) %>%
+        select(.data$possible_values) %>%
+        unnest() %>%
+        pull()
       col_vec <- if_else(col_vec %in% pos_vales, col_vec, type_change)
     } else {
     col_vec <- if_else(
@@ -80,10 +80,10 @@ cleaning_helper <- function(col_vec, col_name, dq_ref = NULL, action = "NA") {
           "limit action is not defined for: ", col_name, ". using NA instead")
       )
       pos_vales <- qref %>%
-        filter(code_name == col_name) %>%
-        select(possible_values) %>%
-        unnest %>%
-        pull
+        filter(.data$code_name == col_name) %>%
+        select(.data$possible_values) %>%
+        unnest() %>%
+        pull()
       col_vec <- if_else(col_vec %in% pos_vales, col_vec, type_change)
     } else {
       col_vec <- pmin(col_vec, rng["range_max"])

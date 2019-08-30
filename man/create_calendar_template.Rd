@@ -8,15 +8,16 @@ create_calendar_template(x = NULL, date_boundaries = NULL)
 }
 \arguments{
 \item{x}{count data to be used in the calendar from
-\code{\link{daily_admssions}}
+\code{\link{daily_admissions}}
 \describe{
   \item{date}{date column formatted to a POSIX date}
   \item{count_column}{counting column of integer type}
 }}
 
-\item{start_date}{a starting date as character vector of format YYYY-MM-DD}
-
-\item{end_date}{an end date as character vector of format YYYY-MM-DD}
+\item{date_boundaries}{character vector of format YYYY-MM-DD (or something
+that is parsable by \code{lubridate::ymd}) defining the start and end
+dates of the calendar. If nothing is supplied, this is derrived from the
+data}
 }
 \value{
 a tibble with correct week alignments for a calendar heatmap
@@ -24,5 +25,5 @@ a tibble with correct week alignments for a calendar heatmap
 \description{
 Creates the basic template for a heatmap calendar in ggplot when using count
 data. The calendar will automatically expand the date contrains to full
-years. Can be supplied the output from \code{\link{daily_admssions}}.
+years. Can be supplied the output from \code{\link{daily_admissions}}.
 }

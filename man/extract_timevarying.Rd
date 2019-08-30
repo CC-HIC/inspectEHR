@@ -16,6 +16,9 @@ default) then all episodes are extracted}
 
 \item{code_names}{a vector of CC-HIC codes names to be extracted}
 
+\item{rename}{a character vector of names you want to relabel CC-HIC codes
+as, or NULL (the default) if you do not want to relabel.}
+
 \item{chunk_size}{a chunking parameter to help speed up the function and
 manage memory constaints}
 

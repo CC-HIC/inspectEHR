@@ -8,6 +8,8 @@
 }
 \arguments{
 \item{object}{a heat_cal object}
+
+\item{...}{other arguments to be passed}
 }
 \description{
 Builds the ggplot layers required to correctly display the calendar heatmap

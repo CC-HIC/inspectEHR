@@ -35,6 +35,8 @@
 #' @param episode_ids an integer vector of episode_ids or NULL. If NULL (the
 #'   default) then all episodes are extracted
 #' @param code_names a vector of CC-HIC codes names to be extracted
+#' @param rename a character vector of names you want to relabel CC-HIC codes
+#'   as, or NULL (the default) if you do not want to relabel.
 #' @param chunk_size a chunking parameter to help speed up the function and
 #'   manage memory constaints
 #' @param cadance a numerical scalar or one of "exact" or "timestamp". If a
@@ -93,7 +95,7 @@ extract_timevarying <- function(connection, episode_ids = NULL, code_names,
   }
 
   if (class(overlap_method) == "function") {
-  rlang::warn("metadata extraction is not yet supported with this feature")
+  rlang::inform("metadata extraction is not yet supported with this feature")
   }
 
   episode_groups <- dplyr::tbl(connection, "events") %>%

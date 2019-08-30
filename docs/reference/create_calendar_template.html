@@ -8,6 +8,13 @@
 
 <title>Calendar Template for Count Data — create_calendar_template • inspectEHR</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
@@ -34,7 +41,7 @@
 
 <meta property="og:description" content="Creates the basic template for a heatmap calendar in ggplot when using count
 data. The calendar will automatically expand the date contrains to full
-years. Can be supplied the output from daily_admssions." />
+years. Can be supplied the output from daily_admissions." />
 
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
@@ -127,7 +134,7 @@ years. Can be supplied the output from daily_admssions." />
     
     <p>Creates the basic template for a heatmap calendar in ggplot when using count
 data. The calendar will automatically expand the date contrains to full
-years. Can be supplied the output from <code>daily_admssions</code>.</p>
+years. Can be supplied the output from <code><a href='daily_admissions.html'>daily_admissions</a></code>.</p>
     
     </div>
 
@@ -139,18 +146,17 @@ years. Can be supplied the output from <code>daily_admssions</code>.</p>
     <tr>
       <th>x</th>
       <td><p>count data to be used in the calendar from
-<code>daily_admssions</code></p><dl class='dl-horizontal'>
+<code><a href='daily_admissions.html'>daily_admissions</a></code></p><dl class='dl-horizontal'>
   <dt>date</dt><dd><p>date column formatted to a POSIX date</p></dd>
   <dt>count_column</dt><dd><p>counting column of integer type</p></dd>
 </dl></td>
     </tr>
     <tr>
-      <th>start_date</th>
-      <td><p>a starting date as character vector of format YYYY-MM-DD</p></td>
-    </tr>
-    <tr>
-      <th>end_date</th>
-      <td><p>an end date as character vector of format YYYY-MM-DD</p></td>
+      <th>date_boundaries</th>
+      <td><p>character vector of format YYYY-MM-DD (or something
+that is parsable by <code><a href='http://lubridate.tidyverse.org/reference/ymd.html'>lubridate::ymd</a></code>) defining the start and end
+dates of the calendar. If nothing is supplied, this is derrived from the
+data</p></td>
     </tr>
     </table>
     

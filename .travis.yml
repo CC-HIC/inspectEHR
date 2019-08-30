@@ -2,6 +2,8 @@ language: r
 cache: packages
 before_install:
   - tlmgr install index
-warnings_are_errors: false
+apt_packages:
+  - qpdf
+warnings_are_errors: true
 after_success:
   - Rscript -e 'covr::codecov()'

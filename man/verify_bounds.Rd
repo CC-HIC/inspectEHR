@@ -4,7 +4,7 @@
 \alias{verify_bounds}
 \title{verify Event Plausibility - Boundary Checks (S3 Generic)}
 \usage{
-verify_bounds(x, ...)
+verify_bounds(x = NULL, los_table = NULL, hours = 24)
 }
 \arguments{
 \item{x}{an extracted nhic event table}

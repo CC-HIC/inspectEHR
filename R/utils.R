@@ -1,11 +1,12 @@
 #' Establishes a connection to the database
 #'
+#' @param database target db
 #' @param host db host: typically "localhost"
+#' @param port db port number
 #' @param username db username
 #' @param password db password
-#' @param database target db
-#' @param system choice of either "postgres" or "sqlite" depending upon your backend
-#' @param file filename as character vector if using an sqlite db
+#' @param sqlite_file filename as character vector if using an sqlite db (in
+#'   which case this is the only argument that needs to be supplied)
 #'
 #' @return a database object connection
 #' @export
@@ -155,7 +156,6 @@ find_max_time <- function(events, time_col) {
   return(max_time)
 }
 
-#' Custom Error Capturing
 is.error <- function(x) {
   inherits(x, "try-error")
 }

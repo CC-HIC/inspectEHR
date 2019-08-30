@@ -7,9 +7,7 @@
 cross_entropy(x)
 }
 \arguments{
-\item{u}{a vector}
-
-\item{v}{a vector the same length as \code{u}}
+\item{x}{an extracted data item}
 }
 \value{
 the cross entropy of \code{u} and \code{v}

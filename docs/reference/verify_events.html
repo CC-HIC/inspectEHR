@@ -8,6 +8,13 @@
 
 <title>Verify CC-HIC Data — verify_events • inspectEHR</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
@@ -35,15 +42,13 @@
 <meta property="og:description" content="Applies all relevent varification flags to an extracted dataitem. This
 includes:
 Completeness: contributed data items match local capability (i.e.
-    missingness only occurs when the data doesn't exist) Performed by
-    verify_complete
+    missingness only occurs when the data doesn't exist)
 Uniqueness plausibility: descriptions of singular events/objects are
-    not duplicated. Performed by verify_unique_plausible
+    not duplicated.
 Atemporal plausibility: Events occur within their episode (within a
     reasonable buffer time). Events fall within an accepted range, follow the
     expected distribution and agree with internal/local knowledge. Repeated
-    measures of the same event show the expected variability. Performed by
-    verify_atemporal_plausible
+    measures of the same event show the expected variability.
 Temporal plausibility: value density over time are consistent with
     local expectations
 " />
@@ -140,15 +145,13 @@ Temporal plausibility: value density over time are consistent with
     <p>Applies all relevent varification flags to an extracted dataitem. This
 includes:</p><ul>
 <li><p>Completeness: contributed data items match local capability (i.e.
-    missingness only occurs when the data doesn't exist) Performed by
-    <code><a href='verify_complete.html'>verify_complete</a></code></p></li>
+    missingness only occurs when the data doesn't exist)</p></li>
 <li><p>Uniqueness plausibility: descriptions of singular events/objects are
-    not duplicated. Performed by <code>verify_unique_plausible</code></p></li>
+    not duplicated.</p></li>
 <li><p>Atemporal plausibility: Events occur within their episode (within a
     reasonable buffer time). Events fall within an accepted range, follow the
     expected distribution and agree with internal/local knowledge. Repeated
-    measures of the same event show the expected variability. Performed by
-    <code>verify_atemporal_plausible</code></p></li>
+    measures of the same event show the expected variability.</p></li>
 <li><p>Temporal plausibility: value density over time are consistent with
     local expectations</p></li>
 </ul>

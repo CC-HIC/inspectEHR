@@ -15,6 +15,7 @@
 #' @param output_folder the path name for output files
 #' @param write_plots true/false to output plots. Otherwise only data processing
 #'   takes place, which can be considerably quicker.
+#' @param generate_report triggers the build of the markdown report
 #'
 #' @importFrom dplyr select arrange pull left_join distinct collect tibble
 #'   anti_join mutate

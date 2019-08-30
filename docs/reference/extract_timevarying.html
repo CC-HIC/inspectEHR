@@ -8,6 +8,13 @@
 
 <title>Extract &amp; Reshape Timevarying Dateitems — extract_timevarying • inspectEHR</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
@@ -152,6 +159,11 @@ default) then all episodes are extracted</p></td>
       <td><p>a vector of CC-HIC codes names to be extracted</p></td>
     </tr>
     <tr>
+      <th>rename</th>
+      <td><p>a character vector of names you want to relabel CC-HIC codes
+as, or NULL (the default) if you do not want to relabel.</p></td>
+    </tr>
+    <tr>
       <th>chunk_size</th>
       <td><p>a chunking parameter to help speed up the function and
 manage memory constaints</p></td>
@@ -211,7 +223,7 @@ to determine how best they wish to account for this.</p>
 <span class='no'>ctn</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='connect.html'>connect</a></span>(<span class='kw'>sqlite_file</span> <span class='kw'>=</span> <span class='no'>db_pth</span>)
 
 <span class='co'># Extract Heart Rates for 5 episodes with default settings</span>
-<span class='no'>hr_default</span> <span class='kw'>&lt;-</span> <span class='fu'>extract_timevarying</span>(<span class='no'>ctn</span>, <span class='kw'>episode_ids</span> <span class='kw'>=</span> <span class='fl'>13639</span>:<span class='fl'>13643</span>, <span class='kw'>code_names</span> <span class='kw'>=</span> <span class='st'>"NIHR_HIC_ICU_0108"</span>)</div><div class='output co'>#&gt; <span class='message'>8.3e-05 hours to process</span></div><div class='input'><span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>hr_default</span>)</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 6 x 3</span><span>
+<span class='no'>hr_default</span> <span class='kw'>&lt;-</span> <span class='fu'>extract_timevarying</span>(<span class='no'>ctn</span>, <span class='kw'>episode_ids</span> <span class='kw'>=</span> <span class='fl'>13639</span>:<span class='fl'>13643</span>, <span class='kw'>code_names</span> <span class='kw'>=</span> <span class='st'>"NIHR_HIC_ICU_0108"</span>)</div><div class='output co'>#&gt; <span class='message'>8.1e-05 hours to process</span></div><div class='input'><span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>hr_default</span>)</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 6 x 3</span><span>
 #&gt;    time NIHR_HIC_ICU_0108 episode_id
 #&gt;   </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>             </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span>      </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span>
 #&gt; </span><span style='color: #BCBCBC;'>1</span><span>     0                99      </span><span style='text-decoration: underline;'>13</span><span>639
@@ -220,7 +232,7 @@ to determine how best they wish to account for this.</p>
 #&gt; </span><span style='color: #BCBCBC;'>4</span><span>     3                95      </span><span style='text-decoration: underline;'>13</span><span>639
 #&gt; </span><span style='color: #BCBCBC;'>5</span><span>     4                69      </span><span style='text-decoration: underline;'>13</span><span>639
 #&gt; </span><span style='color: #BCBCBC;'>6</span><span>     5                76      </span><span style='text-decoration: underline;'>13</span><span>639</div><div class='input'><span class='co'># Extract Heart Rates for 5 episodes with custom settings</span>
-<span class='no'>hr_custom</span> <span class='kw'>&lt;-</span> <span class='fu'>extract_timevarying</span>(<span class='no'>ctn</span>, <span class='kw'>episode_ids</span> <span class='kw'>=</span> <span class='fl'>13639</span>:<span class='fl'>13643</span>, <span class='kw'>code_names</span> <span class='kw'>=</span> <span class='st'>"NIHR_HIC_ICU_0108"</span>, <span class='kw'>cadance</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>overlap_method</span> <span class='kw'>=</span> <span class='no'>mean</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: metadata extraction is not yet supported with this feature</span></div><div class='output co'>#&gt; <span class='message'>6e-05 hours to process</span></div><div class='input'><span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>hr_custom</span>)</div><div class='output co'>#&gt; </span><span style='color: #949494;'># A tibble: 6 x 3</span><span>
+<span class='no'>hr_custom</span> <span class='kw'>&lt;-</span> <span class='fu'>extract_timevarying</span>(<span class='no'>ctn</span>, <span class='kw'>episode_ids</span> <span class='kw'>=</span> <span class='fl'>13639</span>:<span class='fl'>13643</span>, <span class='kw'>code_names</span> <span class='kw'>=</span> <span class='st'>"NIHR_HIC_ICU_0108"</span>, <span class='kw'>cadance</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>overlap_method</span> <span class='kw'>=</span> <span class='no'>mean</span>)</div><div class='output co'>#&gt; <span class='message'>metadata extraction is not yet supported with this feature</span></div><div class='output co'>#&gt; <span class='message'>5.9e-05 hours to process</span></div><div class='input'><span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>hr_custom</span>)</div><div class='output co'>#&gt; </span><span style='color: #949494;'># A tibble: 6 x 3</span><span>
 #&gt;    time NIHR_HIC_ICU_0108 episode_id
 #&gt;   </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>             </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>      </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span>
 #&gt; </span><span style='color: #BCBCBC;'>1</span><span>     0              91.5      </span><span style='text-decoration: underline;'>13</span><span>639

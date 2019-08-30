@@ -10,6 +10,9 @@ extract_demographics(connection = NULL, episode_ids = NULL,
 \arguments{
 \item{connection}{a CC-HIC database connection}
 
+\item{episode_ids}{an integer vector of episode ids from the CC-HIC DB
+that you want to extact. The default (NULL) is to extract all.}
+
 \item{code_names}{a character vector of CC-HIC codes}
 
 \item{rename}{a character vector of names you want to relabel CC-HIC codes

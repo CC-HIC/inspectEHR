@@ -8,6 +8,8 @@ plot_ks(x, reference_tbl)
 }
 \arguments{
 \item{x}{an object from \code{ks_test}}
+
+\item{reference_tbl}{reference table from \code{\link{make_reference}}}
 }
 \description{
 Produces a plot of the KS distances between sites.

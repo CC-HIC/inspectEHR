@@ -11,7 +11,7 @@ plot_hist(x, sites_col = NULL, verify = TRUE)
 
 \item{sites_col}{the HEX colour pallet for each site}
 
-\item{verify}{logical indicator to determin if only verified values should be used}
+\item{verify}{\code{logical} if use only verified data}
 }
 \description{
 Plot a histogram of a CC-HIC event, with each site normalised to 100%

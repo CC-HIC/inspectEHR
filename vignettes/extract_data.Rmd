@@ -16,77 +16,93 @@ knitr::opts_chunk$set(
 )
 ```
 
-inspectEHR contains a number of helper functions for wrangling data. These will be ported over to cleanEHR to keep the roles of the two packages clear.
+inspectEHR contains a number of helper functions for wrangling data. In due course, these will be ported over to cleanEHR to keep the roles of the two packages clear (cleanEHR = cleaning/wrangling, inspectEHR = verification/validation).
 
-```r
+First, install inspectEHR from github, or download the latest release directly.
+
+```{r, eval = FALSE}
 # If you need inspectEHR
-# library(devtools)
-# install_github("CC-HIC/inspectEHR", ref = "sql")
-
-library(tidyverse)
-library(inspectEHR) # note extract is masked by tidyverse
+library(devtools)
+install_github("CC-HIC/inspectEHR")
 ```
 
-I strongly advise running tidyverse. Whilst you don't need it, inspectEHR has been written with tidyeval in mind, and as such works best in the tidyverse ecosystem.
+I strongly advise running tidyverse. Whilst you don't need it, inspectEHR has been written with tidyeval in mind, and as such works best within the tidyverse ecosystem.
 
-Establish a database connection. You will most likely be working with sqlite as the postgres instance is confined to the UCL IDHS.
+Establish a database connection. You will most likely be working with sqlite as the postgres instance is confined to the UCL IDHS. inspectEHR ships with a synthetic database, that you can play around with. The content of the data is more or less nonsense, but it is structurally sound.
 
-```r
-# Establish a DB connection and retrive tables
-ctn <- connect(system = "sqlite", file = "~/path/public_release_yyyymmdd.sqlite3")
-tbls <- retrieve_tables(ctn)
+```{r, message = FALSE}
+library(inspectEHR); library(dbplyr)
+
+# Synthetic database ships with inspectEHR
+db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+ctn <- connect(sqlite_file = db_pth)
 ```
 
-the tbls object is now a list of all tables within the database and can be accessed via the `tbls[["table"]]` syntax.
+Enter the fields you want to extract using HIC codes. See the cleanEHR repo for more information on these codes. Alternately, the `qref` object from inspectEHR contrains all the information on what data exists in CC-HIC. I write this here as a tribble to keep everything in the same document. If you want to rename column names then it is important to keep names and code names together and in the same order.
 
-Enter the fields you want to extract using HIC codes. See the cleanEHR repo for more information on these codes. I write this here as a tribble to keep everything in the same document. If you want to rename column names then it is important to keep names and code names together and in the same order.
+It's best to separate out 1d (time invariant) and 2d (longitudinal) data.
 
-It's best to separate out 1d and 2d data.
-
-```r
+```{r}
 # Grab non-longitudinal (1d) data ----------------
-
-demo_codes <- tribble(
+demo_codes <- tibble::tribble(
   ~hic_codes, ~short_name,
   "NIHR_HIC_ICU_0399", "primary_admission_reason",
   "NIHR_HIC_ICU_0097", "unit_mortality",
 )
 
-# Extract 1d data
+# Extract static variables. Rename on the fly.
+dtb <- extract_demographics(
+  connection = ctn,
+  episode_ids = 13639:13643,
+  code_names = demo_codes$hic_codes,
+  rename = demo_codes$short_name
+)
 
-dtb <- extract_demographics(events = tbls[["events"]],
-                            metadata = tbls[["variables"]],
-                            code_names = demo_codes$hic_codes,
-                            rename = demo_codes$short_name)
-
-# Grab longitudinal (2d) data ---------------------
-
-long_codes <- tribble(
-  ~hic_codes, ~short_name,
-  "NIHR_HIC_ICU_0411", "start_dttm", # ALWAYS
-  "NIHR_HIC_ICU_0150", "fio2",
-  "NIHR_HIC_ICU_0470", "norad",
-  "NIHR_HIC_ICU_0132", "pxo2")
+head(dtb)
 ```
 
-We can now extact 2d data. This will return a table with 1 row per patient per time unit specified in the cadance option. For example, a cadance of 1 will return a table with 1 row per patient per hour. This will be a complete (non-sparse) table, so if nothing was recorded for a partiular hour, that hour will not appear as a row.
+We can now extact 2d data. This will return a table with 1 row per patient per time unit specified in the cadance option. For example, a cadance of 1 will return a table with 1 row per patient per hour. This does not create a row if nothing was recorded, so the rows might run: 1, 2, 4, if nothing was recorded in hour 3.
+
+```{r}
+# Grab longitudinal (2d) data ---------------------
+long_codes <- tibble::tribble(
+  ~hic_codes, ~short_name,
+  "NIHR_HIC_ICU_0108", "hr"
+  )
+
+# Extract time varying variables. Rename on the fly.
+ltb <- extract_timevarying(
+  ctn,
+  episode_ids = 13639:13643,
+  code_names = long_codes$hic_codes,
+  rename = long_codes$short_name
+  )
+
+head(ltb)
+```
+
+Depending upon how much data you want to pull into a long form for analysis, this can take considerable time (more than 24 hours if you want to convert all 50,000 episodes).
+
+You can expand this table to a regular row cadance, by inserting rows of NAs with `expand_missing`
 
 ```r
-ltb <- extract_timevarying(
-  events = tbls[["events"]],
-  code_names = long_codes$hic_codes,
-  metadata = collect(tbls[["variables"]]),
-  chunk_size = 1000,
-  cadance = 1,
-  rename = long_codes$short_name)
-
-# I recomend saving here... depending on how much data you are trying to wrangle, that step can take a long time.
-# save(dtb, ltb, demo_codes, long_codes, file = "./backup.RData")
-
-# Expand this dense tb (i.e. add NAs where appropraite)
 ltb <- expand_missing(ltb)
 ```
 
-expand_missing serves to fill in the gaps with NAs so the table haas a regular cadance.
+We can also pull out data at any arbitrary temporal resolution and custom define the behaviour for information recorded at resolution higher than you are sampling. For example, if heart rates are sampled every hour, and you want to pull out data every 6 hours, we need to know what action to take to collapse those heart rates into a single row. You can supply any custom summary function to the `overlap_method` argument of `extract_timevarying`.
 
-You can also run extract_timevarying with the option of cadance = "exact", but I advise against this if you are taking a large amount of data out of the database.
+```{r, message = FALSE}
+ltb_2 <- extract_timevarying(
+  ctn,
+  episode_ids = 13639:13643,
+  code_names = long_codes$hic_codes,
+  rename = long_codes$short_name,
+  cadance = 6, # 1 row every 6 hours
+  overlap_method = mean # use mean to downsample to our 6 hour cadence
+  )
+
+head(ltb_2)
+DBI::dbDisconnect(ctn)
+```
+
+You can also run extract_timevarying with the option of cadance = "exact" or "timestamp" which both pull out the exact timing of events and labels them with either time from admission, or their timestamp respectively. I advise against this unless you have a specific requirement, as it is very computationally intensive.

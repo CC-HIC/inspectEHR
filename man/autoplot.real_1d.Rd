@@ -11,7 +11,7 @@
 
 \item{sites_col}{the HEX colour pallet for each site}
 
-\item{verify}{\code{logical} should you only plot verified values?}
+\item{verify}{\code{logical} if use only verified data}
 }
 \description{
 Plot real valued dataitem from CC-HIC.

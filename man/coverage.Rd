@@ -4,10 +4,12 @@
 \alias{coverage}
 \title{verify Event Plausibility - Coverage Checks (S3 Generic)}
 \usage{
-coverage(x, ...)
+coverage(x, reference_tbl)
 }
 \arguments{
 \item{x}{an extracted dataitem}
+
+\item{reference_tbl}{reference table from \code{\link{make_reference}}}
 }
 \value{
 a table describing the coverage over a defined time window

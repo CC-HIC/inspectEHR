@@ -7,9 +7,13 @@
 summarise_verification(verified, stats, coverage, reference)
 }
 \arguments{
-\item{reference}{the reference table from \code{\link{make_reference}}}
+\item{verified}{a verified dataitem from \code{\link{verify_events}}}
 
-\item{x}{a verified dataitem from \code{\link{verify_events}}}
+\item{stats}{the stats verification or NULL}
+
+\item{coverage}{the coverage verification or NULL}
+
+\item{reference}{the reference table from \code{\link{make_reference}}}
 }
 \description{
 Collate and Summarise Verification Information

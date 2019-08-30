@@ -18,6 +18,7 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 
 <!-- badges: start -->
 [![Build Status](https://travis-ci.org/CC-HIC/inspectEHR.svg?branch=master)](https://travis-ci.org/CC-HIC/inspectEHR)
+[![codecov](https://codecov.io/gh/CC-HIC/inspectEHR/branch/master/graph/badge.svg)](https://codecov.io/gh/CC-HIC/inspectEHR)
 <!-- badges: end -->
 
 ## Overview

@@ -132,12 +132,12 @@ verify_episodes <- function(episode_length = NULL,
 }
 
 
-#' Validate CC-HIC Events
+#' Verify CC-HIC Events
 #'
-#' Validates a CC-HIC event. This should be applied after event flagging has taken place
+#' Verfifies a CC-HIC event. This should be applied after event flagging has taken place
 #'
 #' @param validated_episodes a tibble with 1 column of validated episodes
-#' @param flagged_data_item a tibble of a CC-HIC event with full condition flagging
+#' @param flagged_events a tibble of a CC-HIC event with full condition flagging
 #'
 #' @return a character vector with event IDs for validated episodes
 #'

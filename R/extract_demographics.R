@@ -5,6 +5,8 @@
 #' row per patient and 1 column per data item.
 #'
 #' @param connection a CC-HIC database connection
+#' @param episode_ids an integer vector of episode ids from the CC-HIC DB
+#'   that you want to extact. The default (NULL) is to extract all.
 #' @param code_names a character vector of CC-HIC codes
 #' @param rename a character vector of names you want to relabel CC-HIC codes
 #'   as, or NULL (the default) if you do not want to relabel.
@@ -16,7 +18,7 @@
 #' @importFrom tidyr spread
 #' @importFrom tibble as_tibble
 #' @importFrom purrr reduce
-#' @importFrom rlang !!! warn
+#' @importFrom rlang !!! inform abort warn .data
 #'
 #' @return A tibble of 1d data
 #' @examples
@@ -40,13 +42,13 @@ extract_demographics <- function(connection = NULL, episode_ids = NULL,
 
   demographics <- tbls[["variables"]] %>%
     collect() %>%
-    dplyr::mutate(nas = tbls[["variables"]] %>%
-      dplyr::select(-code_name, -long_name, -primary_column) %>%
+    mutate(nas = tbls[["variables"]] %>%
+      select(-.data$code_name, -.data$long_name, -.data$primary_column) %>%
       collect() %>%
       tibble::as_tibble() %>%
       apply(1, function(x) sum(!is.na(x)))) %>%
-    dplyr::filter(nas == 1) %>%
-    dplyr::select(code_name, primary_column)
+    filter(.data$nas == 1) %>%
+    select(.data$code_name, .data$primary_column)
 
   all_demographic_codes <- demographics$code_name
   extract_codes <- all_demographic_codes[all_demographic_codes %in% code_names]
@@ -59,21 +61,23 @@ extract_demographics <- function(connection = NULL, episode_ids = NULL,
 
   if (is.null(episode_ids)) {
     tb_base <- tbls[["events"]] %>%
-      select(episode_id, code_name, integer, string, real, date, time,
-             datetime) %>%
-      filter(code_name %in% extract_codes) %>%
+      select(.data$episode_id, .data$code_name, .data$integer,
+             .data$string, .data$real, .data$date, .data$time,
+             .data$datetime) %>%
+      filter(.data$code_name %in% extract_codes) %>%
       collect()
   } else {
     tb_base <- tbls[["events"]] %>%
-      select(episode_id, code_name, integer, string, real, date, time,
-             datetime) %>%
-      filter(code_name %in% extract_codes,
-             episode_id %in% episode_ids) %>%
+      select(.data$episode_id, .data$code_name, .data$integer,
+             .data$string, .data$real, .data$date, .data$time,
+             .data$datetime) %>%
+      filter(.data$code_name %in% extract_codes,
+             .data$episode_id %in% episode_ids) %>%
       collect()
   }
 
   complete_fields <- tb_base %>%
-    select(-episode_id, -code_name) %>%
+    select(-.data$episode_id, -.data$code_name) %>%
     dplyr::select_if(function(x) !(all(is.na(x)))) %>%
     names()
 
@@ -111,17 +115,21 @@ extract_demographics <- function(connection = NULL, episode_ids = NULL,
 }
 
 
+#' @importFrom rlang .data !! enquo
+#' @importFrom dplyr select inner_join filter
+#' @importFrom tidyr spread
+#' @importFrom magrittr %>%
 extract_demographics_helper <- function(tb_base, col_name, demographics) {
   quo_column <- enquo(col_name)
 
   tb_section <- tb_base %>%
-    dplyr::select(.data$code_name, !!quo_column, .data$episode_id) %>%
-    dplyr::inner_join(
+    select(.data$code_name, !!quo_column, .data$episode_id) %>%
+    inner_join(
       demographics %>%
-        dplyr::filter(.data$primary_column == !!quo_column),
+        filter(.data$primary_column == !!quo_column),
       by = "code_name"
     ) %>%
-    select(-primary_column) %>%
+    select(-.data$primary_column) %>%
     spread(key = code_name, value = !!quo_column)
 
   return(tb_section)

@@ -4,7 +4,7 @@
 \alias{verify_periodicity}
 \title{verify Event Plausibility - Periodicity Checks (S3 Generic)}
 \usage{
-verify_periodicity(x, ...)
+verify_periodicity(x, los_table)
 }
 \arguments{
 \item{x}{an extracted events table}
@@ -25,6 +25,6 @@ As periodicity for dataitems is not yet specified, this highlights cases
 that are below the group 5th centile \code{-1} and above the 95th centile
 \code{+1}
 
-This is a similar concept to the \code{\link{verify_coverage}}, although is
+This is a similar concept to the \code{\link{coverage}}, although is
 concerned with the episode, rather than site, level.
 }

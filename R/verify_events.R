@@ -4,15 +4,13 @@
 #' includes:
 #' \itemize{
 #'   \item Completeness: contributed data items match local capability (i.e.
-#'     missingness only occurs when the data doesn't exist) Performed by
-#'     \code{\link{verify_complete}}
+#'     missingness only occurs when the data doesn't exist)
 #'   \item Uniqueness plausibility: descriptions of singular events/objects are
-#'     not duplicated. Performed by \code{\link{verify_unique_plausible}}
+#'     not duplicated.
 #'   \item Atemporal plausibility: Events occur within their episode (within a
 #'     reasonable buffer time). Events fall within an accepted range, follow the
 #'     expected distribution and agree with internal/local knowledge. Repeated
-#'     measures of the same event show the expected variability. Performed by
-#'     \code{\link{verify_atemporal_plausible}}
+#'     measures of the same event show the expected variability.
 #'   \item Temporal plausibility: value density over time are consistent with
 #'     local expectations
 #'     }
@@ -492,13 +490,13 @@ verify_range.datetime_1d <- function(x = NULL) {
 #' vhr <- verify_bounds(hr, los_table = episodes)
 #' head(vhr)
 #' DBI::dbDisconnect(ctn)
-verify_bounds <- function(x, ...) {
+verify_bounds <- function(x = NULL, los_table = NULL, hours = 24) {
   UseMethod("verify_bounds", x)
 }
 
 #' @export
 #' @importFrom rlang abort
-verify_bounds.default <- function(...) {
+verify_bounds.default <- function(x = NULL, los_table = NULL, hours = 24) {
   rlang::abort("There are no methods defined for this data type")
 }
 
@@ -541,8 +539,8 @@ verify_bounds_2d <- function(x = NULL, los_table = NULL, hours = 24) {
 }
 
 #' @export
-verify_bounds.real_2d <- function(x, los_table, ...) {
-  x <- verify_bounds_2d(x, los_table = los_table)
+verify_bounds.real_2d <- function(x = NULL, los_table = NULL, hours = 24) {
+  x <- verify_bounds_2d(x, los_table = los_table, hours = hours)
   if (!("real_2d" %in% class(x))) {
     class(x) <- append(class(x), "real_2d", after = 0)
   }
@@ -550,8 +548,8 @@ verify_bounds.real_2d <- function(x, los_table, ...) {
 }
 
 #' @export
-verify_bounds.integer_2d <- function(x, los_table, ...) {
-  x <- verify_bounds_2d(x, los_table = los_table)
+verify_bounds.integer_2d <- function(x = NULL, los_table = NULL, hours = 24) {
+  x <- verify_bounds_2d(x, los_table = los_table, hours = hours)
   if (!("integer_2d" %in% class(x))) {
     class(x) <- append(class(x), "integer_2d", after = 0)
   }
@@ -559,8 +557,8 @@ verify_bounds.integer_2d <- function(x, los_table, ...) {
 }
 
 #' @export
-verify_bounds.string_2d <- function(x, los_table, ...) {
-  x <- verify_bounds_2d(x, los_table = los_table)
+verify_bounds.string_2d <- function(x = NULL, los_table = NULL, hours = 24) {
+  x <- verify_bounds_2d(x, los_table = los_table, hours = hours)
   if (!("string_2d" %in% class(x))) {
     class(x) <- append(class(x), "string_2d", after = 0)
   }
@@ -613,15 +611,15 @@ verify_duplicate <- function(x, exact = TRUE) {
 
 #' @export
 #' @importFrom rlang abort
-verify_duplicate.default <- function(...) {
+verify_duplicate.default <- function(x, exact = TRUE) {
   rlang::abort("There are no methods defined for this data type")
 }
 
-#' @export
+
 #' @importFrom dplyr ungroup distinct mutate select right_join mutate_at if_else
 #' @importFrom rlang .data
 #' @importFrom lubridate round_date
-verify_duplicate_2d <- function(x = NULL, exact = TRUE) {
+verify_duplicate_2d <- function(x, exact = TRUE) {
   if (exact == TRUE) {
     x <- x %>%
       ungroup() %>%
@@ -665,8 +663,8 @@ verify_duplicate_2d <- function(x = NULL, exact = TRUE) {
 }
 
 #' @export
-verify_duplicate.real_2d <- function(x = NULL, ...) {
-  x <- verify_duplicate_2d(x, ...)
+verify_duplicate.real_2d <- function(x, exact = TRUE) {
+  x <- verify_duplicate_2d(x, exact)
   if (!("real_2d" %in% class(x))) {
     class(x) <- append(class(x), "real_2d", after = 0)
   }
@@ -674,8 +672,8 @@ verify_duplicate.real_2d <- function(x = NULL, ...) {
 }
 
 #' @export
-verify_duplicate.integer_2d <- function(x = NULL, ...) {
-  x <- verify_duplicate_2d(x, ...)
+verify_duplicate.integer_2d <- function(x, exact = TRUE) {
+  x <- verify_duplicate_2d(x, exact)
   if (!("integer_2d" %in% class(x))) {
     class(x) <- append(class(x), "integer_2d", after = 0)
   }
@@ -684,16 +682,16 @@ verify_duplicate.integer_2d <- function(x = NULL, ...) {
 
 
 #' @export
-verify_duplicate.string_2d <- function(x = NULL, ...) {
-  x <- verify_duplicate_2d(x, ...)
+verify_duplicate.string_2d <- function(x, exact = TRUE) {
+  x <- verify_duplicate_2d(x, exact)
   if (!("string_2d" %in% class(x))) {
     class(x) <- append(class(x), "string_2d", after = 0)
   }
   return(x)
 }
 
-#' @export
-verify_duplicate_1d <- function(x = NULL) {
+
+verify_duplicate_1d <- function(x, exact = TRUE) {
   x <- x %>%
     ungroup() %>%
     distinct(
@@ -714,8 +712,8 @@ verify_duplicate_1d <- function(x = NULL) {
 }
 
 #' @export
-verify_duplicate.real_1d <- function(x = NULL) {
-  x <- verify_duplicate_1d(x)
+verify_duplicate.real_1d <- function(x, exact = TRUE) {
+  x <- verify_duplicate_1d(x, exact)
   if (!("real_1d" %in% class(x))) {
     class(x) <- append(class(x), "real_1d", after = 0)
   }
@@ -723,8 +721,8 @@ verify_duplicate.real_1d <- function(x = NULL) {
 }
 
 #' @export
-verify_duplicate.integer_1d <- function(x = NULL) {
-  x <- verify_duplicate_1d(x)
+verify_duplicate.integer_1d <- function(x, exact = TRUE) {
+  x <- verify_duplicate_1d(x, exact)
   if (!("integer_1d" %in% class(x))) {
     class(x) <- append(class(x), "integer_1d", after = 0)
   }
@@ -732,8 +730,8 @@ verify_duplicate.integer_1d <- function(x = NULL) {
 }
 
 #' @export
-verify_duplicate.string_1d <- function(x = NULL) {
-  x <- verify_duplicate_1d(x)
+verify_duplicate.string_1d <- function(x, exact = TRUE) {
+  x <- verify_duplicate_1d(x, exact)
   if (!("string_1d" %in% class(x))) {
     class(x) <- append(class(x), "string_1d", after = 0)
   }
@@ -741,8 +739,8 @@ verify_duplicate.string_1d <- function(x = NULL) {
 }
 
 #' @export
-verify_duplicate.datetime_1d <- function(x = NULL) {
-  x <- verify_duplicate_1d(x)
+verify_duplicate.datetime_1d <- function(x, exact = TRUE) {
+  x <- verify_duplicate_1d(x, exact)
   if (!("datetime_1d" %in% class(x))) {
     class(x) <- append(class(x), "datetime_1d", after = 0)
   }
@@ -750,8 +748,8 @@ verify_duplicate.datetime_1d <- function(x = NULL) {
 }
 
 #' @export
-verify_duplicate.date_1d <- function(x = NULL) {
-  x <- verify_duplicate_1d(x)
+verify_duplicate.date_1d <- function(x, exact = TRUE) {
+  x <- verify_duplicate_1d(x, exact)
   if (!("date_1d" %in% class(x))) {
     class(x) <- append(class(x), "date_1d", after = 0)
   }
@@ -759,8 +757,8 @@ verify_duplicate.date_1d <- function(x = NULL) {
 }
 
 #' @export
-verify_duplicate.time_1d <- function(x = NULL) {
-  x <- verify_duplicate_1d(x)
+verify_duplicate.time_1d <- function(x, exact = TRUE) {
+  x <- verify_duplicate_1d(x, exact)
   if (!("time_1d" %in% class(x))) {
     class(x) <- append(class(x), "time_1d", after = 0)
   }
@@ -778,7 +776,7 @@ verify_duplicate.time_1d <- function(x = NULL) {
 #' that are below the group 5th centile \code{-1} and above the 95th centile
 #' \code{+1}
 #'
-#' This is a similar concept to the \code{\link{verify_coverage}}, although is
+#' This is a similar concept to the \code{\link{coverage}}, although is
 #' concerned with the episode, rather than site, level.
 #'
 #' @param x an extracted events table
@@ -786,12 +784,12 @@ verify_duplicate.time_1d <- function(x = NULL) {
 #'
 #' @return x with a periodicity value and validation columns
 #' @export
-verify_periodicity <- function(x, ...) {
+verify_periodicity <- function(x, los_table) {
   UseMethod("verify_periodicity", x)
 }
 
 #' @export
-verify_periodicity.default <- function(...) {
+verify_periodicity.default <- function(x, los_table) {
   rlang::abort("There are no default methods for this class")
 }
 
@@ -856,7 +854,7 @@ verify_periodicity_generic <- function(x, los_table) {
 }
 
 #' @export
-verify_periodicity.real_2d <- function(x, los_table, ...) {
+verify_periodicity.real_2d <- function(x, los_table) {
   x <- verify_periodicity_generic(x, los_table = los_table)
   if (!("real_2d" %in% class(x))) {
     class(x) <- append(class(x), "real_2d", after = 0)
@@ -865,7 +863,7 @@ verify_periodicity.real_2d <- function(x, los_table, ...) {
 }
 
 #' @export
-verify_periodicity.integer_2d <- function(x, los_table, ...) {
+verify_periodicity.integer_2d <- function(x, los_table) {
   x <- verify_periodicity_generic(x, los_table = los_table)
   if (!("integer_2d" %in% class(x))) {
     class(x) <- append(class(x), "integer_2d", after = 0)
@@ -874,7 +872,7 @@ verify_periodicity.integer_2d <- function(x, los_table, ...) {
 }
 
 #' @export
-verify_periodicity.string_2d <- function(x, los_table, ...) {
+verify_periodicity.string_2d <- function(x, los_table) {
   x <- verify_periodicity_generic(x, los_table = los_table)
   if (!("string_2d" %in% class(x))) {
     class(x) <- append(class(x), "string_2d", after = 0)
@@ -889,15 +887,16 @@ verify_periodicity.string_2d <- function(x, los_table, ...) {
 #' ETL process, and as such, some dataitems disappear without warning.
 #'
 #' @param x an extracted dataitem
+#' @param reference_tbl reference table from \code{\link{make_reference}}
 #'
 #' @return a table describing the coverage over a defined time window
 #' @export
-coverage <- function(x, ...) {
+coverage <- function(x, reference_tbl) {
   UseMethod("coverage", x)
 }
 
 #' @export
-coverage.default <- function(x, ...) {
+coverage.default <- function(x, reference_tbl) {
   rlang::abort("There are no methods defined for this class")
 }
 
@@ -931,8 +930,8 @@ coverage.datetime_1d <- function(x, reference_tbl) {
   x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
 }
 
-#' @export
-coverage_generic_1d <- function(x, reference_tbl = NULL) {
+
+coverage_generic_1d <- function(x, reference_tbl) {
   name_check <- dplyr::intersect(
     names(x),
     c("out_of_bounds", "range_error", "duplicate")
@@ -949,31 +948,31 @@ coverage_generic_1d <- function(x, reference_tbl = NULL) {
       .data$duplicate == 0L | is.na(.data$duplicate)
     ) %>%
     left_join(
-      reference_tbl %>% select(-site),
+      reference_tbl %>% select(-.data$site),
       by = "episode_id") %>%
-    mutate(date = lubridate::as_date(start_date)) %>%
-    group_by(site, date) %>%
-    summarise(event_count = n_distinct(event_id))
+    mutate(date = lubridate::as_date(.data$start_date)) %>%
+    group_by(.data$site, .data$date) %>%
+    summarise(event_count = n_distinct(.data$event_id))
 
   base_calendar <- reference_tbl %>%
-    group_by(site) %>%
+    group_by(.data$site) %>%
     summarise(
       start = lubridate::as_date(
-        lubridate::floor_date(min(start_date), unit = "month")),
+        lubridate::floor_date(min(.data$start_date), unit = "month")),
       end = lubridate::as_date(
-        lubridate::ceiling_date(max(start_date), unit = "month")-1)) %>%
-    tidyr::nest(start, end, .key = "date") %>%
+        lubridate::ceiling_date(max(.data$start_date), unit = "month")-1)) %>%
+    tidyr::nest(.data$start, .data$end, .key = "date") %>%
     mutate(
       date = purrr::map(date, ~ seq.Date(.x$start, .x$end, by = "day"))) %>%
     unnest(date)
 
   out <- left_join(base_calendar, base_events, by = c("site", "date")) %>%
-    filter(is.na(event_count)) %>%
-    mutate(year = lubridate::year(date),
-           month = lubridate::month(date)) %>%
-    group_by(site, year, month) %>%
+    filter(is.na(.data$event_count)) %>%
+    mutate(year = lubridate::year(.data$date),
+           month = lubridate::month(.data$date)) %>%
+    group_by(.data$site, .data$year, .data$month) %>%
     tally() %>%
-    filter(n > 10) %>%
+    filter(.data$n > 10) %>%
     arrange(.data$site, .data$year, .data$month)
 
   return(out)
@@ -994,8 +993,8 @@ coverage.real_2d <- function(x, reference_tbl) {
   x <- coverage_generic_2d(x, reference_tbl = reference_tbl)
 }
 
-#' @export
-coverage_generic_2d <- function(x, reference_tbl = NULL) {
+
+coverage_generic_2d <- function(x, reference_tbl) {
   name_check <- dplyr::intersect(
     names(x),
     c("out_of_bounds", "range_error", "duplicate")
@@ -1016,24 +1015,24 @@ coverage_generic_2d <- function(x, reference_tbl = NULL) {
     summarise(event_count = n_distinct(event_id))
 
   base_calendar <- reference_tbl %>%
-    group_by(site) %>%
+    group_by(.data$site) %>%
     summarise(
       start = lubridate::as_date(
-        lubridate::floor_date(min(start_date), unit = "month")),
+        lubridate::floor_date(min(.data$start_date), unit = "month")),
       end = lubridate::as_date(
-        lubridate::ceiling_date(max(start_date), unit = "month")-1)) %>%
-    tidyr::nest(start, end, .key = "date") %>%
+        lubridate::ceiling_date(max(.data$start_date), unit = "month")-1)) %>%
+    tidyr::nest(.data$start, .data$end, .key = "date") %>%
     mutate(
       date = purrr::map(date, ~ seq.Date(.x$start, .x$end, by = "day"))) %>%
-    unnest(date)
+    unnest(.data$date)
 
   out <- left_join(base_calendar, base_events, by = c("site", "date")) %>%
-    filter(is.na(event_count)) %>%
-    mutate(year = lubridate::year(date),
-           month = lubridate::month(date)) %>%
-    group_by(site, year, month) %>%
+    filter(is.na(.data$event_count)) %>%
+    mutate(year = lubridate::year(.data$date),
+           month = lubridate::month(.data$date)) %>%
+    group_by(.data$site, .data$year, .data$month) %>%
     tally() %>%
-    filter(n > 10) %>%
+    filter(.data$n > 10) %>%
     arrange(.data$site, .data$year, .data$month)
 
   return(out)
@@ -1043,6 +1042,7 @@ coverage_generic_2d <- function(x, reference_tbl = NULL) {
 #' verify Completeness
 #'
 #' @param x an extracted dataitem that has passed through verification
+#' @param reference_tbl the reference table from \code{\link{make_reference}}
 #'
 #' @return a tibble with summary information on dataitem completeness
 #' @export
@@ -1064,5 +1064,5 @@ verify_complete <- function(x, reference_tbl) {
     group_by(.data$site) %>%
     summarise(count = n()) %>%
     left_join(reference, by = "site") %>%
-    mutate(completeness = count / total)
+    mutate(completeness = .data$count / .data$total)
 }

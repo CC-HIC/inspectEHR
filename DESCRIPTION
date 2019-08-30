@@ -41,7 +41,8 @@ Suggests:
     knitr,
     rmarkdown,
     testthat,
-    covr
+    covr,
+    qpdf
 VignetteBuilder: knitr
 URL: https://github.com/CC-HIC/inspectEHR
 BugReports: https://github.com/CC-HIC/inspectEHR

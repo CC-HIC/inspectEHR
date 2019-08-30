@@ -16,9 +16,8 @@ knitr::opts_chunk$set(
 )
 ```
 
-inspectEHR is a quality assurance tool for the CC-HIC project. The goal of this package is to provide a core set of functions to flag erroneous or otherwise questionable data within CC-HIC, so the end researcher can handle this information explicitly.
+inspectEHR is a quality assurance tool for the CC-HIC project. The goal of this package is to provide a core set of functions to highlight erroneous or otherwise questionable data within CC-HIC, so the end researcher can handle this information explicitly.
 
-This information is subseqently written out to the database for future use.
-A report is also generated and compiled with bookdown.
+This information is subseqently written out to the database for future use, so that downstream research can use a consistent set of rules. A report is also generated.
 
-Helper functions for wrangling data have been developed and can be viewed in the other vignette. These will be ported over to cleanEHR shortly.
+Helper functions for wrangling data have been developed and can be viewed in the other vignette. These will be ported over to cleanEHR shortly, after the codecov is higher, and unit tests have been written.

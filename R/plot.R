@@ -3,7 +3,7 @@
 #'
 #' @param x a varified data frame
 #' @param sites_col the HEX colour pallet for each site
-#' @param verify logical indicator if only verified values should be used
+#' @param verify \code{logical} if use only verified data
 #'
 #' @importFrom rlang .data quo !!
 #' @importFrom stringr str_trunc
@@ -52,7 +52,7 @@ plot_ecdf <- function(x, sites_col = NULL, verify = TRUE) {
 #'
 #' @param x an extracted hic data item
 #' @param sites_col the HEX colour pallet for each site
-#' @param verify logical indicator to determin if only verified values should be used
+#' @param verify \code{logical} if use only verified data
 #'
 #' @importFrom rlang .data
 #' @importFrom magrittr %>%
@@ -116,7 +116,7 @@ plot_hist <- function(x, sites_col = NULL, verify = TRUE) {
 #'
 #' @param x and extracted and verified dataitem
 #' @param sites_col the HEX colour pallet for each site
-#'
+#' @param verify \code{logical} if use only verified data
 #'
 #' @importFrom rlang .data
 #' @importFrom magrittr %>%
@@ -167,6 +167,7 @@ plot_periodicity <- function(x, sites_col = NULL, verify = TRUE) {
 #' This is quite hard coded at the moment, and so could be improved in a future version
 #'
 #' @param x an object from \code{ks_test}
+#' @param reference_tbl reference table from \code{\link{make_reference}}
 #'
 #' @export
 #'
@@ -215,7 +216,7 @@ plot_ks <- function(x, reference_tbl) {
 #'
 #' @param x a varified data frame
 #' @param sites_col the HEX colour pallet for each site
-#'
+#' @param verify \code{logical} if use only verified data
 #'
 #' @importFrom rlang .data quo !!
 #' @importFrom magrittr %>%
@@ -256,7 +257,7 @@ plot.integer_1d <- function(x, display = TRUE, ...) {
 #'
 #' @param x a varified data frame
 #' @param sites_col the HEX colour pallet for each site
-#' @param verify \code{logical} should you only plot verified values?
+#' @param verify \code{logical} if use only verified data
 #'
 #' @importFrom rlang .data quo !!
 #' @importFrom magrittr %>%
@@ -291,7 +292,7 @@ plot.real_1d <- function(x, display = TRUE, ...) {
 #'
 #' @param x a varified data frame
 #' @param sites_col the HEX colour pallet for each site
-#'
+#' @param verify \code{logical} if use only verified data
 #'
 #' @importFrom rlang .data quo !!
 #' @importFrom magrittr %>%
@@ -327,6 +328,7 @@ plot.string_1d <- function(x, display = TRUE, ...) {
 #'
 #' @param x a varified data frame
 #' @param sites_col the HEX colour pallet for each site
+#' @param verify \code{logical} if use only verified data
 #'
 #'
 #' @importFrom rlang .data quo !!
@@ -363,6 +365,7 @@ plot.date_1d <- function(x, display = TRUE, ...) {
 #'
 #' @param x a varified data frame
 #' @param sites_col the HEX colour pallet for each site
+#' @param verify \code{logical} if use only verified data
 #'
 #'
 #' @importFrom rlang .data quo !!
@@ -398,7 +401,7 @@ plot.datetime_1d <- function(x, display = TRUE, ...) {
 #'
 #' @param x a varified data frame
 #' @param sites_col the HEX colour pallet for each site
-#'
+#' @param verify \code{logical} if use only verified data
 #'
 #' @importFrom rlang .data quo !!
 #' @importFrom magrittr %>%
@@ -434,6 +437,7 @@ plot.time_1d <- function(x, display = TRUE, ...) {
 #'
 #' @param x a varified data frame
 #' @param sites_col the HEX colour pallet for each site
+#' @param verify \code{logical} if use only verified data
 #'
 #'
 #' @importFrom rlang .data quo !!
@@ -482,7 +486,7 @@ plot.string_2d <- function(x, display = TRUE, periodicity = TRUE, ...) {
 #'
 #' @param x a varified data frame
 #' @param sites_col the HEX colour pallet for each site
-#'
+#' @param verify \code{logical} if use only verified data
 #'
 #' @importFrom rlang .data quo !!
 #' @importFrom magrittr %>%
@@ -529,7 +533,7 @@ plot.integer_2d <- function(x, display = TRUE, periodicity = TRUE, ...) {
 #'
 #' @param x a varified data frame
 #' @param sites_col the HEX colour pallet for each site
-#'
+#' @param verify \code{logical} if use only verified data
 #'
 #' @importFrom rlang .data quo !!
 #' @importFrom magrittr %>%
@@ -642,6 +646,7 @@ plot.real_2d <- function(x, display = TRUE, periodicity = TRUE, ...) {
 #' Builds the ggplot layers required to correctly display the calendar heatmap
 #'
 #' @param object a heat_cal object
+#' @param ... other arguments to be passed
 #'
 #' @importFrom ggplot2 ggplot geom_tile scale_fill_gradientn facet_grid
 #' theme_minimal theme element_blank element_text geom_segment aes labs

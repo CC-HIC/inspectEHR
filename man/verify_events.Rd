@@ -19,15 +19,13 @@ Applies all relevent varification flags to an extracted dataitem. This
 includes:
 \itemize{
   \item Completeness: contributed data items match local capability (i.e.
-    missingness only occurs when the data doesn't exist) Performed by
-    \code{\link{verify_complete}}
+    missingness only occurs when the data doesn't exist)
   \item Uniqueness plausibility: descriptions of singular events/objects are
-    not duplicated. Performed by \code{\link{verify_unique_plausible}}
+    not duplicated.
   \item Atemporal plausibility: Events occur within their episode (within a
     reasonable buffer time). Events fall within an accepted range, follow the
     expected distribution and agree with internal/local knowledge. Repeated
-    measures of the same event show the expected variability. Performed by
-    \code{\link{verify_atemporal_plausible}}
+    measures of the same event show the expected variability.
   \item Temporal plausibility: value density over time are consistent with
     local expectations
     }

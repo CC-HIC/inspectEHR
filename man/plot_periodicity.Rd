@@ -10,6 +10,8 @@ plot_periodicity(x, sites_col = NULL, verify = TRUE)
 \item{x}{and extracted and verified dataitem}
 
 \item{sites_col}{the HEX colour pallet for each site}
+
+\item{verify}{\code{logical} if use only verified data}
 }
 \description{
 Plot the periodicity for a CC-HIC event. This is the typical

@@ -91,8 +91,7 @@ ks_test <- function(x) {
 #' useful is decribing how different two distributions (particularly if
 #' categorical) are.
 #'
-#' @param u a vector
-#' @param v a vector the same length as \code{u}
+#' @param x an extracted data item
 #'
 #' @importFrom rlang abort
 #'

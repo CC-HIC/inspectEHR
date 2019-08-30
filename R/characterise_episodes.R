@@ -5,7 +5,6 @@
 #'
 #' @param distinct_episodes from reference table
 #' @return a summary containing patient and episode numbers
-#' @export
 #'
 #' @importFrom dplyr group_by summarise n_distinct
 #' @importFrom magrittr %>%
@@ -30,7 +29,6 @@ weekly_admissions <- function(distinct_episodes = NULL) {
 #' @param unique_cases_tbl from \code{pull_cases_all}
 #'
 #' @return breakdown of unique daily cases
-#' @export
 #'
 #' @importFrom dplyr group_by summarise n_distinct
 #' @importFrom magrittr %>%
@@ -84,7 +82,6 @@ daily_admissions <- function(reference = NULL, by_site = NULL) {
 #' @param by_site a site code as a character vector
 #'
 #' @return a tibble with the number of unique episodes admitted for a given day
-#' @export
 event_occurrances <- function(extracted_event = NULL, by_site = "UCL") {
   occurances <- extracted_event %>%
     filter(site == by_site) %>%
@@ -107,22 +104,28 @@ event_occurrances <- function(extracted_event = NULL, by_site = "UCL") {
 #'
 #' @param events_table the events table
 #' @param reference_table the reference table
+#' @export
+#'
+#' @importFrom dplyr filter select collect right_join group_by summarise
+#'   n_distinct rename
+#' @importFrom rlang .data
+#' @importFrom magrittr %>%
 #'
 #' @return a tibble with unique episodes and patients reported by ICU
-#' @export
 unit_admissions <- function(events_table = NULL, reference_table = NULL) {
   unit_numbers <- events_table %>%
-    dplyr::filter(code_name == "NIHR_HIC_ICU_0002") %>%
-    dplyr::select(episode_id, string) %>%
+    filter(.data$code_name == "NIHR_HIC_ICU_0002") %>%
+    select(.data$episode_id, .data$string) %>%
     collect() %>%
-    dplyr::right_join(reference_table, by = "episode_id") %>%
-    dplyr::select(episode_id, nhs_number, string, site) %>%
-    dplyr::group_by(site, string) %>%
-    dplyr::summarise(
-      patients = n_distinct(nhs_number),
-      episodes = n_distinct(episode_id)
+    right_join(reference_table, by = "episode_id") %>%
+    select(.data$episode_id, .data$nhs_number,
+                  .data$string, .data$site) %>%
+    group_by(.data$site, .data$string) %>%
+    summarise(
+      patients = n_distinct(.data$nhs_number),
+      episodes = n_distinct(.data$episode_id)
     ) %>%
-    dplyr::rename(unit = string)
+    rename(unit = .data$string)
 
   return(unit_numbers)
 }
@@ -194,14 +197,6 @@ characterise_episodes <- function(connection = NULL) {
     "NIHR_HIC_ICU_0097", "outcome",
     "NIHR_HIC_ICU_0400", "bsd"
   )
-
-
-  # df <- extract_demographics(
-  #   tbl(ctn, "events"),
-  #   collect(tbl(ctn, "variables")),
-  #   df_extract$codes,
-  #   df_extract$names
-  # )
 
   df <- extract_demographics(
     connection = connection,
@@ -302,9 +297,9 @@ df <- df %>%
     select(-.data$epi_end_dttm)
 
   if (nrow(broken_timings) > 0) {
-    recover_timings <- tbl(ctn, "events") %>%
+    recover_timings <- tbl(connection, "events") %>%
       filter(.data$episode_id %in% !!broken_timings$episode_id,
-             code_name %in% c("NIHR_HIC_ICU_0108", "NIHR_HIC_ICU_0129")) %>%
+             .data$code_name %in% c("NIHR_HIC_ICU_0108", "NIHR_HIC_ICU_0129")) %>%
       select(.data$episode_id, .data$datetime) %>%
       collect() %>%
       group_by(.data$episode_id) %>%
@@ -405,9 +400,9 @@ df <- df %>%
 #'
 #' @param df episode length table
 #' @param minutes numeric scalar to define transition period
+#' @export
 #'
 #' @return a table with episodes reconciled as spells
-#' @export
 characterise_spells <- function(df = NULL, minutes = 30) {
   df %>%
     arrange(.data$nhs_number, .data$epi_start_dttm) %>%
@@ -450,7 +445,6 @@ characterise_spells <- function(df = NULL, minutes = 30) {
 #' @param time_code the column name for the time of interest
 #'
 #' @return a table with the correct datetime pairing for the codes given
-#' @export
 #'
 #' @importFrom rlang .data sym
 resolve_date_time <- function(df = NULL,
@@ -482,10 +476,10 @@ resolve_date_time <- function(df = NULL,
 #' Provides an overview of the reasons for episode invalidation
 #'
 #' @param df the episode table returned from \code{\link{characterise_episodes}}
+#' @export
 #'
 #' @return a tibble containing summary information for validation at episode
 #'   level
-#' @export
 episode_varacity <- function(df) {
 
   attr(df, "invalid_records") %>%

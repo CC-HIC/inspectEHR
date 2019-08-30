@@ -1,6 +1,8 @@
 #' Collate and Summarise Verification Information
 #'
-#' @param x a verified dataitem from \code{\link{verify_events}}
+#' @param verified a verified dataitem from \code{\link{verify_events}}
+#' @param stats the stats verification or NULL
+#' @param coverage the coverage verification or NULL
 #' @param reference the reference table from \code{\link{make_reference}}
 #'
 #' @export

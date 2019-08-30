@@ -10,6 +10,8 @@
 \item{x}{a varified data frame}
 
 \item{sites_col}{the HEX colour pallet for each site}
+
+\item{verify}{\code{logical} if use only verified data}
 }
 \description{
 Plot real values from CC-HIC

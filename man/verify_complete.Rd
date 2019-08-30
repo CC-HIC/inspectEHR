@@ -8,6 +8,8 @@ verify_complete(x, reference_tbl)
 }
 \arguments{
 \item{x}{an extracted dataitem that has passed through verification}
+
+\item{reference_tbl}{the reference table from \code{\link{make_reference}}}
 }
 \value{
 a tibble with summary information on dataitem completeness

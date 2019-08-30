@@ -25,6 +25,8 @@ report(database = NULL, username = NULL, password = NULL,
 
 \item{write_plots}{true/false to output plots. Otherwise only data processing
 takes place, which can be considerably quicker.}
+
+\item{generate_report}{triggers the build of the markdown report}
 }
 \description{
 Produce a data quality report for CC-HIC. This wraps all other functions as
