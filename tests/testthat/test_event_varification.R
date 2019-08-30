@@ -6,8 +6,6 @@ ctn <- connect(sqlite_file = db_pth)
 core <- make_core(ctn)
 # episode_length <- characterise_episodes(ctn)
 # verified_episodes <- verify_episodes(episode_length)
-DBI::dbDisconnect(ctn)
-
 ## Testing 1 of each datatype present in the test DB
 str_1d <- extract(core, input = "NIHR_HIC_ICU_0073") # string-1d
 int_1d <- extract(core, input = "NIHR_HIC_ICU_0010") # AML - integer-1d
@@ -18,6 +16,8 @@ dttm_1d <- extract(core, input = "NIHR_HIC_ICU_0411") # Admission - datetime-1d
 int_2d <- extract(core, input = "NIHR_HIC_ICU_0108") # integer-2d
 dbl_2d <- extract(core, input = "NIHR_HIC_ICU_0116") # cvp real-2d
 str_2d <- extract(core, input = "NIHR_HIC_ICU_0126") # airway string-2d
+
+DBI::dbDisconnect(ctn)
 
 test_that("events are extracted to the correct data type", {
   expect_true(class(str_1d$value) == "character")
