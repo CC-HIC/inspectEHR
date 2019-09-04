@@ -25,6 +25,6 @@ a table of the same dimentions as \code{tbl} but with values cleaned
 This function takes an extracted table from either
 \code{\link{extract_demographics}} or \code{\link{extract_timevarying}} and
 returns the table having dealt with out of range values. Currently this
-will either modify the value to NA, or limit the value at an appropraite max
+will either modify the value to NA, or limit the value at an appropriate max
 or min.
 }
