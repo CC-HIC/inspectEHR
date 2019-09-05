@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>verify Event Plausibility - Range Checks (S3 Generic) — verify_range • inspectEHR</title>
+<title>Synchronise Project with IDHS — sync • inspectEHR</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -37,12 +37,13 @@
 
 
 
-<meta property="og:title" content="verify Event Plausibility - Range Checks (S3 Generic) — verify_range" />
+<meta property="og:title" content="Synchronise Project with IDHS — sync" />
 
-<meta property="og:description" content="Varifies events as being in-range (0), high (+1) or
-low (-1). These ranges have been calibrated based upone; ICNARC
-reference ranges, prior evidence (usually case report for exceptional values)
-or expert opinion. Reference ranges are all found in qref." />
+<meta property="og:description" content="Working within the IDHS necessitates necessitates moving between two computers
+where one does not have access to git. For this reason, is it useful to
+automate a syncronisation process when regularly having to move between the
+two. Please use with EXTREME caution, as this function overwrites and deletes
+files as specified" />
 
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
@@ -126,63 +127,46 @@ or expert opinion. Reference ranges are all found in qref." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>verify Event Plausibility - Range Checks (S3 Generic)</h1>
-    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/verify_events.R'><code>R/verify_events.R</code></a></small>
-    <div class="hidden name"><code>verify_range.Rd</code></div>
+    <h1>Synchronise Project with IDHS</h1>
+    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/sync.R'><code>R/sync.R</code></a></small>
+    <div class="hidden name"><code>sync.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Varifies events as being in-range (<code>0</code>), high (<code>+1</code>) or
-low (<code>-1</code>). These ranges have been calibrated based upone; ICNARC
-reference ranges, prior evidence (usually case report for exceptional values)
-or expert opinion. Reference ranges are all found in <code><a href='qref.html'>qref</a></code>.</p>
+    <p>Working within the IDHS necessitates necessitates moving between two computers
+where one does not have access to git. For this reason, is it useful to
+automate a syncronisation process when regularly having to move between the
+two. Please use with EXTREME caution, as this function overwrites and deletes
+files as specified</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>verify_range</span>(<span class='kw'>x</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'>sync</span>(<span class='no'>new</span>, <span class='no'>old</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>x</th>
-      <td><p>an extracted event table</p></td>
+      <th>new</th>
+      <td><p>the path to the new folder that contains the master active files</p></td>
+    </tr>
+    <tr>
+      <th>old</th>
+      <td><p>the path to the old folder where the cleanup is directed</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a tibble of the same length as x with the following features:</p><dl class='dl-horizontal'>
-  <dt>-1</dt><dd><p>event is below the defined range of plausibility</p></dd>
-  <dt>0</dt><dd><p>event is valid</p></dd>
-  <dt>+1</dt><dd><p>event is above the defined range of plausibility</p></dd>
-</dl>
+    <p>returns nothing</p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
+    <p>Hidden files are ignored, which is useful as we don't want to break the
+.git folder anyway</p>
     
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'>## DB Connection</span>
-<span class='no'>db_pth</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/system.file'>system.file</a></span>(<span class='st'>"testdata/synthetic_db.sqlite3"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"inspectEHR"</span>)
-<span class='no'>ctn</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='connect.html'>connect</a></span>(<span class='kw'>sqlite_file</span> <span class='kw'>=</span> <span class='no'>db_pth</span>)
-
-<span class='co'>## Pre-requisites</span>
-<span class='no'>core</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='make_core.html'>make_core</a></span>(<span class='no'>ctn</span>)
-
-<span class='co'>## Data item extraction</span>
-<span class='no'>hr</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='extract.html'>extract</a></span>(<span class='no'>core</span>, <span class='kw'>input</span> <span class='kw'>=</span> <span class='st'>"NIHR_HIC_ICU_0108"</span>)
-
-<span class='co'>## verify Range</span>
-<span class='no'>vhr</span> <span class='kw'>&lt;-</span> <span class='fu'>verify_range</span>(<span class='no'>hr</span>)
-<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>vhr</span>)</div><div class='output co'>#&gt; # A tibble: 6 x 2
-#&gt;   event_id range_error
-#&gt;      &lt;int&gt;       &lt;int&gt;
-#&gt; 1  2412851           0
-#&gt; 2  2412852           0
-#&gt; 3  2412853           0
-#&gt; 4  2412854           0
-#&gt; 5  2412855           0
-#&gt; 6  2412856           0</div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -190,9 +174,9 @@ or expert opinion. Reference ranges are all found in <code><a href='qref.html'>q
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
-      
-      <li><a href="#examples">Examples</a></li>
-    </ul>
+
+      <li><a href="#details">Details</a></li>
+          </ul>
 
   </div>
 </div>

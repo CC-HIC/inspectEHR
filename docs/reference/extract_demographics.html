@@ -174,14 +174,14 @@ as, or NULL (the default) if you do not want to relabel.</p></td>
 <span class='no'>ctn</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='connect.html'>connect</a></span>(<span class='kw'>sqlite_file</span> <span class='kw'>=</span> <span class='no'>db_pth</span>)
 <span class='no'>hic_codes</span> <span class='kw'>&lt;-</span> <span class='st'>"NIHR_HIC_ICU_0409"</span>
 <span class='no'>new_labels</span> <span class='kw'>&lt;-</span> <span class='st'>"apache_score"</span>
-<span class='fu'>extract_demographics</span>(<span class='no'>ctn</span>, <span class='kw'>episode_ids</span> <span class='kw'>=</span> <span class='fl'>13639</span>:<span class='fl'>13643</span>, <span class='no'>hic_codes</span>, <span class='no'>new_labels</span>)</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 5 x 2</span><span>
+<span class='fu'>extract_demographics</span>(<span class='no'>ctn</span>, <span class='kw'>episode_ids</span> <span class='kw'>=</span> <span class='fl'>13639</span>:<span class='fl'>13643</span>, <span class='no'>hic_codes</span>, <span class='no'>new_labels</span>)</div><div class='output co'>#&gt; # A tibble: 5 x 2
 #&gt;   episode_id apache_score
-#&gt;        </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span>        </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span>
-#&gt; </span><span style='color: #BCBCBC;'>1</span><span>      </span><span style='text-decoration: underline;'>13</span><span>639           12
-#&gt; </span><span style='color: #BCBCBC;'>2</span><span>      </span><span style='text-decoration: underline;'>13</span><span>640           16
-#&gt; </span><span style='color: #BCBCBC;'>3</span><span>      </span><span style='text-decoration: underline;'>13</span><span>641           47
-#&gt; </span><span style='color: #BCBCBC;'>4</span><span>      </span><span style='text-decoration: underline;'>13</span><span>642           28
-#&gt; </span><span style='color: #BCBCBC;'>5</span><span>      </span><span style='text-decoration: underline;'>13</span><span>643           14</div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div></span></pre>
+#&gt;        &lt;int&gt;        &lt;int&gt;
+#&gt; 1      13639           12
+#&gt; 2      13640           16
+#&gt; 3      13641           47
+#&gt; 4      13642           28
+#&gt; 5      13643           14</div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

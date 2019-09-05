@@ -158,21 +158,21 @@ explicitly called.</p>
     <pre class="examples"><div class='input'><span class='no'>db_pth</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/system.file'>system.file</a></span>(<span class='st'>"testdata/synthetic_db.sqlite3"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"inspectEHR"</span>)
 <span class='no'>ctn</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='connect.html'>connect</a></span>(<span class='kw'>sqlite_file</span> <span class='kw'>=</span> <span class='no'>db_pth</span>)
 <span class='no'>core</span> <span class='kw'>&lt;-</span> <span class='fu'>make_core</span>(<span class='no'>ctn</span>)
-<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>core</span>)</div><div class='output co'>#&gt; <span style='color: #949494;'># Source:   lazy query [?? x 22]</span><span>
-#&gt; </span><span style='color: #949494;'># Database: sqlite 3.29.0
-#&gt; #   [/Users/edward/_dev/inspectEHR/inst/testdata/synthetic_db.sqlite3]</span><span>
+<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>core</span>)</div><div class='output co'>#&gt; # Source:   lazy query [?? x 22]
+#&gt; # Database: sqlite 3.29.0
+#&gt; #   [/Users/edward/_dev/inspectEHR/inst/testdata/synthetic_db.sqlite3]
 #&gt;   episode_id nhs_number start_date provenance filename date_created version
-#&gt;        </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span> </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span>      </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span>           </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span> </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span>    </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span>        </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span>  
-#&gt; </span><span style='color: #BCBCBC;'>1</span><span>      </span><span style='text-decoration: underline;'>13</span><span>626 8674351972 2016-02-1…          2 simulat… 2019-08-20 … v8.3.2 
-#&gt; </span><span style='color: #BCBCBC;'>2</span><span>      </span><span style='text-decoration: underline;'>13</span><span>626 8674351972 2016-02-1…          2 simulat… 2019-08-20 … v8.3.2 
-#&gt; </span><span style='color: #BCBCBC;'>3</span><span>      </span><span style='text-decoration: underline;'>13</span><span>626 8674351972 2016-02-1…          2 simulat… 2019-08-20 … v8.3.2 
-#&gt; </span><span style='color: #BCBCBC;'>4</span><span>      </span><span style='text-decoration: underline;'>13</span><span>626 8674351972 2016-02-1…          2 simulat… 2019-08-20 … v8.3.2 
-#&gt; </span><span style='color: #BCBCBC;'>5</span><span>      </span><span style='text-decoration: underline;'>13</span><span>626 8674351972 2016-02-1…          2 simulat… 2019-08-20 … v8.3.2 
-#&gt; </span><span style='color: #BCBCBC;'>6</span><span>      </span><span style='text-decoration: underline;'>13</span><span>626 8674351972 2016-02-1…          2 simulat… 2019-08-20 … v8.3.2 
-#&gt; </span><span style='color: #949494;'># … with 15 more variables: date_parsed </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span style='color: #949494;'>, site </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span style='color: #949494;'>, theme </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span style='color: #949494;'>,
-#&gt; #   notes </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span style='color: #949494;'>, code_name </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span style='color: #949494;'>, string </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span style='color: #949494;'>, string2 </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span style='color: #949494;'>, string3 </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span style='color: #949494;'>,
-#&gt; #   datetime </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span style='color: #949494;'>, date </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span style='color: #949494;'>, time </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span style='color: #949494;'>, real </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span style='color: #949494;'>, integer </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span style='color: #949494;'>,
-#&gt; #   integer2 </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span style='color: #949494;'>, event_id </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span></div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div></span></pre>
+#&gt;        &lt;int&gt; &lt;chr&gt;      &lt;chr&gt;           &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;        &lt;chr&gt;  
+#&gt; 1      13626 8674351972 2016-02-1…          2 simulat… 2019-08-20 … v8.3.2 
+#&gt; 2      13626 8674351972 2016-02-1…          2 simulat… 2019-08-20 … v8.3.2 
+#&gt; 3      13626 8674351972 2016-02-1…          2 simulat… 2019-08-20 … v8.3.2 
+#&gt; 4      13626 8674351972 2016-02-1…          2 simulat… 2019-08-20 … v8.3.2 
+#&gt; 5      13626 8674351972 2016-02-1…          2 simulat… 2019-08-20 … v8.3.2 
+#&gt; 6      13626 8674351972 2016-02-1…          2 simulat… 2019-08-20 … v8.3.2 
+#&gt; # … with 15 more variables: date_parsed &lt;chr&gt;, site &lt;chr&gt;, theme &lt;chr&gt;,
+#&gt; #   notes &lt;chr&gt;, code_name &lt;chr&gt;, string &lt;chr&gt;, string2 &lt;chr&gt;, string3 &lt;chr&gt;,
+#&gt; #   datetime &lt;chr&gt;, date &lt;chr&gt;, time &lt;chr&gt;, real &lt;dbl&gt;, integer &lt;int&gt;,
+#&gt; #   integer2 &lt;int&gt;, event_id &lt;int&gt;</div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

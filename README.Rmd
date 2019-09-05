@@ -46,7 +46,7 @@ A copy should already be installed into the group library for the CC-HIC team in
 A synthetic database with 1000 patients ships with inspectEHR for you to explore. Actual values are garbage, but everything is internally consistent. The code to produce a more comprehensive synthetic test database is found in `data-raw/write_synthetic_data.R`. We have skimmmed off the first 1000 patients so as to not make the synehtic database combersome.
 
 ```{r, message = FALSE}
-library(inspectEHR); library(dbplyr)
+library(inspectEHR)
 
 # Synthetic database ships with inspectEHR
 db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")

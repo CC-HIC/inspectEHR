@@ -162,20 +162,20 @@ the S3 classes associated with the inspectEHR package</p>
     <pre class="examples"><div class='input'><span class='no'>db_pth</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/system.file'>system.file</a></span>(<span class='st'>"testdata/synthetic_db.sqlite3"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"inspectEHR"</span>)
 <span class='no'>ctn</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='connect.html'>connect</a></span>(<span class='kw'>sqlite_file</span> <span class='kw'>=</span> <span class='no'>db_pth</span>)
 <span class='no'>core</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='make_core.html'>make_core</a></span>(<span class='no'>ctn</span>)
-<span class='fu'>extract</span>(<span class='no'>core</span>, <span class='kw'>input</span> <span class='kw'>=</span> <span class='st'>"NIHR_HIC_ICU_0073"</span>)</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 1,000 x 5</span><span>
+<span class='fu'>extract</span>(<span class='no'>core</span>, <span class='kw'>input</span> <span class='kw'>=</span> <span class='st'>"NIHR_HIC_ICU_0073"</span>)</div><div class='output co'>#&gt; # A tibble: 1,000 x 5
 #&gt;    event_id site  code_name         episode_id value     
-#&gt;       </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span> </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span> </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span>                  </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span> </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span>     
-#&gt; </span><span style='color: #BCBCBC;'> 1</span><span>    </span><span style='text-decoration: underline;'>29</span><span>582 B     NIHR_HIC_ICU_0073      </span><span style='text-decoration: underline;'>13</span><span>626 8674351972
-#&gt; </span><span style='color: #BCBCBC;'> 2</span><span>    </span><span style='text-decoration: underline;'>29</span><span>595 B     NIHR_HIC_ICU_0073      </span><span style='text-decoration: underline;'>13</span><span>639 4295442348
-#&gt; </span><span style='color: #BCBCBC;'> 3</span><span>    </span><span style='text-decoration: underline;'>29</span><span>596 B     NIHR_HIC_ICU_0073      </span><span style='text-decoration: underline;'>13</span><span>640 3369135825
-#&gt; </span><span style='color: #BCBCBC;'> 4</span><span>    </span><span style='text-decoration: underline;'>29</span><span>597 B     NIHR_HIC_ICU_0073      </span><span style='text-decoration: underline;'>13</span><span>641 5222379698
-#&gt; </span><span style='color: #BCBCBC;'> 5</span><span>    </span><span style='text-decoration: underline;'>29</span><span>598 B     NIHR_HIC_ICU_0073      </span><span style='text-decoration: underline;'>13</span><span>642 4463215420
-#&gt; </span><span style='color: #BCBCBC;'> 6</span><span>    </span><span style='text-decoration: underline;'>29</span><span>599 B     NIHR_HIC_ICU_0073      </span><span style='text-decoration: underline;'>13</span><span>643 7366572217
-#&gt; </span><span style='color: #BCBCBC;'> 7</span><span>    </span><span style='text-decoration: underline;'>29</span><span>600 B     NIHR_HIC_ICU_0073      </span><span style='text-decoration: underline;'>13</span><span>644 2869432968
-#&gt; </span><span style='color: #BCBCBC;'> 8</span><span>    </span><span style='text-decoration: underline;'>29</span><span>601 B     NIHR_HIC_ICU_0073      </span><span style='text-decoration: underline;'>13</span><span>645 7961536515
-#&gt; </span><span style='color: #BCBCBC;'> 9</span><span>    </span><span style='text-decoration: underline;'>29</span><span>602 B     NIHR_HIC_ICU_0073      </span><span style='text-decoration: underline;'>13</span><span>646 1894163389
-#&gt; </span><span style='color: #BCBCBC;'>10</span><span>    </span><span style='text-decoration: underline;'>29</span><span>603 B     NIHR_HIC_ICU_0073      </span><span style='text-decoration: underline;'>13</span><span>647 6386822293
-#&gt; </span><span style='color: #949494;'># … with 990 more rows</span><span></div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div></span></pre>
+#&gt;       &lt;int&gt; &lt;chr&gt; &lt;chr&gt;                  &lt;int&gt; &lt;chr&gt;     
+#&gt;  1    29582 B     NIHR_HIC_ICU_0073      13626 8674351972
+#&gt;  2    29595 B     NIHR_HIC_ICU_0073      13639 4295442348
+#&gt;  3    29596 B     NIHR_HIC_ICU_0073      13640 3369135825
+#&gt;  4    29597 B     NIHR_HIC_ICU_0073      13641 5222379698
+#&gt;  5    29598 B     NIHR_HIC_ICU_0073      13642 4463215420
+#&gt;  6    29599 B     NIHR_HIC_ICU_0073      13643 7366572217
+#&gt;  7    29600 B     NIHR_HIC_ICU_0073      13644 2869432968
+#&gt;  8    29601 B     NIHR_HIC_ICU_0073      13645 7961536515
+#&gt;  9    29602 B     NIHR_HIC_ICU_0073      13646 1894163389
+#&gt; 10    29603 B     NIHR_HIC_ICU_0073      13647 6386822293
+#&gt; # … with 990 more rows</div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

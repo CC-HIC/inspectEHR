@@ -185,15 +185,15 @@ contributes from more than one episode, and then duplicated across episodes.</p>
 
 <span class='co'>## verify Boundary Conditions</span>
 <span class='no'>vhr</span> <span class='kw'>&lt;-</span> <span class='fu'>verify_bounds</span>(<span class='no'>hr</span>, <span class='kw'>los_table</span> <span class='kw'>=</span> <span class='no'>episodes</span>)
-<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>vhr</span>)</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 6 x 2</span><span>
+<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>vhr</span>)</div><div class='output co'>#&gt; # A tibble: 6 x 2
 #&gt;   event_id out_of_bounds
-#&gt;      </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span>         </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span>
-#&gt; </span><span style='color: #BCBCBC;'>1</span><span>  2</span><span style='text-decoration: underline;'>412</span><span>851            -</span><span style='color: #BB0000;'>1</span><span>
-#&gt; </span><span style='color: #BCBCBC;'>2</span><span>  2</span><span style='text-decoration: underline;'>412</span><span>852            -</span><span style='color: #BB0000;'>1</span><span>
-#&gt; </span><span style='color: #BCBCBC;'>3</span><span>  2</span><span style='text-decoration: underline;'>412</span><span>853            -</span><span style='color: #BB0000;'>1</span><span>
-#&gt; </span><span style='color: #BCBCBC;'>4</span><span>  2</span><span style='text-decoration: underline;'>412</span><span>854            -</span><span style='color: #BB0000;'>1</span><span>
-#&gt; </span><span style='color: #BCBCBC;'>5</span><span>  2</span><span style='text-decoration: underline;'>412</span><span>855            -</span><span style='color: #BB0000;'>1</span><span>
-#&gt; </span><span style='color: #BCBCBC;'>6</span><span>  2</span><span style='text-decoration: underline;'>412</span><span>856            -</span><span style='color: #BB0000;'>1</span><span></div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div></span></pre>
+#&gt;      &lt;int&gt;         &lt;int&gt;
+#&gt; 1  2412851            -1
+#&gt; 2  2412852            -1
+#&gt; 3  2412853            -1
+#&gt; 4  2412854            -1
+#&gt; 5  2412855            -1
+#&gt; 6  2412856            -1</div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

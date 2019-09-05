@@ -199,16 +199,16 @@ unify this procedure.</p>
 
 <span class='co'>## Full varification</span>
 <span class='no'>vhr</span> <span class='kw'>&lt;-</span> <span class='fu'>verify_events</span>(<span class='no'>hr</span>, <span class='no'>ve</span>)
-<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>vhr</span>)</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 6 x 11</span><span>
+<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>vhr</span>)</div><div class='output co'>#&gt; # A tibble: 6 x 11
 #&gt;   episode_id periodicity event_id site  code_name datetime value range_error
-#&gt;        </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span>       </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>    </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span> </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span> </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span>     </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span>    </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span>       </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span>
-#&gt; </span><span style='color: #BCBCBC;'>1</span><span>      </span><span style='text-decoration: underline;'>13</span><span>626        20.0  2</span><span style='text-decoration: underline;'>412</span><span>851 B     NIHR_HIC… 2016-02…    69           0
-#&gt; </span><span style='color: #BCBCBC;'>2</span><span>      </span><span style='text-decoration: underline;'>13</span><span>626        20.0  2</span><span style='text-decoration: underline;'>412</span><span>852 B     NIHR_HIC… 2016-02…    93           0
-#&gt; </span><span style='color: #BCBCBC;'>3</span><span>      </span><span style='text-decoration: underline;'>13</span><span>626        20.0  2</span><span style='text-decoration: underline;'>412</span><span>853 B     NIHR_HIC… 2016-02…    86           0
-#&gt; </span><span style='color: #BCBCBC;'>4</span><span>      </span><span style='text-decoration: underline;'>13</span><span>626        20.0  2</span><span style='text-decoration: underline;'>412</span><span>854 B     NIHR_HIC… 2016-02…    93           0
-#&gt; </span><span style='color: #BCBCBC;'>5</span><span>      </span><span style='text-decoration: underline;'>13</span><span>626        20.0  2</span><span style='text-decoration: underline;'>412</span><span>855 B     NIHR_HIC… 2016-02…    63           0
-#&gt; </span><span style='color: #BCBCBC;'>6</span><span>      </span><span style='text-decoration: underline;'>13</span><span>626        20.0  2</span><span style='text-decoration: underline;'>412</span><span>856 B     NIHR_HIC… 2016-02…   102           0
-#&gt; </span><span style='color: #949494;'># … with 3 more variables: out_of_bounds </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span style='color: #949494;'>, duplicate </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span style='color: #949494;'>, var_per </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span></div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div></span></pre>
+#&gt;        &lt;int&gt;       &lt;dbl&gt;    &lt;int&gt; &lt;chr&gt; &lt;chr&gt;     &lt;chr&gt;    &lt;int&gt;       &lt;int&gt;
+#&gt; 1      13626        20.0  2412851 B     NIHR_HIC… 2016-02…    69           0
+#&gt; 2      13626        20.0  2412852 B     NIHR_HIC… 2016-02…    93           0
+#&gt; 3      13626        20.0  2412853 B     NIHR_HIC… 2016-02…    86           0
+#&gt; 4      13626        20.0  2412854 B     NIHR_HIC… 2016-02…    93           0
+#&gt; 5      13626        20.0  2412855 B     NIHR_HIC… 2016-02…    63           0
+#&gt; 6      13626        20.0  2412856 B     NIHR_HIC… 2016-02…   102           0
+#&gt; # … with 3 more variables: out_of_bounds &lt;int&gt;, duplicate &lt;int&gt;, var_per &lt;int&gt;</div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

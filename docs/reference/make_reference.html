@@ -156,15 +156,15 @@ This is part of the basic setup.</p>
     <pre class="examples"><div class='input'><span class='no'>db_pth</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/system.file'>system.file</a></span>(<span class='st'>"testdata/synthetic_db.sqlite3"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"inspectEHR"</span>)
 <span class='no'>ctn</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='connect.html'>connect</a></span>(<span class='kw'>sqlite_file</span> <span class='kw'>=</span> <span class='no'>db_pth</span>)
 <span class='no'>ref</span> <span class='kw'>&lt;-</span> <span class='fu'>make_reference</span>(<span class='no'>ctn</span>)
-<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>ref</span>)</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 6 x 4</span><span>
+<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>ref</span>)</div><div class='output co'>#&gt; # A tibble: 6 x 4
 #&gt;   episode_id nhs_number start_date          site 
-#&gt;        </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span> </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span>      </span><span style='color: #949494;font-style: italic;'>&lt;dttm&gt;</span><span>              </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span>
-#&gt; </span><span style='color: #BCBCBC;'>1</span><span>      </span><span style='text-decoration: underline;'>13</span><span>626 8674351972 2016-02-19 </span><span style='color: #949494;'>01:28:00</span><span> B    
-#&gt; </span><span style='color: #BCBCBC;'>2</span><span>      </span><span style='text-decoration: underline;'>13</span><span>639 4295442348 2016-02-18 </span><span style='color: #949494;'>17:36:04</span><span> B    
-#&gt; </span><span style='color: #BCBCBC;'>3</span><span>      </span><span style='text-decoration: underline;'>13</span><span>640 3369135825 2016-02-18 </span><span style='color: #949494;'>20:21:47</span><span> B    
-#&gt; </span><span style='color: #BCBCBC;'>4</span><span>      </span><span style='text-decoration: underline;'>13</span><span>641 5222379698 2016-02-18 </span><span style='color: #949494;'>18:23:56</span><span> B    
-#&gt; </span><span style='color: #BCBCBC;'>5</span><span>      </span><span style='text-decoration: underline;'>13</span><span>642 4463215420 2016-02-18 </span><span style='color: #949494;'>09:19:18</span><span> B    
-#&gt; </span><span style='color: #BCBCBC;'>6</span><span>      </span><span style='text-decoration: underline;'>13</span><span>643 7366572217 2016-02-18 </span><span style='color: #949494;'>21:07:40</span><span> B    </div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div></span></pre>
+#&gt;        &lt;int&gt; &lt;chr&gt;      &lt;dttm&gt;              &lt;chr&gt;
+#&gt; 1      13626 8674351972 2016-02-19 01:28:00 B    
+#&gt; 2      13639 4295442348 2016-02-18 17:36:04 B    
+#&gt; 3      13640 3369135825 2016-02-18 20:21:47 B    
+#&gt; 4      13641 5222379698 2016-02-18 18:23:56 B    
+#&gt; 5      13642 4463215420 2016-02-18 09:19:18 B    
+#&gt; 6      13643 7366572217 2016-02-18 21:07:40 B    </div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

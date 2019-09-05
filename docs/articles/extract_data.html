@@ -90,7 +90,7 @@
       <h1>How to extract data using inspectEHR</h1>
                         <h4 class="author">Edward Palmer</h4>
             
-            <h4 class="date">2019-08-30</h4>
+            <h4 class="date">2019-09-05</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/CC-HIC/inspectEHR/blob/master/vignettes/extract_data.Rmd"><code>vignettes/extract_data.Rmd</code></a></small>
       <div class="hidden name"><code>extract_data.Rmd</code></div>
@@ -151,7 +151,7 @@
 <a class="sourceLine" id="cb4-11" data-line-number="11">  <span class="dt">code_names =</span> long_codes<span class="op">$</span>hic_codes,</a>
 <a class="sourceLine" id="cb4-12" data-line-number="12">  <span class="dt">rename =</span> long_codes<span class="op">$</span>short_name</a>
 <a class="sourceLine" id="cb4-13" data-line-number="13">  )</a>
-<a class="sourceLine" id="cb4-14" data-line-number="14"><span class="co">#&gt; 6.9e-05 hours to process</span></a>
+<a class="sourceLine" id="cb4-14" data-line-number="14"><span class="co">#&gt; 6.2e-05 hours to process</span></a>
 <a class="sourceLine" id="cb4-15" data-line-number="15"></a>
 <a class="sourceLine" id="cb4-16" data-line-number="16"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(ltb)</a>
 <a class="sourceLine" id="cb4-17" data-line-number="17"><span class="co">#&gt; # A tibble: 6 x 3</span></a>
@@ -175,19 +175,18 @@
 <a class="sourceLine" id="cb6-6" data-line-number="6">  <span class="dt">cadance =</span> <span class="dv">6</span>, <span class="co"># 1 row every 6 hours</span></a>
 <a class="sourceLine" id="cb6-7" data-line-number="7">  <span class="dt">overlap_method =</span> mean <span class="co"># use mean to downsample to our 6 hour cadence</span></a>
 <a class="sourceLine" id="cb6-8" data-line-number="8">  )</a>
-<a class="sourceLine" id="cb6-9" data-line-number="9"><span class="co">#&gt; Warning: metadata extraction is not yet supported with this feature</span></a>
-<a class="sourceLine" id="cb6-10" data-line-number="10"></a>
-<a class="sourceLine" id="cb6-11" data-line-number="11"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(ltb_<span class="dv">2</span>)</a>
-<a class="sourceLine" id="cb6-12" data-line-number="12"><span class="co">#&gt; # A tibble: 6 x 3</span></a>
-<a class="sourceLine" id="cb6-13" data-line-number="13"><span class="co">#&gt;    time    hr episode_id</span></a>
-<a class="sourceLine" id="cb6-14" data-line-number="14"><span class="co">#&gt;   &lt;dbl&gt; &lt;dbl&gt;      &lt;int&gt;</span></a>
-<a class="sourceLine" id="cb6-15" data-line-number="15"><span class="co">#&gt; 1     0  95        13639</span></a>
-<a class="sourceLine" id="cb6-16" data-line-number="16"><span class="co">#&gt; 2     6  83.8      13639</span></a>
-<a class="sourceLine" id="cb6-17" data-line-number="17"><span class="co">#&gt; 3    12  88.6      13639</span></a>
-<a class="sourceLine" id="cb6-18" data-line-number="18"><span class="co">#&gt; 4    18  92.2      13639</span></a>
-<a class="sourceLine" id="cb6-19" data-line-number="19"><span class="co">#&gt; 5    24  82.7      13639</span></a>
-<a class="sourceLine" id="cb6-20" data-line-number="20"><span class="co">#&gt; 6    30  99.4      13639</span></a>
-<a class="sourceLine" id="cb6-21" data-line-number="21">DBI<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect">dbDisconnect</a></span>(ctn)</a></code></pre></div>
+<a class="sourceLine" id="cb6-9" data-line-number="9"></a>
+<a class="sourceLine" id="cb6-10" data-line-number="10"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(ltb_<span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb6-11" data-line-number="11"><span class="co">#&gt; # A tibble: 6 x 3</span></a>
+<a class="sourceLine" id="cb6-12" data-line-number="12"><span class="co">#&gt;    time    hr episode_id</span></a>
+<a class="sourceLine" id="cb6-13" data-line-number="13"><span class="co">#&gt;   &lt;dbl&gt; &lt;dbl&gt;      &lt;int&gt;</span></a>
+<a class="sourceLine" id="cb6-14" data-line-number="14"><span class="co">#&gt; 1     0  95        13639</span></a>
+<a class="sourceLine" id="cb6-15" data-line-number="15"><span class="co">#&gt; 2     6  83.8      13639</span></a>
+<a class="sourceLine" id="cb6-16" data-line-number="16"><span class="co">#&gt; 3    12  88.6      13639</span></a>
+<a class="sourceLine" id="cb6-17" data-line-number="17"><span class="co">#&gt; 4    18  92.2      13639</span></a>
+<a class="sourceLine" id="cb6-18" data-line-number="18"><span class="co">#&gt; 5    24  82.7      13639</span></a>
+<a class="sourceLine" id="cb6-19" data-line-number="19"><span class="co">#&gt; 6    30  99.4      13639</span></a>
+<a class="sourceLine" id="cb6-20" data-line-number="20">DBI<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect">dbDisconnect</a></span>(ctn)</a></code></pre></div>
 <p>You can also run extract_timevarying with the option of cadance = “exact” or “timestamp” which both pull out the exact timing of events and labels them with either time from admission, or their timestamp respectively. I advise against this unless you have a specific requirement, as it is very computationally intensive.</p>
   </div>
 

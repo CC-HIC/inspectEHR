@@ -223,24 +223,24 @@ to determine how best they wish to account for this.</p>
 <span class='no'>ctn</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='connect.html'>connect</a></span>(<span class='kw'>sqlite_file</span> <span class='kw'>=</span> <span class='no'>db_pth</span>)
 
 <span class='co'># Extract Heart Rates for 5 episodes with default settings</span>
-<span class='no'>hr_default</span> <span class='kw'>&lt;-</span> <span class='fu'>extract_timevarying</span>(<span class='no'>ctn</span>, <span class='kw'>episode_ids</span> <span class='kw'>=</span> <span class='fl'>13639</span>:<span class='fl'>13643</span>, <span class='kw'>code_names</span> <span class='kw'>=</span> <span class='st'>"NIHR_HIC_ICU_0108"</span>)</div><div class='output co'>#&gt; <span class='message'>8.1e-05 hours to process</span></div><div class='input'><span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>hr_default</span>)</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 6 x 3</span><span>
+<span class='no'>hr_default</span> <span class='kw'>&lt;-</span> <span class='fu'>extract_timevarying</span>(<span class='no'>ctn</span>, <span class='kw'>episode_ids</span> <span class='kw'>=</span> <span class='fl'>13639</span>:<span class='fl'>13643</span>, <span class='kw'>code_names</span> <span class='kw'>=</span> <span class='st'>"NIHR_HIC_ICU_0108"</span>)</div><div class='output co'>#&gt; <span class='message'>7e-05 hours to process</span></div><div class='input'><span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>hr_default</span>)</div><div class='output co'>#&gt; # A tibble: 6 x 3
 #&gt;    time NIHR_HIC_ICU_0108 episode_id
-#&gt;   </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>             </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span>      </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span>
-#&gt; </span><span style='color: #BCBCBC;'>1</span><span>     0                99      </span><span style='text-decoration: underline;'>13</span><span>639
-#&gt; </span><span style='color: #BCBCBC;'>2</span><span>     1                84      </span><span style='text-decoration: underline;'>13</span><span>639
-#&gt; </span><span style='color: #BCBCBC;'>3</span><span>     2               102      </span><span style='text-decoration: underline;'>13</span><span>639
-#&gt; </span><span style='color: #BCBCBC;'>4</span><span>     3                95      </span><span style='text-decoration: underline;'>13</span><span>639
-#&gt; </span><span style='color: #BCBCBC;'>5</span><span>     4                69      </span><span style='text-decoration: underline;'>13</span><span>639
-#&gt; </span><span style='color: #BCBCBC;'>6</span><span>     5                76      </span><span style='text-decoration: underline;'>13</span><span>639</div><div class='input'><span class='co'># Extract Heart Rates for 5 episodes with custom settings</span>
-<span class='no'>hr_custom</span> <span class='kw'>&lt;-</span> <span class='fu'>extract_timevarying</span>(<span class='no'>ctn</span>, <span class='kw'>episode_ids</span> <span class='kw'>=</span> <span class='fl'>13639</span>:<span class='fl'>13643</span>, <span class='kw'>code_names</span> <span class='kw'>=</span> <span class='st'>"NIHR_HIC_ICU_0108"</span>, <span class='kw'>cadance</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>overlap_method</span> <span class='kw'>=</span> <span class='no'>mean</span>)</div><div class='output co'>#&gt; <span class='message'>metadata extraction is not yet supported with this feature</span></div><div class='output co'>#&gt; <span class='message'>5.9e-05 hours to process</span></div><div class='input'><span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>hr_custom</span>)</div><div class='output co'>#&gt; </span><span style='color: #949494;'># A tibble: 6 x 3</span><span>
+#&gt;   &lt;dbl&gt;             &lt;int&gt;      &lt;int&gt;
+#&gt; 1     0                99      13639
+#&gt; 2     1                84      13639
+#&gt; 3     2               102      13639
+#&gt; 4     3                95      13639
+#&gt; 5     4                69      13639
+#&gt; 6     5                76      13639</div><div class='input'><span class='co'># Extract Heart Rates for 5 episodes with custom settings</span>
+<span class='no'>hr_custom</span> <span class='kw'>&lt;-</span> <span class='fu'>extract_timevarying</span>(<span class='no'>ctn</span>, <span class='kw'>episode_ids</span> <span class='kw'>=</span> <span class='fl'>13639</span>:<span class='fl'>13643</span>, <span class='kw'>code_names</span> <span class='kw'>=</span> <span class='st'>"NIHR_HIC_ICU_0108"</span>, <span class='kw'>cadance</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>overlap_method</span> <span class='kw'>=</span> <span class='no'>mean</span>)</div><div class='output co'>#&gt; <span class='message'>metadata extraction is not yet supported with this feature</span></div><div class='output co'>#&gt; <span class='message'>5.3e-05 hours to process</span></div><div class='input'><span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/head'>head</a></span>(<span class='no'>hr_custom</span>)</div><div class='output co'>#&gt; # A tibble: 6 x 3
 #&gt;    time NIHR_HIC_ICU_0108 episode_id
-#&gt;   </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>             </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span>      </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span>
-#&gt; </span><span style='color: #BCBCBC;'>1</span><span>     0              91.5      </span><span style='text-decoration: underline;'>13</span><span>639
-#&gt; </span><span style='color: #BCBCBC;'>2</span><span>     2             102        </span><span style='text-decoration: underline;'>13</span><span>639
-#&gt; </span><span style='color: #BCBCBC;'>3</span><span>     4              80        </span><span style='text-decoration: underline;'>13</span><span>639
-#&gt; </span><span style='color: #BCBCBC;'>4</span><span>     6              90        </span><span style='text-decoration: underline;'>13</span><span>639
-#&gt; </span><span style='color: #BCBCBC;'>5</span><span>     8              90.7      </span><span style='text-decoration: underline;'>13</span><span>639
-#&gt; </span><span style='color: #BCBCBC;'>6</span><span>    10              96        </span><span style='text-decoration: underline;'>13</span><span>639</div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div></span></pre>
+#&gt;   &lt;dbl&gt;             &lt;dbl&gt;      &lt;int&gt;
+#&gt; 1     0              91.5      13639
+#&gt; 2     2             102        13639
+#&gt; 3     4              80        13639
+#&gt; 4     6              90        13639
+#&gt; 5     8              90.7      13639
+#&gt; 6    10              96        13639</div><div class='input'><span class='kw pkg'>DBI</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect'>dbDisconnect</a></span>(<span class='no'>ctn</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

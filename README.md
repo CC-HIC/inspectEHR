@@ -7,6 +7,7 @@
 
 [![Build
 Status](https://travis-ci.org/CC-HIC/inspectEHR.svg?branch=master)](https://travis-ci.org/CC-HIC/inspectEHR)
+[![codecov](https://codecov.io/gh/CC-HIC/inspectEHR/branch/master/graph/badge.svg)](https://codecov.io/gh/CC-HIC/inspectEHR)
 <!-- badges: end -->
 
 ## Overview
@@ -51,7 +52,7 @@ off the first 1000 patients so as to not make the synehtic database
 combersome.
 
 ``` r
-library(inspectEHR); library(dbplyr)
+library(inspectEHR)
 
 # Synthetic database ships with inspectEHR
 db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
@@ -104,7 +105,6 @@ ltb_2 <- extract_timevarying(
   cadance = 2, # 1 row every 2 hours
   overlap_method = mean # use mean to downsample to our 2 hour cadence
   )
-#> Warning: metadata extraction is not yet supported with this feature
 
 head(ltb_2)
 #> # A tibble: 6 x 3
