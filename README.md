@@ -8,6 +8,8 @@
 [![Build
 Status](https://travis-ci.org/CC-HIC/inspectEHR.svg?branch=master)](https://travis-ci.org/CC-HIC/inspectEHR)
 [![codecov](https://codecov.io/gh/CC-HIC/inspectEHR/branch/master/graph/badge.svg)](https://codecov.io/gh/CC-HIC/inspectEHR)
+[![Lifecycle
+Status](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/)
 <!-- badges: end -->
 
 ## Overview
