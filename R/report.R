@@ -237,7 +237,7 @@ report <- function(database = NULL,
     }
 
     # Saving errors outside the main list
-    dl <- summarise_verification(df, df_stat, df_cov, reference)
+    hic_event_summary[[i]] <- summarise_verification(df, df_stat, df_cov, reference)
 
     # The plotting
     if (write_plots) {
@@ -248,11 +248,14 @@ report <- function(database = NULL,
       for (s in seq_along(all_sites)) {
         hc <- make_heatcal(
           reference_tbl = reference, dataitem_tbl = df, site = all_sites[s])
-        hc_plot <- plot(hc, display = FALSE)
-        ggsave(hc_plot, filename = glue(
-          "{output_folder}plots/{hic_codes[i]}/
-          {hic_codes[i]}_heatcal_{all_sites[s]}.svg"
-        ))
+
+        if (hc != FALSE) {
+          hc_plot <- plot(hc, display = FALSE)
+          ggsave(hc_plot, filename = glue(
+            "{output_folder}plots/{hic_codes[i]}/{hic_codes[i]}_heatcal_{all_sites[s]}.svg"
+          ))
+        }
+
       }
 
       if (!is.na(ks_pos) && ks_pos == "ks") {

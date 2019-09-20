@@ -12,7 +12,8 @@
 #'   interest
 #' @export
 #'
-#' @return an object of class heat_cal
+#' @return an object of class heat_cal. Returns `FALSE` if the site is not found
+#'   in the data
 make_heatcal <- function(
   reference_tbl = NULL,
   dataitem_tbl = NULL,
@@ -26,9 +27,12 @@ make_heatcal <- function(
 
   if (!is.null(dataitem_tbl)) {
     type <- "events"
-    if (class(dataitem_tbl)[1] %in% preserved_classes) {
-      abort("You must supply an extracted table for this functionality. \n
-            See `extract()`")
+    if (!(any(class(dataitem_tbl) %in% preserved_classes))) {
+      abort("You must supply an extracted table for this functionality. See `extract()`")
+    }
+    if (!(site %in% unique(dataitem_tbl$site))) {
+      rlang::inform("No data for this site")
+      return(FALSE)
     }
   } else {
     type <- "episodes"

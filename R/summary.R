@@ -12,8 +12,12 @@
 #' @importFrom dplyr group_by summarise full_join n if_else
 #' @importFrom tidyr gather
 summarise_verification <- function(verified, stats, coverage, reference) {
-  dl <- vector(mode = "list", length = 4)
-  names(dl) <- c("error_checks", "stats", "completeness", "coverage")
+  dl <- vector(mode = "list", length = 5)
+  names(dl) <- c("n", "error_checks", "stats", "completeness", "coverage")
+
+  n <- verified %>%
+    group_by(.data$site) %>%
+    tally()
 
   bounds <- verified %>%
     group_by(.data$site) %>%
@@ -49,6 +53,8 @@ summarise_verification <- function(verified, stats, coverage, reference) {
         na.rm = TRUE
       )
     )
+
+  dl[["n"]] <- n
 
   dl[["error_checks"]] <- bounds %>%
     full_join(range, by = "site") %>%
