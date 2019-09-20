@@ -1,7 +1,7 @@
 #' Plot Patient
 #'
-#' @param connection
-#' @param nhs_number
+#' @param connection a database connection
+#' @param nhs_number the patients NHS number
 #'
 #' @importFrom dplyr filter select collect pull mutate group_by summarise
 #' @importFrom ggplot2 ggplot aes geom_dotplot

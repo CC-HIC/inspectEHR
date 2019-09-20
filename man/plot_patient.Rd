@@ -7,7 +7,9 @@
 plot_patient(connection, nhs_number)
 }
 \arguments{
-\item{nhs_number}{}
+\item{connection}{a database connection}
+
+\item{nhs_number}{the patients NHS number}
 }
 \description{
 Plot Patient

@@ -44,7 +44,7 @@ report <- function(database = NULL,
   )
 
   # Folder set up ====
-  if (str_sub(output_folder, -1) != "/") {
+  if (stringr::str_sub(output_folder, -1) != "/") {
     output_folder <- paste0(output_folder, "/")
   }
 
