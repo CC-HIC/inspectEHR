@@ -1,0 +1,5 @@
+book_filename: "quality_reports"
+delete_merged_file: true
+language:
+  ui:
+    chapter_name: "Section "

@@ -59,16 +59,23 @@ make_heatcal <- function(
 
 #' Find First Sunday
 #'
-#' Finds the first sunday of the year supplied to x
+#' Finds the first sunday of the month supplied to x
 #'
 #' @param x a vector of class date
 #' @return a vector with dates for the first sunday of each year supplied to x
 #'
 #' @importFrom lubridate floor_date wday days
 find_first_sunday <- function(x) {
-  first <- floor_date(x, "month")
-  dow <- vapply(seq(0, 6), function(x) wday(first + days(x)))
-  first_sunday <- first + days(which(dow == 1) - 1)
+  first_of_month <- floor_date(x, "month")
+  days_of_week <- vapply(
+    seq(0, 6), function(x) {
+      as.integer(
+        wday(
+          first_of_month + days(x)
+        )
+      )},
+    vector(mode = "double", length = 1))
+  first_sunday <- first_of_month + days(which(days_of_week == 1) - 1)
 }
 
 
@@ -116,7 +123,10 @@ create_calendar_template <- function(x = NULL,
     ) %>%
     mutate(
       first_sundays = as.Date(
-        vapply(.data$years, find_first_sunday),
+        vapply(
+          .data$years,
+          find_first_sunday,
+          vector(mode = "double", length = 1)),
         origin = "1970/01/01"
       ),
       remaining_days = as.integer(.data$first_sundays - .data$years),

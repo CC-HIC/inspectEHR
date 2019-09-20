@@ -1,0 +1,92 @@
+# Events in Detail
+
+This section reviews each event in detail. It is advisable to study each event in detail before embarking on a research endevour. If you find a problem with anything here, please submit an issue request on github.
+
+```{r trial, echo=FALSE, message=FALSE, results="asis"}
+load("./_bookdown_files/data/working_data.RData")
+
+for(i in seq_along(code_names)) {
+  if (dir.exists(
+    paste0(root, code_names[i]))) {
+    
+    event_files <- list.files(paste0(root, code_names[i]))
+    
+    main <- event_files[grepl(pattern = "main", x = event_files)]
+    coverage <- event_files[grepl(pattern = "covarage", x = event_files)]
+    ks <- event_files[grepl(pattern = "ks", x = event_files)]
+    period <- event_files[grepl(pattern = "periodicity", x = event_files)]
+    
+    ## Event Title
+    cat("## ",
+        substr(
+          code_names[i], nchar(code_names[i])-3, nchar(code_names[i])),
+        ": ",
+        names(code_names)[i],
+        "  \n", sep = "")
+    
+    if (nrow(hic_event_summary[[code_names[i]]]$error_checks) != 0) {
+      
+      errors <- hic_event_summary[[code_names[i]]]$error_checks %>%
+        group_by(site) %>%
+        spread(key = error_type, value = n) %>%
+        select(site, duplicate_events, early_event, late_event, low_value, high_value) %>%
+        rename(`duplicate events` = duplicate_events,
+             `early event` = early_event,
+             `late event` = late_event,
+             `low value` = low_value,
+             `high value` = high_value)
+    
+    this_cap <- paste0("Errors for ", names(code_names)[i],
+                       ": duplicate events = events that appear to be duplicates based on exact replication of a value and a datetime stamp (to the second), ",
+                       "early event = events that occurred before the patient arrived in ICU, ",
+                       "late event = events that occurred after the patient left ICU, ",
+                       "low value = events below a possible range, ",
+                       "high value = events above a possible range.")
+    
+    knitr::kable(errors, caption = this_cap)
+    }
+
+    if (code_names[i] %in% one_d) {
+        knitr::kable(hic_event_summary[[code_names[i]]]$missingness)
+    }
+    
+    # check to see if there is anything to show here
+    if (length(event_files) == 0) {
+      cat("There are no plots for the dataitem. This is usually for reasons of confidentiality.  \n")
+    } else {
+    
+    ## eCDF/Histograms
+    if (length(main) != 0) {
+    cat("### Distribution  \n")
+      for (j in seq_along(main)) {
+        cat("![](", root, code_names[i], "/", main[j], ")  \n", sep = "")
+        cat("\n")
+      }
+    rm(j)
+    }
+    ## Coverage
+    if (length(coverage) != 0) {
+    cat("### Coverage  \n")
+      for (j in seq_along(coverage)) {
+        cat("![](", root, code_names[i], "/", coverage[j], ")  \n", sep = "")
+        cat("\n")
+      }
+    rm(j)
+    }
+    ## Periodicity
+    if (length(period) != 0) {
+    cat("### Periodicity  \n")
+      cat("![](", root, code_names[i], "/", period, ")  \n", sep = "")
+      cat("\n")
+    }
+    ## KS
+    if (length(ks) != 0) {
+    cat("### KS Distance  \n")
+      cat("![](", root, code_names[i], "/", ks, ")  \n", sep = "")
+      cat("\n")
+    }
+    
+    }
+  }
+}
+```

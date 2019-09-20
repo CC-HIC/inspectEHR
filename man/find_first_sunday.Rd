@@ -13,5 +13,5 @@ find_first_sunday(x)
 a vector with dates for the first sunday of each year supplied to x
 }
 \description{
-Finds the first sunday of the year supplied to x
+Finds the first sunday of the month supplied to x
 }

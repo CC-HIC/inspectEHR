@@ -18,13 +18,14 @@
 #' @param generate_report triggers the build of the markdown report
 #'
 #' @importFrom dplyr select arrange pull left_join distinct collect tibble
-#'   anti_join mutate
+#'   anti_join mutate copy_to
 #' @importFrom ggplot2 ggplot aes geom_tile theme element_blank element_rect
 #'   ylab ggtitle ggsave dup_axis scale_x_discrete geom_point
 #' @importFrom DBI dbWriteTable
 #' @importFrom rlang inform abort
 #' @importFrom glue glue
 #' @importFrom scales viridis_pal
+#' @importFrom stringr str_sub
 #'
 #' @export
 report <- function(database = NULL,
@@ -288,4 +289,5 @@ report <- function(database = NULL,
   rlang::inform("Finished event level evaluation")
   # close the connection
   DBI::dbDisconnect(ctn)
+  return(TRUE)
 }

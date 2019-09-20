@@ -1,0 +1,59 @@
+---
+title: "How to make a data quality report"
+author: "Edward Palmer"
+date: "20th September 2019. Updated: `r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{dq_report}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The primary role of inspectEHR is to process the data inside CC-HIC in such a way as to make it ready to produce a data quality report.
+
+First, install inspectEHR from github, or download the latest release directly.
+
+```{r, eval = FALSE}
+# If you need inspectEHR
+library(devtools)
+install_github("CC-HIC/inspectEHR")
+```
+
+You will most likely be working with sqlite as the postgres instance is confined to the UCL IDHS.
+
+```{r, message = FALSE}
+library(inspectEHR); library(dbplyr)
+
+# Synthetic database ships with inspectEHR
+#db_path <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
+#output_path <- "./2019-09-reports"
+```
+
+Supply the `report` function with an output folder. Please note, you must have write access to the database for this function to work.
+
+```{r}
+#report(sqlite_file = db_path, output_folder = output_path)
+```
+
+This will perform the following procedures:
+
+1. Episodes will be characterised and verified/validated. This information will be stored inside the database in a new table called `episode_verification`.
+
+2. Events will be verified/validated. This information will be stored inside the database in a new table called `event_verification`.
+
+3. Summary information that is necessary for making a data quality report is exported as a `.RData` file to the `output_folder`.
+
+4. Plots are pre-drawn and exported to the `output_folder`.
+
+5. A data quality report is generated and exported to the `output_folder`.
+
+6. A data quality score is generated and added to the report for each site.
+
+Steps 3 and 4 are necessary as it allows for non identifying information to be exported from a secure location, without any risk of confidential information leak.

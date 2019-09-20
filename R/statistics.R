@@ -49,7 +49,7 @@ ks_test <- function(x) {
     length = base::ncol(site_pairs)
   )
 
-  for (i in seq_along(site_pairs)) {
+  for (i in seq_along(ks_list)) {
     ks_list[[i]] <- ks.test(
       x = x %>%
         filter(.data$site == site_pairs[, i][1]) %>%

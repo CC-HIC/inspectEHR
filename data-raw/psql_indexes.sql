@@ -29,5 +29,9 @@ CREATE INDEX  events_episodeid_index  ON events
 (
     episode_id
 );
+CREATE INDEX  events_string_index  ON events
+(
+    string
+);
 COMMIT;
 VACUUM;
