@@ -92,10 +92,10 @@ cleaning_helper <- function(col_vec, col_name, dq_ref = NULL, action = "NA") {
     change <- length(setdiff(before, col_vec))
   }
 
-  return(col_vec)
   rlang::inform(
     paste0("Finished cleaning: ", col_name, ". ", change, "elements modified")
   )
+  return(col_vec)
   }
 
 }

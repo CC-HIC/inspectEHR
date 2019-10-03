@@ -37,7 +37,10 @@ ks_test <- function(x) {
   code_name <- attr(x, "code_name")
   sites <- unique(x$site)
   site_count <- length(sites)
-  if (site_count < 2) rlang::abort("Comparison must have 2 or more sites")
+  if (site_count < 2) {
+    rlang::inform("Comparison must have 2 or more sites")
+    return(FALSE)
+  }
   site_pairs <- utils::combn(sites, 2)
 
   if (!(class(x$value)[1] %in% c("numeric", "integer"))) {

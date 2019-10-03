@@ -71,9 +71,14 @@
 #' hr_custom <- extract_timevarying(ctn, episode_ids = 13639:13643, code_names = "NIHR_HIC_ICU_0108", cadance = 2, overlap_method = mean)
 #' head(hr_custom)
 #' DBI::dbDisconnect(ctn)
-extract_timevarying <- function(connection, episode_ids = NULL, code_names,
-                                rename = NULL, chunk_size = 5000, cadance = 1,
-                                overlap_method = "distinct") {
+extract_timevarying <- function(connection,
+                                episode_ids = NULL,
+                                code_names,
+                                rename = NULL,
+                                chunk_size = 5000,
+                                cadance = 1,
+                                overlap_method = "distinct",
+                                time_boundaries = c(-Inf, Inf)) {
   starting <- lubridate::now()
 
   if (!is.null(episode_ids) && class(episode_ids) != "integer") {
@@ -107,13 +112,15 @@ extract_timevarying <- function(connection, episode_ids = NULL, code_names,
     episode_groups <- filter(episode_groups, episode_id %in% episode_ids)
   }
 
+  mdata <- collect(dplyr::tbl(connection, "variables"))
+
   episode_groups <- episode_groups %>%
     mutate(group = as.integer(seq(n()) / chunk_size)) %>%
     split(., .$group) %>%
     map(function(epi_ids) {
       collect_events <- dplyr::tbl(connection, "events") %>%
-        filter(code_name %in% exons) %>%
-        filter(episode_id %in% !!epi_ids$episode_id) %>%
+        filter(code_name %in% exons,
+               episode_id %in% !!epi_ids$episode_id) %>%
         collect()
 
       map(collect_events %>%
@@ -121,9 +128,10 @@ extract_timevarying <- function(connection, episode_ids = NULL, code_names,
         distinct() %>%
         pull(), process_all,
       events = collect_events,
-      metadata = collect(dplyr::tbl(connection, "variables")),
+      metadata = mdata,
       cadance = cadance,
-      overlap_method = overlap_method
+      overlap_method = overlap_method,
+      time_boundaries = time_boundaries
       ) %>%
         bind_rows()
     }) %>%
@@ -161,15 +169,23 @@ extract_timevarying <- function(connection, episode_ids = NULL, code_names,
 }
 
 
-process_all <- function(epi_id, events, metadata, cadance, overlap_method) {
+process_all <- function(epi_id, events, metadata, cadance, overlap_method, time_boundaries) {
   pt <- events %>%
-    filter(episode_id == epi_id)
+    filter(episode_id == epi_id) %>%
+    mutate(datetime = as.POSIXct(datetime))
 
   start_time <- pt %>%
     filter(code_name == "NIHR_HIC_ICU_0411") %>%
-    mutate(datetime = as.POSIXct(datetime)) %>%
     select(datetime) %>%
     pull()
+
+  if (!identical(time_boundaries, c(-Inf, Inf))) {
+    pull_from <- start_time + lubridate::hours(time_boundaries[1])
+    pull_to <- start_time + lubridate::hours(time_boundaries[2])
+    pt <- pt %>%
+      filter(datetime >= pull_from,
+             datetime <= pull_to)
+  }
 
   if (cadance == "exact") {
     imap(pt %>%
@@ -392,8 +408,9 @@ expand_missing <- function(df, cadance = 1) {
     split(., .$episode_id) %>%
     imap(function(base_table, epi_id) {
       tibble(
-        episode_id = epi_id,
-        time = seq(min(base_table$time, 0),
+        episode_id = as.numeric(epi_id),
+        time = seq(
+          min(base_table$time, 0),
           max(base_table$time, 0),
           by = cadance
         )

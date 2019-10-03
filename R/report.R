@@ -259,10 +259,12 @@ report <- function(database = NULL,
       }
 
       if (!is.na(ks_pos) && ks_pos == "ks") {
-        stat_plot <- plot_ks(df_stat, reference)
-        ggsave(hc_plot, filename = glue(
-          "{output_folder}plots/{hic_codes[i]}/{hic_codes[i]}_ks.svg"
-        ))
+        if (df_stat != FALSE) {
+          stat_plot <- plot_ks(df_stat, reference)
+          ggsave(stat_plot, filename = glue(
+            "{output_folder}plots/{hic_codes[i]}/{hic_codes[i]}_ks.svg"
+          ))
+        }
       }
 
       if (!(hic_codes[i] %in% paste0(
