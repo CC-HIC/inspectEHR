@@ -6,7 +6,7 @@
 \usage{
 extract_timevarying(connection, episode_ids = NULL, code_names,
   rename = NULL, chunk_size = 5000, cadance = 1,
-  overlap_method = "distinct")
+  time_boundaries = c(-Inf, Inf))
 }
 \arguments{
 \item{connection}{a CC-HIC database connection}
@@ -22,17 +22,13 @@ as, or NULL (the default) if you do not want to relabel.}
 \item{chunk_size}{a chunking parameter to help speed up the function and
 manage memory constaints}
 
-\item{cadance}{a numerical scalar or one of "exact" or "timestamp". If a
-numerical scalar is used, it will describe the base time unit to build each
-row, in divisions of an hour. For example: 1 = 1 hour, 0.5 = 30 mins, 2 = 2
-hourly. If multiple events occur within the specified time, then the first
-is chosen and the others are dropped. If cadance = "exact", then the EXACT
-datetime will be used at the time column. This is likely to generate a
-LARGE table, so use cautiously.}
-
-\item{overlap_method}{a summary function to adress the issue of extracting
-data that is contributed at a higher resolution than your cadance. The
-default behaviour is "distinct" which simply disgards any excess data.}
+\item{cadance}{a numerical scalar >= 0 or "timestamp". If a numerical scalar
+is used, it will describe the base time unit to build each row, in
+divisions of an hour. For example: 1 = 1 hour, 0.5 = 30 mins, 2 = 2 hourly.
+If multiple events occur within the specified time, then duplicate rows are
+created. If cadance = 0, then the pricise datetime will be used to generate
+the time column. This is likely to generate a large table, so use
+cautiously.}
 }
 \value{
 sparse tibble with hourly cadance as rows, and unique hic events as
@@ -45,7 +41,11 @@ time per patient.
 }
 \details{
 The time unit is user definable, and set by the "cadance" argument. The
-default behaviour is to produce a table with 1 row per hour per patient.
+default behaviour is to produce a table with 1 row per hour per patient. If
+there are duplicates/conflicts for example if there are more than 1 event for
+a given hour, then duplicate rows are created This behaviour is intentional,
+so that end researchers do not accidentally discard data that is contributed
+on a high cadance.
 
 Many events inside CC-HIC occur on a greater than hourly basis. Depending
 upon the chosen analysis, you may which to increase the cadance. 0.5 for

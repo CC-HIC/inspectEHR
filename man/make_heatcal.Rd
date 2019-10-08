@@ -24,7 +24,8 @@ if you have extreme outliers to enable good constrast over the range of
 interest}
 }
 \value{
-an object of class heat_cal
+an object of class heat_cal. Returns `FALSE` if the site is not found
+  in the data
 }
 \description{
 Make a heat_cal object

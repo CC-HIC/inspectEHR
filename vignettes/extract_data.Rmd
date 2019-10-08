@@ -97,8 +97,7 @@ ltb_2 <- extract_timevarying(
   episode_ids = 13639:13643,
   code_names = long_codes$hic_codes,
   rename = long_codes$short_name,
-  cadance = 6, # 1 row every 6 hours
-  overlap_method = mean # use mean to downsample to our 6 hour cadence
+  cadance = 6 # 1 row every 6 hours
   )
 
 head(ltb_2)
