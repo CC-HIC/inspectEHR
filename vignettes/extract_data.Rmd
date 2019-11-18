@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 inspectEHR contains a number of helper functions for wrangling data. In due course, these will be ported over to cleanEHR to keep the roles of the two packages clear (cleanEHR = cleaning/wrangling, inspectEHR = verification/validation).
 
-First, install inspectEHR from github, or download the latest release directly.
+First, install inspectEHR from github, or download the dev release directly.
 
 ```{r, eval = FALSE}
 # If you need inspectEHR
@@ -31,7 +31,7 @@ I strongly advise running tidyverse. Whilst you don't need it, inspectEHR has be
 Establish a database connection. You will most likely be working with sqlite as the postgres instance is confined to the UCL IDHS. inspectEHR ships with a synthetic database, that you can play around with. The content of the data is more or less nonsense, but it is structurally sound.
 
 ```{r, message = FALSE}
-library(inspectEHR); library(dbplyr)
+library(inspectEHR)
 
 # Synthetic database ships with inspectEHR
 db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
@@ -61,13 +61,13 @@ dtb <- extract_demographics(
 head(dtb)
 ```
 
-We can now extact 2d data. This will return a table with 1 row per patient per time unit specified in the cadance option. For example, a cadance of 1 will return a table with 1 row per patient per hour. This does not create a row if nothing was recorded, so the rows might run: 1, 2, 4, if nothing was recorded in hour 3.
+We can now extact 2d data. This will return a table with 1 row per patient per time unit specified in the cadance option. For example, a cadance of 1 will return a table with 1 row per patient per hour. This does not create a row if nothing was recorded, so the rows might run: 1, 2, 4, if nothing was recorded in hour 3. Note how a summary function *must* be provided. This determines the behaviour when collapsing dataitems down into rows below the natural cadance of recording.
 
 ```{r}
 # Grab longitudinal (2d) data ---------------------
 long_codes <- tibble::tribble(
-  ~hic_codes, ~short_name,
-  "NIHR_HIC_ICU_0108", "hr"
+  ~hic_codes, ~short_name, ~func,
+  "NIHR_HIC_ICU_0108", "hr", mean
   )
 
 # Extract time varying variables. Rename on the fly.
@@ -75,7 +75,8 @@ ltb <- extract_timevarying(
   ctn,
   episode_ids = 13639:13643,
   code_names = long_codes$hic_codes,
-  rename = long_codes$short_name
+  rename = long_codes$short_name,
+  coalesce_rows = long_codes$func
   )
 
 head(ltb)
@@ -97,7 +98,8 @@ ltb_2 <- extract_timevarying(
   episode_ids = 13639:13643,
   code_names = long_codes$hic_codes,
   rename = long_codes$short_name,
-  cadance = 6 # 1 row every 6 hours
+  cadance = 6, # 1 row every 6 hours
+  coalesce_rows = long_codes$func
   )
 
 head(ltb_2)

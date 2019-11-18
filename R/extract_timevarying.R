@@ -77,6 +77,7 @@ extract_timevarying <- function(connection,
                                 episode_ids = NULL,
                                 code_names,
                                 rename = NULL,
+                                coalesce_rows = NULL,
                                 chunk_size = 5000,
                                 cadance = 1,
                                 time_boundaries = c(-Inf, Inf)) {
@@ -98,6 +99,16 @@ extract_timevarying <- function(connection,
   } else {
     exons <- code_names
   }
+
+  if (any(code_names %in% "NIHR_HIC_ICU_0187")) {
+    rlang::abort("NIHR_HIC_ICU_0187: Organism is not currently supported")
+  }
+
+  params <- tibble(
+    code_names = code_names,
+    short_names = rename,
+    func = coalesce_rows
+  )
 
   episode_groups <- dplyr::tbl(connection, "events") %>%
     select(episode_id) %>%
@@ -126,6 +137,7 @@ extract_timevarying <- function(connection,
       events = collect_events,
       metadata = mdata,
       cadance = cadance,
+      coalesce_rows = params,
       time_boundaries = time_boundaries
       ) %>%
         bind_rows()
@@ -133,12 +145,13 @@ extract_timevarying <- function(connection,
     bind_rows()
 
   if (!is.null(rename)) {
-    replacement_names <- rename[match(names(episode_groups), code_names)]
-    names(episode_groups) <- if_else(
-      is.na(replacement_names), names(episode_groups), replacement_names)
-    # replacement_names <- code_names
-    # names(replacement_names) <- rename
-    # episode_groups <- rename(episode_groups, !!!replacement_names)
+    for (i in seq_len(nrow(params))) {
+      names(episode_groups) <- gsub(
+        pattern = params$code_names[i],
+        replacement = params$short_names[i],
+        x = names(episode_groups)
+      )
+    }
   }
 
   if (is.null(rename)) {
@@ -159,14 +172,18 @@ extract_timevarying <- function(connection,
   inform(paste(elapsed_time, "hours to process"))
 
   if (requireNamespace("praise", quietly = TRUE)) {
-    praise::praise()
+    well_done <-
+      praise::praise(
+        "${EXCLAMATION}! How ${adjective} was that?!"
+        )
+    rlang::inform(well_done)
   }
 
   return(episode_groups)
 }
 
 
-process_all <- function(epi_id, events, metadata, cadance, time_boundaries) {
+process_all <- function(epi_id, events, metadata, cadance, coalesce_rows, time_boundaries) {
   pt <- events %>%
     filter(episode_id == epi_id) %>%
     mutate(datetime = as.POSIXct(datetime))
@@ -190,10 +207,11 @@ process_all <- function(epi_id, events, metadata, cadance, time_boundaries) {
         filter(code_name %in% find_2d(metadata)$code_name) %>%
         arrange(code_name) %>%
         split(., .$code_name),
-      process_episode,
+      process_item,
       metadata = metadata,
       start_time = start_time,
-      cadance = cadance
+      cadance = cadance,
+      coalesce_rows = coalesce_rows
       ) %>%
         reduce(
           full_join, by = "diff_time",
@@ -207,8 +225,9 @@ process_all <- function(epi_id, events, metadata, cadance, time_boundaries) {
         filter(code_name %in% find_2d(metadata)$code_name) %>%
         arrange(code_name) %>%
         split(., .$code_name),
-      process_episode_timestamp,
-      metadata = metadata
+      process_item_timestamp,
+      metadata = metadata,
+      coalesce_rows = coalesce_rows
       ) %>%
       reduce(full_join, by = "time_stamp",
              .init = tibble(time_stamp = lubridate::ymd_hms(NULL))) %>%
@@ -219,7 +238,7 @@ process_all <- function(epi_id, events, metadata, cadance, time_boundaries) {
 }
 
 
-process_episode <- function(df, var_name, metadata, start_time, cadance) {
+process_item <- function(df, var_name, metadata, start_time, cadance, coalesce_rows) {
   stopifnot(!is.na(df$datetime))
 
   prim_col <- metadata %>%
@@ -228,6 +247,12 @@ process_episode <- function(df, var_name, metadata, start_time, cadance) {
     pull()
 
   meta_names <- find_2d_meta(metadata, var_name)
+
+  summary_func <- coalesce_rows %>%
+    filter(code_names == var_name) %>%
+    select(func) %>%
+    pull() %>%
+    `[[`(1)
 
   tb_a <- df %>%
     mutate(
@@ -238,17 +263,37 @@ process_episode <- function(df, var_name, metadata, start_time, cadance) {
       mutate(diff_time = round_any(diff_time, cadance))
   }
 
-  tb_a <- tb_a %>%
-    distinct_at(vars(diff_time, prim_col, meta_names), .keep_all = TRUE) %>%
-    rename(!!var_name := prim_col) %>%
-    select(diff_time, !!var_name, !!!meta_names)
-
   if (length(meta_names) == 0) {
-    return(tb_a)
-  }
+    tb_a <- tb_a %>%
+      distinct(diff_time, .keep_all = TRUE) %>%
+      rename(!!var_name := prim_col) %>%
+      select(diff_time, !!var_name)
+  } else {
+    tb_a <- tb_a %>%
+      distinct_at(vars(diff_time, prim_col, meta_names), .keep_all = TRUE) %>%
+      rename(!!var_name := prim_col) %>%
+      select(diff_time, !!var_name, !!!meta_names) %>%
+      mutate_at(vars(meta_names), function(x) {
+        x <- as.character(x)
+        if_else(is.na(x), "0", x)
+      }) %>%
+      split(.[meta_names[1]]) %>%
+      map(function(x) {
+        append_n <- distinct_at(x, vars(meta_names)) %>%
+          pull() %>%
+          as.character()
 
-  names(meta_names) <- paste(var_name, "meta", seq_along(meta_names), sep = "_")
-  rename(tb_a, !!!meta_names)
+        new_name <- paste(var_name, append_n, sep = "_")
+        names(x) <- if_else(names(x) == var_name, new_name, names(x))
+
+        select(x, -c(!!!meta_names)) %>%
+          group_by(diff_time) %>%
+          summarise_at(vars(new_name), summary_func, na.rm = TRUE)
+      }) %>%
+      reduce(full_join, by = "diff_time",
+             .init = tibble(diff_time = as.numeric(NULL)))
+  }
+  return(tb_a)
 }
 
 
@@ -264,7 +309,7 @@ process_episode <- function(df, var_name, metadata, start_time, cadance) {
 #'   this will be accessed directly)
 #' @param var_name the CC-HIC codename for the current variable being processed
 #' @param metadata the CC-HIC metadata table
-process_episode_timestamp <- function(df, var_name, metadata) {
+process_item_timestamp <- function(df, var_name, metadata) {
   stopifnot(!is.na(df$datetime))
 
   prim_col <- metadata %>%

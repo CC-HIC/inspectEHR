@@ -5,8 +5,8 @@
 \title{Extract & Reshape Timevarying Dateitems}
 \usage{
 extract_timevarying(connection, episode_ids = NULL, code_names,
-  rename = NULL, chunk_size = 5000, cadance = 1,
-  time_boundaries = c(-Inf, Inf))
+  rename = NULL, coalesce_rows = NULL, chunk_size = 5000,
+  cadance = 1, time_boundaries = c(-Inf, Inf))
 }
 \arguments{
 \item{connection}{a CC-HIC database connection}
