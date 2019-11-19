@@ -1,5 +1,7 @@
 ---
 output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -30,21 +32,19 @@ inspectEHR is a data wrangling, cleaning and reporting tool for CC-HIC. It is de
 * `extract_timevarying()` produces a table for longitudinal variables
 * `clean()` cleans the above tables according to pre-defined standards.
 * `report()` produces a data quality report (note, being fixed for IDHS usage)
-* `shiny_report()` starts an interactive shiny session for the data quality reports (under development)
 
 ## Installation
 
 ```{r, eval = FALSE}
 # install directly from github with
-library(devtools)
-install_github("cc-hic/inspectEHR")
+remotes::install_github("cc-hic/inspectEHR")
 ```
 
 A copy should already be installed into the group library for the CC-HIC team inside the UCL safe haven. If you are having problems with this, please contact me directly.
 
 ## Usage
 
-A synthetic database with 1000 patients ships with inspectEHR for you to explore. Actual values are garbage, but everything is internally consistent. The code to produce a more comprehensive synthetic test database is found in `data-raw/write_synthetic_data.R`. We have skimmmed off the first 1000 patients so as to not make the synehtic database combersome.
+A synthetic database with 1000 patients ships with inspectEHR for you to explore. Actual values are garbage, but everything is logically consitent (e.g. patients discharge after they arrive). The code to produce a more comprehensive synthetic test database is found in `data-raw/write_synthetic_data.R`. We have embedded the first 1000 patients so as to not make the synehtic database combersome.
 
 ```{r, message = FALSE}
 library(inspectEHR)
@@ -73,7 +73,8 @@ ltb <- extract_timevarying(
 head(ltb)
 
 # Pull out to any arbitrary temporal resolution and custom define the
-# behaviour for information recorded at resolution higher than you are sampling
+# behaviour for information recorded at resolution higher than you are sampling.
+# only extract the first 24 hours of data
 
 ltb_2 <- extract_timevarying(
   ctn,
@@ -81,7 +82,8 @@ ltb_2 <- extract_timevarying(
   code_names = "NIHR_HIC_ICU_0108",
   rename = "hr",
   cadance = 2, # 1 row every 2 hours
-  overlap_method = mean # use mean to downsample to our 2 hour cadence
+  coalese_rows = mean, # use mean to downsample to our 2 hour cadence
+  time_boundaries = c(0, 24)
   )
 
 head(ltb_2)
