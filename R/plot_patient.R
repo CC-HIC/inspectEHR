@@ -8,8 +8,6 @@
 #'
 #' @return
 #' @export
-#'
-#' @examples
 plot_patient <- function(connection, nhs_number) {
 
   value_title <- "Patient Overview"

@@ -71,7 +71,7 @@
 #' @importFrom lubridate now
 #' @importFrom praise praise
 #' @importFrom rlang inform
-#' @importFrom dplyr distinct_at
+#' @importFrom dplyr distinct_at first
 #'
 #' @examples
 #' # DB Connection
@@ -82,13 +82,13 @@
 #' hr_default <- extract_timevarying(ctn, episode_ids = 13639:13643, code_names = "NIHR_HIC_ICU_0108")
 #' head(hr_default)
 #' # Extract Heart Rates for 5 episodes with custom settings
-#' hr_custom <- extract_timevarying(ctn, episode_ids = 13639:13643, code_names = "NIHR_HIC_ICU_0108", cadance = 2, overlap_method = mean)
+#' hr_custom <- extract_timevarying(ctn, episode_ids = 13639:13643, code_names = "NIHR_HIC_ICU_0108", cadance = 2, coalesce_rows = mean)
 #' head(hr_custom)
 #' DBI::dbDisconnect(ctn)
 extract_timevarying <- function(connection,
                                 episode_ids = NULL,
                                 code_names,
-                                rename = NULL,
+                                rename = as.character(NA),
                                 coalesce_rows = dplyr::first,
                                 chunk_size = 5000,
                                 cadance = 1,
@@ -115,11 +115,11 @@ extract_timevarying <- function(connection,
   if (any(code_names %in% "NIHR_HIC_ICU_0187")) {
     rlang::abort("NIHR_HIC_ICU_0187: Organism is not currently supported")
   }
-
+  
   params <- tibble(
     code_names = code_names,
     short_names = rename,
-    func = coalesce_rows
+    func = c(coalesce_rows)
   )
 
   episode_groups <- dplyr::tbl(connection, "events") %>%
@@ -156,7 +156,7 @@ extract_timevarying <- function(connection,
     }) %>%
     bind_rows()
 
-  if (!is.null(rename)) {
+  if (!all(is.na(rename))) {
     for (i in seq_len(nrow(params))) {
       names(episode_groups) <- gsub(
         pattern = params$code_names[i],
@@ -166,7 +166,7 @@ extract_timevarying <- function(connection,
     }
   }
 
-  if (is.null(rename)) {
+  if (all(is.na(rename))) {
     lookups <- tibble(codes = code_names,
                       names = code_names)
   } else {

@@ -4,8 +4,6 @@
 #'
 #' @return
 #' @export
-#'
-#' @examples
 verify_chronology <- function(connection){
 
   chrono_codes <- tribble(
