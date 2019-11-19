@@ -16,17 +16,14 @@ knitr::opts_chunk$set(
 )
 ```
 
-inspectEHR contains a number of helper functions for wrangling data. In due course, these will be ported over to cleanEHR to keep the roles of the two packages clear (cleanEHR = cleaning/wrangling, inspectEHR = verification/validation).
+inspectEHR contains a number of helper functions for wrangling data. In due course, these will be ported over to cleanEHR to keep the roles of the two packages clear; in theory cleanEHR = cleaning/wrangling, inspectEHR = verification/validation.
 
 First, install inspectEHR from github, or download the dev release directly.
 
 ```{r, eval = FALSE}
 # If you need inspectEHR
-library(devtools)
-install_github("CC-HIC/inspectEHR")
+remotes::install_github("CC-HIC/inspectEHR")
 ```
-
-I strongly advise running tidyverse. Whilst you don't need it, inspectEHR has been written with tidyeval in mind, and as such works best within the tidyverse ecosystem.
 
 Establish a database connection. You will most likely be working with sqlite as the postgres instance is confined to the UCL IDHS. inspectEHR ships with a synthetic database, that you can play around with. The content of the data is more or less nonsense, but it is structurally sound.
 
@@ -61,7 +58,7 @@ dtb <- extract_demographics(
 head(dtb)
 ```
 
-We can now extact 2d data. This will return a table with 1 row per patient per time unit specified in the cadance option. For example, a cadance of 1 will return a table with 1 row per patient per hour. This does not create a row if nothing was recorded, so the rows might run: 1, 2, 4, if nothing was recorded in hour 3. Note how a summary function *must* be provided. This determines the behaviour when collapsing dataitems down into rows below the natural cadance of recording.
+We can now extact 2d data. This will return a table with 1 row per patient per time unit specified in the cadance option. For example, a cadance of 1 will return a table with 1 row per patient per hour. This does not create a row if nothing was recorded, so the rows might run: 1, 2, 4, if nothing was recorded in hour 3. Note how a summary function can be provided to `coalese_rows`. This determines the behaviour when collapsing dataitems down into rows below the natural cadance of recording.
 
 ```{r}
 # Grab longitudinal (2d) data ---------------------
@@ -90,7 +87,7 @@ You can expand this table to a regular row cadance, by inserting rows of NAs wit
 ltb <- expand_missing(ltb)
 ```
 
-We can also pull out data at any arbitrary temporal resolution and custom define the behaviour for information recorded at resolution higher than you are sampling. For example, if heart rates are sampled every hour, and you want to pull out data every 6 hours, we need to know what action to take to collapse those heart rates into a single row. You can supply any custom summary function to the `overlap_method` argument of `extract_timevarying`.
+We can also pull out data at any arbitrary temporal resolution and custom define the behaviour for information recorded at resolution higher than you are sampling. For example, if heart rates are sampled every hour, and you want to pull out data every 6 hours, we need to know what action to take to collapse those heart rates into a single row. You can supply any custom summary function to the `coalese_rows` argument of `extract_timevarying`.
 
 ```{r, message = FALSE}
 ltb_2 <- extract_timevarying(
@@ -106,4 +103,4 @@ head(ltb_2)
 DBI::dbDisconnect(ctn)
 ```
 
-You can also run extract_timevarying with the option of cadance = "exact" or "timestamp" which both pull out the exact timing of events and labels them with either time from admission, or their timestamp respectively. I advise against this unless you have a specific requirement, as it is very computationally intensive.
+You can also run `extract_timevarying` with the option of cadance = "timestamp" which both pull out the exact timing of events and labels them with their timestamp. I advise against this unless you have a specific requirement, as it is a very memory intensive task.
