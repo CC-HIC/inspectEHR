@@ -5,6 +5,7 @@
 #' @param pxo2 numeric vector of oxygen partial pressures
 #' @param pxco2 numeric vector of co2 partial pressures
 #' @param ph numeric vector of pH
+#' @param probability logical flag. If true return the probability that the sample came from an Arterial line.
 #'
 #' @return a character vector of either "arterial" or "venous".
 #' @export

@@ -12,6 +12,8 @@ analyze_bg(pxo2, pxco2, ph, probability = FALSE)
 \item{pxco2}{numeric vector of co2 partial pressures}
 
 \item{ph}{numeric vector of pH}
+
+\item{probability}{logical flag. If true return the probability that the sample came from an Arterial line.}
 }
 \value{
 a character vector of either "arterial" or "venous".
