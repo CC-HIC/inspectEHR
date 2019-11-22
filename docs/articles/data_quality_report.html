@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>An overview of inspectEHR • inspectEHR</title>
+<title>How to make a data quality report • inspectEHR</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="An overview of inspectEHR">
+<script src="../pkgdown.js"></script><meta property="og:title" content="How to make a data quality report">
 <meta property="og:description" content="">
 <meta property="og:image" content="/logo.png">
 <meta name="twitter:card" content="summary">
@@ -92,21 +92,41 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1>An overview of inspectEHR</h1>
+      <h1>How to make a data quality report</h1>
                         <h4 class="author">Edward Palmer</h4>
             
-            <h4 class="date">2019-11-22</h4>
+            <h4 class="date">20th September 2019. Updated: 2019-11-22</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/CC-HIC/inspectEHR/blob/master/vignettes/overview.Rmd"><code>vignettes/overview.Rmd</code></a></small>
-      <div class="hidden name"><code>overview.Rmd</code></div>
+      <small class="dont-index">Source: <a href="https://github.com/CC-HIC/inspectEHR/blob/master/vignettes/data_quality_report.Rmd"><code>vignettes/data_quality_report.Rmd</code></a></small>
+      <div class="hidden name"><code>data_quality_report.Rmd</code></div>
 
     </div>
 
     
     
-<p>inspectEHR is a quality assurance tool for the CC-HIC project. The goal of this package is to provide a core set of functions to highlight erroneous or otherwise questionable data within CC-HIC, so the end researcher can handle this information explicitly.</p>
-<p>This information is subseqently written out to the database for future use, so that downstream research can use a consistent set of rules. A report is also generated.</p>
-<p>Helper functions for wrangling data have been developed and can be viewed in the other vignette. These will be ported over to cleanEHR shortly, after the codecov is higher, and unit tests have been written.</p>
+<p>The primary role of inspectEHR is to process the data inside CC-HIC in such a way as to make it ready to produce a data quality report.</p>
+<p>First, install inspectEHR from github, or download the latest release directly.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="co"># If you need inspectEHR</span></a>
+<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(devtools)</a>
+<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw"><a href="https://rdrr.io/pkg/devtools/man/remote-reexports.html">install_github</a></span>(<span class="st">"CC-HIC/inspectEHR"</span>)</a></code></pre></div>
+<p>You will most likely be working with sqlite as the postgres instance is confined to the UCL IDHS.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(inspectEHR); <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(dbplyr)</a>
+<a class="sourceLine" id="cb2-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb2-3" data-line-number="3"><span class="co"># Synthetic database ships with inspectEHR</span></a>
+<a class="sourceLine" id="cb2-4" data-line-number="4"><span class="co">#db_path &lt;- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")</span></a>
+<a class="sourceLine" id="cb2-5" data-line-number="5"><span class="co">#output_path &lt;- "./2019-09-reports"</span></a></code></pre></div>
+<p>Supply the <code>report</code> function with an output folder. Please note, you must have write access to the database for this function to work.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="co">#report(sqlite_file = db_path, output_folder = output_path)</span></a></code></pre></div>
+<p>This will perform the following procedures:</p>
+<ol style="list-style-type: decimal">
+<li><p>Episodes will be characterised and verified/validated. This information will be stored inside the database in a new table called <code>episode_verification</code>.</p></li>
+<li><p>Events will be verified/validated. This information will be stored inside the database in a new table called <code>event_verification</code>.</p></li>
+<li><p>Summary information that is necessary for making a data quality report is exported as a <code>.RData</code> file to the <code>output_folder</code>.</p></li>
+<li><p>Plots are pre-drawn and exported to the <code>output_folder</code>.</p></li>
+<li><p>A data quality report is generated and exported to the <code>output_folder</code>.</p></li>
+<li><p>A data quality score is generated and added to the report for each site.</p></li>
+</ol>
+<p>Steps 3 and 4 are necessary as it allows for non identifying information to be exported from a secure location, without any risk of confidential information leak.</p>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

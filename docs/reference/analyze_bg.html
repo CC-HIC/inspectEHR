@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Extract 2d Values — extract_2d • inspectEHR</title>
+<title>Analyze Blood Gases — analyze_bg • inspectEHR</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -42,10 +42,8 @@
 
 
 
-<meta property="og:title" content="Extract 2d Values — extract_2d" />
-<meta property="og:description" content="This function extracts the correct column from the CC-HIC database
-depending upon what type of data is called for. It additionally pulls
-out the datetime column, which accompanies any data for this class" />
+<meta property="og:title" content="Analyze Blood Gases — analyze_bg" />
+<meta property="og:description" content="labells blood sampels according to whether or not they came from an arterial or venous source." />
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
 
@@ -133,40 +131,41 @@ out the datetime column, which accompanies any data for this class" />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Extract 2d Values</h1>
-    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/extract.R'><code>R/extract.R</code></a></small>
-    <div class="hidden name"><code>extract_2d.Rd</code></div>
+    <h1>Analyze Blood Gases</h1>
+    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/analyse_bg.R'><code>R/analyse_bg.R</code></a></small>
+    <div class="hidden name"><code>analyze_bg.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This function extracts the correct column from the CC-HIC database
-depending upon what type of data is called for. It additionally pulls
-out the datetime column, which accompanies any data for this class</p>
+    <p>labells blood sampels according to whether or not they came from an arterial or venous source.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>extract_2d</span>(<span class='kw'>core_table</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>input</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>data_location</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'>analyze_bg</span>(<span class='no'>pxo2</span>, <span class='no'>pxco2</span>, <span class='no'>ph</span>, <span class='kw'>probability</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>core_table</th>
-      <td><p>a core table</p></td>
+      <th>pxo2</th>
+      <td><p>numeric vector of oxygen partial pressures</p></td>
     </tr>
     <tr>
-      <th>input</th>
-      <td><p>the input variable of choice</p></td>
+      <th>pxco2</th>
+      <td><p>numeric vector of co2 partial pressures</p></td>
     </tr>
     <tr>
-      <th>data_location</th>
-      <td><p>the column name that stores the primary data for this
-variable</p></td>
+      <th>ph</th>
+      <td><p>numeric vector of pH</p></td>
+    </tr>
+    <tr>
+      <th>probability</th>
+      <td><p>logical flag. If true return the probability that the sample came from an Arterial line.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a long table with 1 row per event from the CC-HIC database</p>
+    <p>a character vector of either "arterial" or "venous".</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

@@ -82,7 +82,7 @@ ltb_2 <- extract_timevarying(
   code_names = "NIHR_HIC_ICU_0108",
   rename = "hr",
   cadance = 2, # 1 row every 2 hours
-  coalese_rows = mean, # use mean to downsample to our 2 hour cadence
+  coalesce_rows = mean, # use mean to downsample to our 2 hour cadence
   time_boundaries = c(0, 24)
   )
 

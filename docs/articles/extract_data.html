@@ -13,8 +13,9 @@
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="How to extract data using inspectEHR">
 <meta property="og:description" content="">
 <meta property="og:image" content="/logo.png">
@@ -37,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">inspectEHR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.10.9000</span>
       </span>
     </div>
 
@@ -45,7 +46,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="../index.html">
-    <span class="fa fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -60,6 +61,9 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/data_quality_report.html">How to make a data quality report</a>
+    </li>
+    <li>
       <a href="../articles/extract_data.html">How to extract data using inspectEHR</a>
     </li>
     <li>
@@ -71,7 +75,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/CC-HIC/inspectEHR">
-    <span class="fa fa-github fa-lg"></span>
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -84,13 +88,14 @@
 <!--/.navbar -->
 
       
+
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1>How to extract data using inspectEHR</h1>
                         <h4 class="author">Edward Palmer</h4>
             
-            <h4 class="date">2019-09-05</h4>
+            <h4 class="date">2019-11-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/CC-HIC/inspectEHR/blob/master/vignettes/extract_data.Rmd"><code>vignettes/extract_data.Rmd</code></a></small>
       <div class="hidden name"><code>extract_data.Rmd</code></div>
@@ -99,18 +104,16 @@
 
     
     
-<p>inspectEHR contains a number of helper functions for wrangling data. In due course, these will be ported over to cleanEHR to keep the roles of the two packages clear (cleanEHR = cleaning/wrangling, inspectEHR = verification/validation).</p>
-<p>First, install inspectEHR from github, or download the latest release directly.</p>
+<p>inspectEHR contains a number of helper functions for wrangling data. In due course, these will be ported over to cleanEHR to keep the roles of the two packages clear; in theory cleanEHR = cleaning/wrangling, inspectEHR = verification/validation.</p>
+<p>First, install inspectEHR from github, or download the dev release directly.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="co"># If you need inspectEHR</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(devtools)</a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw"><a href="https://www.rdocumentation.org/packages/devtools/topics/reexports">install_github</a></span>(<span class="st">"CC-HIC/inspectEHR"</span>)</a></code></pre></div>
-<p>I strongly advise running tidyverse. Whilst you don’t need it, inspectEHR has been written with tidyeval in mind, and as such works best within the tidyverse ecosystem.</p>
+<a class="sourceLine" id="cb1-2" data-line-number="2">remotes<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/remotes/man/install_github.html">install_github</a></span>(<span class="st">"CC-HIC/inspectEHR"</span>)</a></code></pre></div>
 <p>Establish a database connection. You will most likely be working with sqlite as the postgres instance is confined to the UCL IDHS. inspectEHR ships with a synthetic database, that you can play around with. The content of the data is more or less nonsense, but it is structurally sound.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(inspectEHR); <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(dbplyr)</a>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(inspectEHR)</a>
 <a class="sourceLine" id="cb2-2" data-line-number="2"></a>
 <a class="sourceLine" id="cb2-3" data-line-number="3"><span class="co"># Synthetic database ships with inspectEHR</span></a>
-<a class="sourceLine" id="cb2-4" data-line-number="4">db_pth &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/system.file">system.file</a></span>(<span class="st">"testdata/synthetic_db.sqlite3"</span>, <span class="dt">package =</span> <span class="st">"inspectEHR"</span>)</a>
-<a class="sourceLine" id="cb2-5" data-line-number="5">ctn &lt;-<span class="st"> </span><span class="kw"><a href="../reference/connect.html">connect</a></span>(<span class="dt">sqlite_file =</span> db_pth)</a></code></pre></div>
+<a class="sourceLine" id="cb2-4" data-line-number="4">db_pth &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span>(<span class="st">"testdata/synthetic_db.sqlite3"</span>, <span class="dt">package =</span> <span class="st">"inspectEHR"</span>)</a>
+<a class="sourceLine" id="cb2-5" data-line-number="5">ctn &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/inspectEHR/man/connect.html">connect</a></span>(<span class="dt">sqlite_file =</span> db_pth)</a></code></pre></div>
 <p>Enter the fields you want to extract using HIC codes. See the cleanEHR repo for more information on these codes. Alternately, the <code>qref</code> object from inspectEHR contrains all the information on what data exists in CC-HIC. I write this here as a tribble to keep everything in the same document. If you want to rename column names then it is important to keep names and code names together and in the same order.</p>
 <p>It’s best to separate out 1d (time invariant) and 2d (longitudinal) data.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="co"># Grab non-longitudinal (1d) data ----------------</span></a>
@@ -121,14 +124,14 @@
 <a class="sourceLine" id="cb3-6" data-line-number="6">)</a>
 <a class="sourceLine" id="cb3-7" data-line-number="7"></a>
 <a class="sourceLine" id="cb3-8" data-line-number="8"><span class="co"># Extract static variables. Rename on the fly.</span></a>
-<a class="sourceLine" id="cb3-9" data-line-number="9">dtb &lt;-<span class="st"> </span><span class="kw"><a href="../reference/extract_demographics.html">extract_demographics</a></span>(</a>
+<a class="sourceLine" id="cb3-9" data-line-number="9">dtb &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/inspectEHR/man/extract_demographics.html">extract_demographics</a></span>(</a>
 <a class="sourceLine" id="cb3-10" data-line-number="10">  <span class="dt">connection =</span> ctn,</a>
 <a class="sourceLine" id="cb3-11" data-line-number="11">  <span class="dt">episode_ids =</span> <span class="dv">13639</span><span class="op">:</span><span class="dv">13643</span>,</a>
 <a class="sourceLine" id="cb3-12" data-line-number="12">  <span class="dt">code_names =</span> demo_codes<span class="op">$</span>hic_codes,</a>
 <a class="sourceLine" id="cb3-13" data-line-number="13">  <span class="dt">rename =</span> demo_codes<span class="op">$</span>short_name</a>
 <a class="sourceLine" id="cb3-14" data-line-number="14">)</a>
 <a class="sourceLine" id="cb3-15" data-line-number="15"></a>
-<a class="sourceLine" id="cb3-16" data-line-number="16"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(dtb)</a>
+<a class="sourceLine" id="cb3-16" data-line-number="16"><span class="kw"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(dtb)</a>
 <a class="sourceLine" id="cb3-17" data-line-number="17"><span class="co">#&gt; # A tibble: 5 x 3</span></a>
 <a class="sourceLine" id="cb3-18" data-line-number="18"><span class="co">#&gt;   episode_id unit_mortality primary_admission_reason</span></a>
 <a class="sourceLine" id="cb3-19" data-line-number="19"><span class="co">#&gt;        &lt;int&gt; &lt;chr&gt;          &lt;chr&gt;                   </span></a>
@@ -137,63 +140,67 @@
 <a class="sourceLine" id="cb3-22" data-line-number="22"><span class="co">#&gt; 3      13641 A              02.01.07.17.07          </span></a>
 <a class="sourceLine" id="cb3-23" data-line-number="23"><span class="co">#&gt; 4      13642 A              02.12.04.26.16          </span></a>
 <a class="sourceLine" id="cb3-24" data-line-number="24"><span class="co">#&gt; 5      13643 A              01.09.02.51.01</span></a></code></pre></div>
-<p>We can now extact 2d data. This will return a table with 1 row per patient per time unit specified in the cadance option. For example, a cadance of 1 will return a table with 1 row per patient per hour. This does not create a row if nothing was recorded, so the rows might run: 1, 2, 4, if nothing was recorded in hour 3.</p>
+<p>We can now extact 2d data. This will return a table with 1 row per patient per time unit specified in the cadance option. For example, a cadance of 1 will return a table with 1 row per patient per hour. This does not create a row if nothing was recorded, so the rows might run: 1, 2, 4, if nothing was recorded in hour 3. Note how a summary function can be provided to <code>coalese_rows</code>. This determines the behaviour when collapsing dataitems down into rows below the natural cadance of recording.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="co"># Grab longitudinal (2d) data ---------------------</span></a>
 <a class="sourceLine" id="cb4-2" data-line-number="2">long_codes &lt;-<span class="st"> </span>tibble<span class="op">::</span><span class="kw"><a href="https://tibble.tidyverse.org/reference/tribble.html">tribble</a></span>(</a>
-<a class="sourceLine" id="cb4-3" data-line-number="3">  <span class="op">~</span>hic_codes, <span class="op">~</span>short_name,</a>
-<a class="sourceLine" id="cb4-4" data-line-number="4">  <span class="st">"NIHR_HIC_ICU_0108"</span>, <span class="st">"hr"</span></a>
+<a class="sourceLine" id="cb4-3" data-line-number="3">  <span class="op">~</span>hic_codes, <span class="op">~</span>short_name, <span class="op">~</span>func,</a>
+<a class="sourceLine" id="cb4-4" data-line-number="4">  <span class="st">"NIHR_HIC_ICU_0108"</span>, <span class="st">"hr"</span>, mean</a>
 <a class="sourceLine" id="cb4-5" data-line-number="5">  )</a>
 <a class="sourceLine" id="cb4-6" data-line-number="6"></a>
 <a class="sourceLine" id="cb4-7" data-line-number="7"><span class="co"># Extract time varying variables. Rename on the fly.</span></a>
-<a class="sourceLine" id="cb4-8" data-line-number="8">ltb &lt;-<span class="st"> </span><span class="kw"><a href="../reference/extract_timevarying.html">extract_timevarying</a></span>(</a>
+<a class="sourceLine" id="cb4-8" data-line-number="8">ltb &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/inspectEHR/man/extract_timevarying.html">extract_timevarying</a></span>(</a>
 <a class="sourceLine" id="cb4-9" data-line-number="9">  ctn,</a>
 <a class="sourceLine" id="cb4-10" data-line-number="10">  <span class="dt">episode_ids =</span> <span class="dv">13639</span><span class="op">:</span><span class="dv">13643</span>,</a>
 <a class="sourceLine" id="cb4-11" data-line-number="11">  <span class="dt">code_names =</span> long_codes<span class="op">$</span>hic_codes,</a>
-<a class="sourceLine" id="cb4-12" data-line-number="12">  <span class="dt">rename =</span> long_codes<span class="op">$</span>short_name</a>
-<a class="sourceLine" id="cb4-13" data-line-number="13">  )</a>
-<a class="sourceLine" id="cb4-14" data-line-number="14"><span class="co">#&gt; 6.2e-05 hours to process</span></a>
-<a class="sourceLine" id="cb4-15" data-line-number="15"></a>
-<a class="sourceLine" id="cb4-16" data-line-number="16"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(ltb)</a>
-<a class="sourceLine" id="cb4-17" data-line-number="17"><span class="co">#&gt; # A tibble: 6 x 3</span></a>
-<a class="sourceLine" id="cb4-18" data-line-number="18"><span class="co">#&gt;    time    hr episode_id</span></a>
-<a class="sourceLine" id="cb4-19" data-line-number="19"><span class="co">#&gt;   &lt;dbl&gt; &lt;int&gt;      &lt;int&gt;</span></a>
-<a class="sourceLine" id="cb4-20" data-line-number="20"><span class="co">#&gt; 1     0    99      13639</span></a>
-<a class="sourceLine" id="cb4-21" data-line-number="21"><span class="co">#&gt; 2     1    84      13639</span></a>
-<a class="sourceLine" id="cb4-22" data-line-number="22"><span class="co">#&gt; 3     2   102      13639</span></a>
-<a class="sourceLine" id="cb4-23" data-line-number="23"><span class="co">#&gt; 4     3    95      13639</span></a>
-<a class="sourceLine" id="cb4-24" data-line-number="24"><span class="co">#&gt; 5     4    69      13639</span></a>
-<a class="sourceLine" id="cb4-25" data-line-number="25"><span class="co">#&gt; 6     5    76      13639</span></a></code></pre></div>
+<a class="sourceLine" id="cb4-12" data-line-number="12">  <span class="dt">rename =</span> long_codes<span class="op">$</span>short_name,</a>
+<a class="sourceLine" id="cb4-13" data-line-number="13">  <span class="dt">coalesce_rows =</span> long_codes<span class="op">$</span>func</a>
+<a class="sourceLine" id="cb4-14" data-line-number="14">  )</a>
+<a class="sourceLine" id="cb4-15" data-line-number="15"><span class="co">#&gt; 6.8e-05 hours to process</span></a>
+<a class="sourceLine" id="cb4-16" data-line-number="16"><span class="co">#&gt; WOWIE! How wonderful was that?!</span></a>
+<a class="sourceLine" id="cb4-17" data-line-number="17"></a>
+<a class="sourceLine" id="cb4-18" data-line-number="18"><span class="kw"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(ltb)</a>
+<a class="sourceLine" id="cb4-19" data-line-number="19"><span class="co">#&gt; # A tibble: 6 x 3</span></a>
+<a class="sourceLine" id="cb4-20" data-line-number="20"><span class="co">#&gt;    time    hr episode_id</span></a>
+<a class="sourceLine" id="cb4-21" data-line-number="21"><span class="co">#&gt;   &lt;dbl&gt; &lt;int&gt;      &lt;int&gt;</span></a>
+<a class="sourceLine" id="cb4-22" data-line-number="22"><span class="co">#&gt; 1     0    99      13639</span></a>
+<a class="sourceLine" id="cb4-23" data-line-number="23"><span class="co">#&gt; 2     1    84      13639</span></a>
+<a class="sourceLine" id="cb4-24" data-line-number="24"><span class="co">#&gt; 3     2   102      13639</span></a>
+<a class="sourceLine" id="cb4-25" data-line-number="25"><span class="co">#&gt; 4     3    95      13639</span></a>
+<a class="sourceLine" id="cb4-26" data-line-number="26"><span class="co">#&gt; 5     4    69      13639</span></a>
+<a class="sourceLine" id="cb4-27" data-line-number="27"><span class="co">#&gt; 6     5    76      13639</span></a></code></pre></div>
 <p>Depending upon how much data you want to pull into a long form for analysis, this can take considerable time (more than 24 hours if you want to convert all 50,000 episodes).</p>
 <p>You can expand this table to a regular row cadance, by inserting rows of NAs with <code>expand_missing</code></p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">ltb &lt;-<span class="st"> </span><span class="kw"><a href="../reference/expand_missing.html">expand_missing</a></span>(ltb)</a></code></pre></div>
-<p>We can also pull out data at any arbitrary temporal resolution and custom define the behaviour for information recorded at resolution higher than you are sampling. For example, if heart rates are sampled every hour, and you want to pull out data every 6 hours, we need to know what action to take to collapse those heart rates into a single row. You can supply any custom summary function to the <code>overlap_method</code> argument of <code>extract_timevarying</code>.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1">ltb_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw"><a href="../reference/extract_timevarying.html">extract_timevarying</a></span>(</a>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">ltb &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/inspectEHR/man/expand_missing.html">expand_missing</a></span>(ltb)</a></code></pre></div>
+<p>We can also pull out data at any arbitrary temporal resolution and custom define the behaviour for information recorded at resolution higher than you are sampling. For example, if heart rates are sampled every hour, and you want to pull out data every 6 hours, we need to know what action to take to collapse those heart rates into a single row. You can supply any custom summary function to the <code>coalese_rows</code> argument of <code>extract_timevarying</code>.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1">ltb_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/inspectEHR/man/extract_timevarying.html">extract_timevarying</a></span>(</a>
 <a class="sourceLine" id="cb6-2" data-line-number="2">  ctn,</a>
 <a class="sourceLine" id="cb6-3" data-line-number="3">  <span class="dt">episode_ids =</span> <span class="dv">13639</span><span class="op">:</span><span class="dv">13643</span>,</a>
 <a class="sourceLine" id="cb6-4" data-line-number="4">  <span class="dt">code_names =</span> long_codes<span class="op">$</span>hic_codes,</a>
 <a class="sourceLine" id="cb6-5" data-line-number="5">  <span class="dt">rename =</span> long_codes<span class="op">$</span>short_name,</a>
 <a class="sourceLine" id="cb6-6" data-line-number="6">  <span class="dt">cadance =</span> <span class="dv">6</span>, <span class="co"># 1 row every 6 hours</span></a>
-<a class="sourceLine" id="cb6-7" data-line-number="7">  <span class="dt">overlap_method =</span> mean <span class="co"># use mean to downsample to our 6 hour cadence</span></a>
+<a class="sourceLine" id="cb6-7" data-line-number="7">  <span class="dt">coalesce_rows =</span> long_codes<span class="op">$</span>func</a>
 <a class="sourceLine" id="cb6-8" data-line-number="8">  )</a>
 <a class="sourceLine" id="cb6-9" data-line-number="9"></a>
-<a class="sourceLine" id="cb6-10" data-line-number="10"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(ltb_<span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb6-10" data-line-number="10"><span class="kw"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(ltb_<span class="dv">2</span>)</a>
 <a class="sourceLine" id="cb6-11" data-line-number="11"><span class="co">#&gt; # A tibble: 6 x 3</span></a>
 <a class="sourceLine" id="cb6-12" data-line-number="12"><span class="co">#&gt;    time    hr episode_id</span></a>
-<a class="sourceLine" id="cb6-13" data-line-number="13"><span class="co">#&gt;   &lt;dbl&gt; &lt;dbl&gt;      &lt;int&gt;</span></a>
-<a class="sourceLine" id="cb6-14" data-line-number="14"><span class="co">#&gt; 1     0  95        13639</span></a>
-<a class="sourceLine" id="cb6-15" data-line-number="15"><span class="co">#&gt; 2     6  83.8      13639</span></a>
-<a class="sourceLine" id="cb6-16" data-line-number="16"><span class="co">#&gt; 3    12  88.6      13639</span></a>
-<a class="sourceLine" id="cb6-17" data-line-number="17"><span class="co">#&gt; 4    18  92.2      13639</span></a>
-<a class="sourceLine" id="cb6-18" data-line-number="18"><span class="co">#&gt; 5    24  82.7      13639</span></a>
-<a class="sourceLine" id="cb6-19" data-line-number="19"><span class="co">#&gt; 6    30  99.4      13639</span></a>
-<a class="sourceLine" id="cb6-20" data-line-number="20">DBI<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/DBI/topics/dbDisconnect">dbDisconnect</a></span>(ctn)</a></code></pre></div>
-<p>You can also run extract_timevarying with the option of cadance = “exact” or “timestamp” which both pull out the exact timing of events and labels them with either time from admission, or their timestamp respectively. I advise against this unless you have a specific requirement, as it is very computationally intensive.</p>
+<a class="sourceLine" id="cb6-13" data-line-number="13"><span class="co">#&gt;   &lt;dbl&gt; &lt;int&gt;      &lt;int&gt;</span></a>
+<a class="sourceLine" id="cb6-14" data-line-number="14"><span class="co">#&gt; 1     0    99      13639</span></a>
+<a class="sourceLine" id="cb6-15" data-line-number="15"><span class="co">#&gt; 2     6    69      13639</span></a>
+<a class="sourceLine" id="cb6-16" data-line-number="16"><span class="co">#&gt; 3    12    88      13639</span></a>
+<a class="sourceLine" id="cb6-17" data-line-number="17"><span class="co">#&gt; 4    18   101      13639</span></a>
+<a class="sourceLine" id="cb6-18" data-line-number="18"><span class="co">#&gt; 5    24    92      13639</span></a>
+<a class="sourceLine" id="cb6-19" data-line-number="19"><span class="co">#&gt; 6    30    93      13639</span></a>
+<a class="sourceLine" id="cb6-20" data-line-number="20">DBI<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/DBI/man/dbDisconnect.html">dbDisconnect</a></span>(ctn)</a></code></pre></div>
+<p>You can also run <code>extract_timevarying</code> with the option of cadance = “timestamp” which both pull out the exact timing of events and labels them with their timestamp. I advise against this unless you have a specific requirement, as it is a very memory intensive task.</p>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
+
       </div>
 
 </div>
+
 
 
       <footer><div class="copyright">
@@ -201,12 +208,14 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
 </div>
+
       </footer>
 </div>
 
   
+
 
   </body>
 </html>

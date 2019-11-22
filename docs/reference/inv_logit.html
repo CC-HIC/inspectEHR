@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Extract 2d Values — extract_2d • inspectEHR</title>
+<title>Inverse Logistic Function — inv_logit • inspectEHR</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -42,10 +42,8 @@
 
 
 
-<meta property="og:title" content="Extract 2d Values — extract_2d" />
-<meta property="og:description" content="This function extracts the correct column from the CC-HIC database
-depending upon what type of data is called for. It additionally pulls
-out the datetime column, which accompanies any data for this class" />
+<meta property="og:title" content="Inverse Logistic Function — inv_logit" />
+<meta property="og:description" content="Inverse Logistic Function" />
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
 
@@ -133,47 +131,40 @@ out the datetime column, which accompanies any data for this class" />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Extract 2d Values</h1>
-    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/extract.R'><code>R/extract.R</code></a></small>
-    <div class="hidden name"><code>extract_2d.Rd</code></div>
+    <h1>Inverse Logistic Function</h1>
+    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/utils.R'><code>R/utils.R</code></a></small>
+    <div class="hidden name"><code>inv_logit.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This function extracts the correct column from the CC-HIC database
-depending upon what type of data is called for. It additionally pulls
-out the datetime column, which accompanies any data for this class</p>
+    <p>Inverse Logistic Function</p>
     </div>
 
-    <pre class="usage"><span class='fu'>extract_2d</span>(<span class='kw'>core_table</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>input</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>data_location</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'>inv_logit</span>(<span class='no'>x</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>core_table</th>
-      <td><p>a core table</p></td>
-    </tr>
-    <tr>
-      <th>input</th>
-      <td><p>the input variable of choice</p></td>
-    </tr>
-    <tr>
-      <th>data_location</th>
-      <td><p>the column name that stores the primary data for this
-variable</p></td>
+      <th>x</th>
+      <td><p>a numeric vector on the logistic scale</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a long table with 1 row per event from the CC-HIC database</p>
+    <p>a numeric vector on the probability scale</p>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='fu'>inv_logit</span>(-<span class='fl'>4</span>:<span class='fl'>4</span>)</div><div class='output co'>#&gt; [1] 0.01798621 0.04742587 0.11920292 0.26894142 0.50000000 0.73105858 0.88079708
+#&gt; [8] 0.95257413 0.98201379</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
       <li><a href="#value">Value</a></li>
+      <li><a href="#examples">Examples</a></li>
     </ul>
 
   </div>

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Extract 2d Values — extract_2d • inspectEHR</title>
+<title>Process episode with a timestamp — process_item_timestamp • inspectEHR</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -42,10 +42,12 @@
 
 
 
-<meta property="og:title" content="Extract 2d Values — extract_2d" />
-<meta property="og:description" content="This function extracts the correct column from the CC-HIC database
-depending upon what type of data is called for. It additionally pulls
-out the datetime column, which accompanies any data for this class" />
+<meta property="og:title" content="Process episode with a timestamp — process_item_timestamp" />
+<meta property="og:description" content="Process a single episode into a rectangular table with a timestamp column
+instead of the usual difftime since admission. The timestamp column
+corresponds to the exact timestamp of the event of interest. This is
+particularly useful for when you need to combine episodes into spells. Take
+care around times of clock change." />
 <meta property="og:image" content="/logo.png" />
 <meta name="twitter:card" content="summary" />
 
@@ -133,47 +135,45 @@ out the datetime column, which accompanies any data for this class" />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Extract 2d Values</h1>
-    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/extract.R'><code>R/extract.R</code></a></small>
-    <div class="hidden name"><code>extract_2d.Rd</code></div>
+    <h1>Process episode with a timestamp</h1>
+    <small class="dont-index">Source: <a href='https://github.com/CC-HIC/inspectEHR/blob/master/R/extract_timevarying.R'><code>R/extract_timevarying.R</code></a></small>
+    <div class="hidden name"><code>process_item_timestamp.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This function extracts the correct column from the CC-HIC database
-depending upon what type of data is called for. It additionally pulls
-out the datetime column, which accompanies any data for this class</p>
+    <p>Process a single episode into a rectangular table with a timestamp column
+instead of the usual difftime since admission. The timestamp column
+corresponds to the exact timestamp of the event of interest. This is
+particularly useful for when you need to combine episodes into spells. Take
+care around times of clock change.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>extract_2d</span>(<span class='kw'>core_table</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>input</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>data_location</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'>process_item_timestamp</span>(<span class='no'>df</span>, <span class='no'>var_name</span>, <span class='no'>metadata</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>core_table</th>
-      <td><p>a core table</p></td>
+      <th>df</th>
+      <td><p>a dataframe containing all episode information (It is unlikely that
+this will be accessed directly)</p></td>
     </tr>
     <tr>
-      <th>input</th>
-      <td><p>the input variable of choice</p></td>
+      <th>var_name</th>
+      <td><p>the CC-HIC codename for the current variable being processed</p></td>
     </tr>
     <tr>
-      <th>data_location</th>
-      <td><p>the column name that stores the primary data for this
-variable</p></td>
+      <th>metadata</th>
+      <td><p>the CC-HIC metadata table</p></td>
     </tr>
     </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>a long table with 1 row per event from the CC-HIC database</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-      <li><a href="#value">Value</a></li>
     </ul>
 
   </div>

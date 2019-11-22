@@ -29,15 +29,12 @@ details on how to use the package to perform the most common tasks:
     standards.
   - `report()` produces a data quality report (note, being fixed for
     IDHS usage)
-  - `shiny_report()` starts an interactive shiny session for the data
-    quality reports (under development)
 
 ## Installation
 
 ``` r
 # install directly from github with
-library(devtools)
-install_github("cc-hic/inspectEHR")
+remotes::install_github("cc-hic/inspectEHR")
 ```
 
 A copy should already be installed into the group library for the CC-HIC
@@ -47,11 +44,11 @@ please contact me directly.
 ## Usage
 
 A synthetic database with 1000 patients ships with inspectEHR for you to
-explore. Actual values are garbage, but everything is internally
-consistent. The code to produce a more comprehensive synthetic test
-database is found in `data-raw/write_synthetic_data.R`. We have skimmmed
-off the first 1000 patients so as to not make the synehtic database
-combersome.
+explore. Actual values are garbage, but everything is logically
+consitent (e.g. patients discharge after they arrive). The code to
+produce a more comprehensive synthetic test database is found in
+`data-raw/write_synthetic_data.R`. We have embedded the first 1000
+patients so as to not make the synehtic database combersome.
 
 ``` r
 library(inspectEHR)
@@ -97,7 +94,8 @@ head(ltb)
 #> # … with 1 more row
 
 # Pull out to any arbitrary temporal resolution and custom define the
-# behaviour for information recorded at resolution higher than you are sampling
+# behaviour for information recorded at resolution higher than you are sampling.
+# only extract the first 24 hours of data
 
 ltb_2 <- extract_timevarying(
   ctn,
@@ -105,18 +103,19 @@ ltb_2 <- extract_timevarying(
   code_names = "NIHR_HIC_ICU_0108",
   rename = "hr",
   cadance = 2, # 1 row every 2 hours
-  overlap_method = mean # use mean to downsample to our 2 hour cadence
+  coalesce_rows = mean, # use mean to downsample to our 2 hour cadence
+  time_boundaries = c(0, 24)
   )
 
 head(ltb_2)
 #> # A tibble: 6 x 3
 #>    time    hr episode_id
-#>   <dbl> <dbl>      <int>
-#> 1     0  91.5      13639
-#> 2     2 102        13639
-#> 3     4  80        13639
-#> 4     6  90        13639
-#> 5     8  90.7      13639
+#>   <dbl> <int>      <int>
+#> 1     0    99      13639
+#> 2     2   102      13639
+#> 3     4    95      13639
+#> 4     6    90      13639
+#> 5     8    89      13639
 #> # … with 1 more row
 DBI::dbDisconnect(ctn)
 ```
