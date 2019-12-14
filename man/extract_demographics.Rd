@@ -4,8 +4,12 @@
 \alias{extract_demographics}
 \title{Extract 1d data from CC-HIC}
 \usage{
-extract_demographics(connection = NULL, episode_ids = NULL,
-  code_names = NULL, rename = NULL)
+extract_demographics(
+  connection = NULL,
+  episode_ids = NULL,
+  code_names = NULL,
+  rename = NULL
+)
 }
 \arguments{
 \item{connection}{a CC-HIC database connection}

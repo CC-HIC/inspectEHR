@@ -1,7 +1,7 @@
 Package: inspectEHR
 Type: Package
 Title: Data Quality Reporting for CC-HIC
-Version: 0.6.9.9000
+Version: 0.6.10.9000
 Authors@R: c(
     person("Edward", "Palmer", role = c("aut", "cre"), email = "edward.palmer@ucl.ac.uk", 
     comment = c(ORCID = "0000-0002-8024-4616"))
@@ -37,7 +37,7 @@ Imports:
     broom,
     praise,
     shiny
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.0
 Suggests:
     knitr,
     rmarkdown,

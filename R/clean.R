@@ -93,7 +93,7 @@ cleaning_helper <- function(col_vec, col_name, dq_ref = NULL, action = "NA") {
   }
 
   rlang::inform(
-    paste0("Finished cleaning: ", col_name, ". ", change, "elements modified")
+    paste0("Finished cleaning: ", col_name, ". ", change, " elements modified")
   )
   return(col_vec)
   }

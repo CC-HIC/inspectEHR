@@ -3,7 +3,6 @@
 \docType{package}
 \name{inspectEHR}
 \alias{inspectEHR}
-\alias{inspectEHR-package}
 \title{inspectEHR}
 \description{
 This package contains functions for data wrangling, cleaning, verification,

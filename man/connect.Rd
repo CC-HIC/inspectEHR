@@ -4,8 +4,14 @@
 \alias{connect}
 \title{Establishes a connection to the database}
 \usage{
-connect(database = NULL, host = "localhost", port = 5432,
-  username = NULL, password = NULL, sqlite_file = NULL)
+connect(
+  database = NULL,
+  host = "localhost",
+  port = 5432,
+  username = NULL,
+  password = NULL,
+  sqlite_file = NULL
+)
 }
 \arguments{
 \item{database}{target db}

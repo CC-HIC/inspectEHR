@@ -4,8 +4,13 @@
 \alias{make_heatcal}
 \title{Make a heat_cal object}
 \usage{
-make_heatcal(reference_tbl = NULL, dataitem_tbl = NULL, site = NULL,
-  date_boundaries = NULL, max_limit = NULL)
+make_heatcal(
+  reference_tbl = NULL,
+  dataitem_tbl = NULL,
+  site = NULL,
+  date_boundaries = NULL,
+  max_limit = NULL
+)
 }
 \arguments{
 \item{reference_tbl}{reference table produced from \code{\link{make_reference}}}

@@ -11,6 +11,9 @@ plot_patient(connection, nhs_number)
 
 \item{nhs_number}{the patients NHS number}
 }
+\value{
+
+}
 \description{
 Plot Patient
 }

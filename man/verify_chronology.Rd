@@ -9,6 +9,9 @@ verify_chronology(connection)
 \arguments{
 \item{connection}{a database connection}
 }
+\value{
+
+}
 \description{
 Verify Chronology
 }

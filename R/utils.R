@@ -180,6 +180,21 @@ round_any <- function(x, accuracy = 1) {
 }
 
 
+#' Inverse Logistic Function
+#'
+#' @param x a numeric vector on the logistic scale
+#'
+#' @return a numeric vector on the probability scale
+#' @export
+#'
+#' @examples
+#' inv_logit(-4:4)
+inv_logit <- function(x) {
+  p <- 1 / (1 + exp(-x))
+  ifelse(x == Inf, 1, p)
+}
+
+
 #' Daily Events for HIC Data item by Site
 #'
 #' Calculates the number of events contributed for each calendar day, stratified

@@ -6,26 +6,27 @@
 #'
 #' The time unit is user definable, and set by the "cadance" argument. The
 #' default behaviour is to produce a table with 1 row per hour per patient. If
-#' there are duplicates/conflicts for example if there are more than 1 event for
-#' a given hour, then duplicate rows are created This behaviour is intentional,
-#' so that end researchers do not accidentally discard data that is contributed
-#' on a high cadance.
+#' there are duplicates/conflicts (e.g more than 1 event for a given hour), then
+#' only the first result for that hour is returned. One can override this
+#' behvaiour by supplying a vector of summary functions directly to the
+#' 'coalesce_rows' argument.
 #'
 #' Many events inside CC-HIC occur on a greater than hourly basis. Depending
 #' upon the chosen analysis, you may which to increase the cadance. 0.5 for
 #' example will produce a table with 1 row per 30 minutes per patient.
 #'
 #' Where you are extacting at a resolution lower than is recorded in the
-#' database, you can specify a summary function with the \code{overlap_method}
+#' database, you can specify a summary function with the \code{coalesce_rows}
 #' argument. This argument takes a summary function as an argument, for example,
-#' mean and will apply this behaviour to all data items in the database. At
-#' present, this doesn't deal with: functions that act differently across
-#' different data types, or metadata.
+#' 'mean' and will apply this behaviour to the specified data items in the
+#' database.
 #'
 #' Choose what variables you want to pull out wisely. This function is actually
 #' quite efficient considering what it needs to do, but it can take a very long
-#' time if pulling out lots of data. It is a strong recomendation that you
-#' optimise the database with indexes prior to using this function.
+#' time if extracting lots of data. It is a strong recomendation that you
+#' optimise the database with indexes prior to using this function. You may want
+#' to test your extraction with 100 or so patients to make sure it is doing what
+#' you want.
 #'
 #' It is perfectly possible for this function to produce negative time rows. If,
 #' for example a patient had a measure taken in the hours before they were
@@ -42,9 +43,14 @@
 #'   please use NULL.
 #' @param code_names a vector of CC-HIC codes names to be extracted
 #' @param rename a character vector of names you want to relabel CC-HIC codes
-#'   as, or NULL (the default) if you do not want to relabel.
+#'   as, or NULL (the default) if you do not want to relabel. Given in the same
+#'   order as \code{code_names}
+#' @param coalesce_rows a function vector of the summary functions that you want
+#'   to summarise data that is contributed higher than your set cadance. Given
+#'   in the same order as \code{code_names}
 #' @param chunk_size a chunking parameter to help speed up the function and
-#'   manage memory constaints
+#'   manage memory constaints. The defaults work well for most desktop
+#'   computers.
 #' @param cadance a numerical scalar >= 0 or "timestamp". If a numerical scalar
 #'   is used, it will describe the base time unit to build each row, in
 #'   divisions of an hour. For example: 1 = 1 hour, 0.5 = 30 mins, 2 = 2 hourly.
@@ -52,16 +58,22 @@
 #'   created. If cadance = 0, then the pricise datetime will be used to generate
 #'   the time column. This is likely to generate a large table, so use
 #'   cautiously.
+#' @param time_boundaries an integer vector of length 2 containing the start and
+#'   end times (in hours) relative to the ICU admission time, for which you want
+#'   data extraction to occur. For example, \code{c(0, 24)} will return the
+#'   first 24 hours of data after admission. The default \code{c(-Inf, Inf)}
+#'   will return all data.
 #'
 #' @return sparse tibble with hourly cadance as rows, and unique hic events as
-#'   columns
+#'   columns. Data items that contain metadata are reallocated to their own
+#'   columns.
 #' @export
 #'
 #' @importFrom purrr map imap
 #' @importFrom lubridate now
 #' @importFrom praise praise
 #' @importFrom rlang inform
-#' @importFrom dplyr distinct_at
+#' @importFrom dplyr distinct_at first
 #'
 #' @examples
 #' # DB Connection
@@ -72,14 +84,14 @@
 #' hr_default <- extract_timevarying(ctn, episode_ids = 13639:13643, code_names = "NIHR_HIC_ICU_0108")
 #' head(hr_default)
 #' # Extract Heart Rates for 5 episodes with custom settings
-#' hr_custom <- extract_timevarying(ctn, episode_ids = 13639:13643, code_names = "NIHR_HIC_ICU_0108", cadance = 2, overlap_method = mean)
+#' hr_custom <- extract_timevarying(ctn, episode_ids = 13639:13643, code_names = "NIHR_HIC_ICU_0108", cadance = 2, coalesce_rows = mean)
 #' head(hr_custom)
 #' DBI::dbDisconnect(ctn)
 extract_timevarying <- function(connection,
                                 episode_ids = NULL,
                                 code_names,
-                                rename = NULL,
-                                coalesce_rows = NULL,
+                                rename = as.character(NA),
+                                coalesce_rows = dplyr::first,
                                 chunk_size = 5000,
                                 cadance = 1,
                                 time_boundaries = c(-Inf, Inf)) {
@@ -105,11 +117,11 @@ extract_timevarying <- function(connection,
   if (any(code_names %in% "NIHR_HIC_ICU_0187")) {
     rlang::abort("NIHR_HIC_ICU_0187: Organism is not currently supported")
   }
-
+  
   params <- tibble(
     code_names = code_names,
     short_names = rename,
-    func = coalesce_rows
+    func = c(coalesce_rows)
   )
 
   episode_groups <- dplyr::tbl(connection, "events") %>%
@@ -146,7 +158,7 @@ extract_timevarying <- function(connection,
     }) %>%
     bind_rows()
 
-  if (!is.null(rename)) {
+  if (!all(is.na(rename))) {
     for (i in seq_len(nrow(params))) {
       names(episode_groups) <- gsub(
         pattern = params$code_names[i],
@@ -156,7 +168,7 @@ extract_timevarying <- function(connection,
     }
   }
 
-  if (is.null(rename)) {
+  if (all(is.na(rename))) {
     lookups <- tibble(codes = code_names,
                       names = code_names)
   } else {

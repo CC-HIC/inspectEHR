@@ -4,9 +4,17 @@
 \alias{report}
 \title{CC-HIC Data Quality Report}
 \usage{
-report(database = NULL, username = NULL, password = NULL,
-  host = "localhost", port = 5432, sqlite_file = NULL,
-  output_folder = NULL, write_plots = TRUE, generate_report = TRUE)
+report(
+  database = NULL,
+  username = NULL,
+  password = NULL,
+  host = "localhost",
+  port = 5432,
+  sqlite_file = NULL,
+  output_folder = NULL,
+  write_plots = TRUE,
+  generate_report = TRUE
+)
 }
 \arguments{
 \item{database}{the database name for connection}
