@@ -37,7 +37,9 @@
 #'
 #' @param connection a CC-HIC database connection
 #' @param episode_ids an integer vector of episode_ids or NULL. If NULL (the
-#'   default) then all episodes are extracted
+#'   default) then all episodes are extracted. If working with the public
+#'   dataset where episode ids are given as a character string of hashed values
+#'   please use NULL.
 #' @param code_names a vector of CC-HIC codes names to be extracted
 #' @param rename a character vector of names you want to relabel CC-HIC codes
 #'   as, or NULL (the default) if you do not want to relabel.
