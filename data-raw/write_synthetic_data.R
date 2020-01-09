@@ -9,7 +9,8 @@
 # - [] No meta data
 
 library(tidyverse)
-library(lubridate); library(hms)
+library(lubridate)
+library(hms)
 # library(inspectEHR)
 library(devtools)
 load_all()
@@ -151,7 +152,7 @@ dfs <- dfs %>%
 ## Creating the basic time cadance
 dfl <- dfs %>%
   select(episode_id, NIHR_HIC_ICU_0411, NIHR_HIC_ICU_0412) %>%
-  nest(NIHR_HIC_ICU_0411, NIHR_HIC_ICU_0412) %>%
+  nest(data = c(NIHR_HIC_ICU_0411, NIHR_HIC_ICU_0412)) %>%
   mutate(data = map(data, ~ seq.POSIXt(.x$NIHR_HIC_ICU_0411, .x$NIHR_HIC_ICU_0412, by = "hour"))) %>%
   unnest(data) %>%
   rename(datetime = data)
@@ -221,7 +222,7 @@ dfs <- bind_rows(dfs, spells)
 
 spells_l <- spells %>%
   select(episode_id, NIHR_HIC_ICU_0411, NIHR_HIC_ICU_0412) %>%
-  nest(NIHR_HIC_ICU_0411, NIHR_HIC_ICU_0412) %>%
+  nest(data = c(NIHR_HIC_ICU_0411, NIHR_HIC_ICU_0412)) %>%
   mutate(data = map(data, ~ seq.POSIXt(.x$NIHR_HIC_ICU_0411, .x$NIHR_HIC_ICU_0412, by = "hour"))) %>%
   unnest(data) %>%
   rename(datetime = data)
@@ -341,9 +342,9 @@ episodes <- episodes %>% mutate_if(is.POSIXct, format) %>%
 ## datetimes in string format so they are readable without parsing.
 
 events <- events %>%
-  mutate_if(lubridate::is.Date, format) %>%
-  mutate_if(is.POSIXct, format) %>%
-  mutate_if(hms::is.hms, function(x) if_else(is.na(x), as.character(NA), format(x)))
+  dplyr::mutate_at(vars(date), format) %>%
+  dplyr::mutate_at(vars(datetime), format) %>%
+  dplyr::mutate_at(vars(time), function(x) if_else(is.na(x), as.character(NA), format(x)))
 
 provenance <- provenance %>% mutate_if(is.POSIXct, format)
 

@@ -883,7 +883,7 @@ verify_periodicity.string_2d <- function(x, los_table) {
 #' verify Event Plausibility - Coverage Checks (S3 Generic)
 #'
 #' Checks to ensure that long term data item contribution is consistent. This is
-#' because often back end cahnges occur in hospitals that silently disrupt the
+#' because often back end changes occur in hospitals that silently disrupt the
 #' ETL process, and as such, some dataitems disappear without warning.
 #'
 #' @param x an extracted dataitem
@@ -1004,6 +1004,7 @@ coverage_generic_2d <- function(x, reference_tbl) {
                  names `out_of_bounds`, `range_error` and `duplicate`")
   }
 
+  # Daily event count by site
   base_events <- x %>%
     filter(
       .data$out_of_bounds == 0L | is.na(.data$out_of_bounds),
@@ -1014,6 +1015,8 @@ coverage_generic_2d <- function(x, reference_tbl) {
     group_by(site, date) %>%
     summarise(event_count = n_distinct(event_id))
 
+  # Builds a calendar with all days from first occurance to final occurance
+  # by site
   base_calendar <- reference_tbl %>%
     group_by(.data$site) %>%
     summarise(
@@ -1021,7 +1024,7 @@ coverage_generic_2d <- function(x, reference_tbl) {
         lubridate::floor_date(min(.data$start_date), unit = "month")),
       end = lubridate::as_date(
         lubridate::ceiling_date(max(.data$start_date), unit = "month")-1)) %>%
-    tidyr::nest(.data$start, .data$end, .key = "date") %>%
+    tidyr::nest(date = c(.data$start, .data$end)) %>%
     mutate(
       date = purrr::map(date, ~ seq.Date(.x$start, .x$end, by = "day"))) %>%
     unnest(.data$date)
