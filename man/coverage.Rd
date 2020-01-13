@@ -16,6 +16,6 @@ a table describing the coverage over a defined time window
 }
 \description{
 Checks to ensure that long term data item contribution is consistent. This is
-because often back end cahnges occur in hospitals that silently disrupt the
+because often back end changes occur in hospitals that silently disrupt the
 ETL process, and as such, some dataitems disappear without warning.
 }

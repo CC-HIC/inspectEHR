@@ -71,7 +71,6 @@
 #'
 #' @importFrom purrr map imap
 #' @importFrom lubridate now
-#' @importFrom praise praise
 #' @importFrom rlang inform
 #' @importFrom dplyr distinct_at first
 #'

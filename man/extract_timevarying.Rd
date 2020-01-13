@@ -19,7 +19,9 @@ extract_timevarying(
 \item{connection}{a CC-HIC database connection}
 
 \item{episode_ids}{an integer vector of episode_ids or NULL. If NULL (the
-default) then all episodes are extracted}
+default) then all episodes are extracted. If working with the public
+dataset where episode ids are given as a character string of hashed values
+please use NULL.}
 
 \item{code_names}{a vector of CC-HIC codes names to be extracted}
 

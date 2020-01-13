@@ -1,7 +1,7 @@
 Package: inspectEHR
 Type: Package
 Title: Data Quality Reporting for CC-HIC
-Version: 0.6.10.9000
+Version: 0.6.11.9000
 Authors@R: c(
     person("Edward", "Palmer", role = c("aut", "cre"), email = "edward.palmer@ucl.ac.uk", 
     comment = c(ORCID = "0000-0002-8024-4616"))
@@ -18,31 +18,30 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     DBI,
+    broom,
     dbplyr,
     dplyr (>= 0.8.0),
-    tidyselect,
     ggplot2,
     glue,
+    hms,
     lubridate,
     magrittr,
     rlang (>= 0.4.0),
+    purrr,
     RPostgres,
     RSQLite,
-    purrr,
     scales,
     stringr,
     tibble,
     tidyr,
-    hms,
-    broom,
-    praise,
-    shiny
+    tidyselect
 RoxygenNote: 7.0.0
 Suggests:
+    covr,
     knitr,
+    praise,
     rmarkdown,
     testthat,
-    covr,
     qpdf
 VignetteBuilder: knitr
 URL: https://github.com/CC-HIC/inspectEHR
