@@ -3,7 +3,7 @@ Type: Package
 Title: Data Quality Reporting for CC-HIC
 Version: 0.6.11.9000
 Authors@R: c(
-    person("Edward", "Palmer", role = c("aut", "cre"), email = "edward.palmer@ucl.ac.uk", 
+    person("Edward", "Palmer", role = c("aut", "cre"), email = "edward.palmer@ucl.ac.uk",
     comment = c(ORCID = "0000-0002-8024-4616"))
     )
 Description: This package helps to produce data quality reports for CC-HIC.
@@ -13,7 +13,7 @@ Description: This package helps to produce data quality reports for CC-HIC.
     cleanEHR in due course.
 License: GPL-3
 Depends:
-    R (>= 3.5.0)
+    R (>= 3.4.0)
 Encoding: UTF-8
 LazyData: true
 Imports:
