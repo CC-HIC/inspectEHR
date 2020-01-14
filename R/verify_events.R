@@ -252,7 +252,7 @@ verify_range_string <- function(x = NULL) {
     possible_values <- qref %>%
       filter(.data$code_name == !!quo_codename) %>%
       select(.data$possible_values) %>%
-      unnest() %>%
+      unnest(cols = c(possible_values)) %>%
       select(.data$possible_values) %>%
       pull()
 
@@ -889,136 +889,105 @@ verify_periodicity.string_2d <- function(x, los_table) {
 #' - 1. Sudden stopping of data (transitions to zero)
 #' - 2. Sudden change in amount of data (transitions to new lower mean)
 #' - 3. High frequency of anomalous data in general
+#' 
+#' The return is a table of months and years for which each site is considered to have appropraite
+#' coverage
 #'
 #' @param x an extracted dataitem
 #' @param reference_tbl reference table from \code{\link{make_reference}}
 #'
 #' @return a table describing the coverage over a defined time window
 #' @export
-coverage <- function(x, reference_tbl) {
-  UseMethod("coverage", x)
+verify_coverage <- function(x, reference_tbl) {
+  UseMethod("verify_coverage", x)
 }
 
-#' @export
-coverage.default <- function(x, reference_tbl) {
-  rlang::abort("There are no methods defined for this class")
+verify_coverage.default <- function(x, reference_tbl) {
+  rlang::message("There are no methods defined for this class")
 }
 
-#' @export
-coverage.integer_1d <- function(x, reference_tbl) {
-  x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
+verify_coverage.integer_1d <- function(x, reference_tbl) {
+  x <- coverage_generic(x, reference_tbl = reference_tbl)
 }
 
-#' @export
-coverage.string_1d <- function(x, reference_tbl) {
-  x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
+verify_coverage.string_1d <- function(x, reference_tbl) {
+  x <- coverage_generic(x, reference_tbl = reference_tbl)
 }
 
-#' @export
-coverage.real_1d <- function(x, reference_tbl) {
-  x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
+verify_coverage.real_1d <- function(x, reference_tbl) {
+  x <- coverage_generic(x, reference_tbl = reference_tbl)
 }
 
-#' @export
-coverage.date_1d <- function(x, reference_tbl) {
-  x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
+verify_coverage.date_1d <- function(x, reference_tbl) {
+  x <- coverage_generic(x, reference_tbl = reference_tbl)
 }
 
-#' @export
-coverage.time_1d <- function(x, reference_tbl) {
-  x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
+verify_coverage.time_1d <- function(x, reference_tbl) {
+  x <- coverage_generic(x, reference_tbl = reference_tbl)
 }
 
-#' @export
-coverage.datetime_1d <- function(x, reference_tbl) {
-  x <- coverage_generic_1d(x, reference_tbl = reference_tbl)
+verify_coverage.datetime_1d <- function(x, reference_tbl) {
+  x <- coverage_generic(x, reference_tbl = reference_tbl)
+}
+
+verify_coverage.integer_2d <- function(x, reference_tbl) {
+  x <- coverage_generic(x, reference_tbl = reference_tbl)
+}
+
+verify_coverage.string_2d <- function(x, reference_tbl) {
+  x <- coverage_generic(x, reference_tbl = reference_tbl)
+}
+
+verify_coverage.real_2d <- function(x, reference_tbl) {
+  x <- coverage_generic(x, reference_tbl = reference_tbl)
 }
 
 
-coverage_generic_1d <- function(x, reference_tbl) {
-  name_check <- dplyr::intersect(
-    names(x),
-    c("out_of_bounds", "range_error", "duplicate")
-  )
-  if (length(name_check) != 3) {
+#' Check Coverage
+#'
+#' @param x verified table
+#' @param reference_tbl reference table
+#' @param threshold threshold number of days in a month over which an anomaly is declared
+#'
+coverage_generic <- function(x, reference_tbl, threshold = 10) {
+  
+  name_check <- all(c("out_of_bounds", "range_error", "duplicate") %in% names(x))
+  if (!name_check) {
     rlang::abort("You must supply a dataframe to `x` that contains columns with
                  names `out_of_bounds`, `range_error` and `duplicate`")
   }
-
-  base_events <- x %>%
-    filter(
-      .data$out_of_bounds == 0L | is.na(.data$out_of_bounds),
-      .data$range_error == 0L | is.na(.data$range_error),
-      .data$duplicate == 0L | is.na(.data$duplicate)
-    ) %>%
-    left_join(
-      reference_tbl %>% select(-.data$site),
-      by = "episode_id") %>%
-    mutate(date = lubridate::as_date(.data$start_date)) %>%
-    group_by(.data$site, .data$date) %>%
-    summarise(event_count = n_distinct(.data$event_id))
-
-  base_calendar <- reference_tbl %>%
-    group_by(.data$site) %>%
-    summarise(
-      start = lubridate::as_date(
-        lubridate::floor_date(min(.data$start_date), unit = "month")),
-      end = lubridate::as_date(
-        lubridate::ceiling_date(max(.data$start_date), unit = "month")-1)) %>%
-    tidyr::nest(.data$start, .data$end, .key = "date") %>%
-    mutate(
-      date = purrr::map(date, ~ seq.Date(.x$start, .x$end, by = "day"))) %>%
-    unnest(date)
-
-  out <- left_join(base_calendar, base_events, by = c("site", "date")) %>%
-    filter(is.na(.data$event_count)) %>%
-    mutate(year = lubridate::year(.data$date),
-           month = lubridate::month(.data$date)) %>%
-    group_by(.data$site, .data$year, .data$month) %>%
-    tally() %>%
-    filter(.data$n > 10) %>%
-    arrange(.data$site, .data$year, .data$month)
-
-  return(out)
-}
-
-#' @export
-coverage.integer_2d <- function(x, reference_tbl) {
-  x <- coverage_generic_2d(x, reference_tbl = reference_tbl)
-}
-
-#' @export
-coverage.string_2d <- function(x, reference_tbl) {
-  x <- coverage_generic_2d(x, reference_tbl = reference_tbl)
-}
-
-#' @export
-coverage.real_2d <- function(x, reference_tbl) {
-  x <- coverage_generic_2d(x, reference_tbl = reference_tbl)
-}
-
-
-coverage_generic_2d <- function(x, reference_tbl) {
-  name_check <- dplyr::intersect(
-    names(x),
-    c("out_of_bounds", "range_error", "duplicate")
-  )
-  if (length(name_check) != 3) {
-    rlang::abort("You must supply a dataframe to `x` that contains columns with
-                 names `out_of_bounds`, `range_error` and `duplicate`")
-  }
-
+  
   # Daily event count by site
-  base_events <- x %>%
-    filter(
-      .data$out_of_bounds == 0L | is.na(.data$out_of_bounds),
-      .data$range_error == 0L | is.na(.data$range_error),
-      .data$duplicate == 0L | is.na(.data$duplicate)
-    ) %>%
-    mutate(date = lubridate::as_date(datetime)) %>%
-    group_by(site, date) %>%
-    summarise(event_count = n_distinct(event_id))
-
+  if (any(grepl("1", class(x)))) {
+    base_events <- x %>%
+      filter(
+        .data$out_of_bounds == 0L | is.na(.data$out_of_bounds),
+        .data$range_error == 0L | is.na(.data$range_error),
+        .data$duplicate == 0L | is.na(.data$duplicate)
+      ) %>%
+      left_join(
+        reference_tbl %>% select(-.data$site),
+        by = "episode_id") %>%
+      mutate(date = lubridate::as_date(.data$start_date)) %>%
+      select(-nhs_number, -start_date)
+    
+    sum_events <- base_events %>%
+      group_by(.data$site, .data$date) %>%
+      summarise(event_count = n_distinct(.data$event_id))
+  } else {
+    base_events <- x %>%
+      filter(
+        .data$out_of_bounds == 0L | is.na(.data$out_of_bounds),
+        .data$range_error == 0L | is.na(.data$range_error),
+        .data$duplicate == 0L | is.na(.data$duplicate)
+      ) %>%
+      mutate(date = lubridate::as_date(datetime))
+    
+    sum_events <- base_events %>%
+      group_by(site, date) %>%
+      summarise(event_count = n())
+  }
+  
   # Builds a calendar with all days from first occurance to final occurance
   # by site
   base_calendar <- reference_tbl %>%
@@ -1032,17 +1001,72 @@ coverage_generic_2d <- function(x, reference_tbl) {
     mutate(
       date = purrr::map(date, ~ seq.Date(.x$start, .x$end, by = "day"))) %>%
     unnest(.data$date)
-
-  out <- left_join(base_calendar, base_events, by = c("site", "date")) %>%
-    filter(is.na(.data$event_count)) %>%
+  
+  # Deterministic Rule #1
+  # Check for periods with zero contribution. If any month has > threshold days of zero contribution
+  # Consider it erroneous
+  
+  rule1 <- anti_join(base_calendar, sum_events, by = c("site", "date")) %>%
     mutate(year = lubridate::year(.data$date),
            month = lubridate::month(.data$date)) %>%
     group_by(.data$site, .data$year, .data$month) %>%
     tally() %>%
-    filter(.data$n > 10) %>%
+    filter(.data$n < threshold) %>%
     arrange(.data$site, .data$year, .data$month)
-
-  return(out)
+  
+  # Deterministic Rule #2
+  # Check for periods with greater than 2SD below the annual mean.
+  # If any month has > 10 days below this level
+  # Consider it erroneous
+  
+  rule2 <- left_join(base_calendar, sum_events, by = c("site", "date")) %>%
+    mutate(event_count = if_else(is.na(.data$event_count), 0L, .data$event_count)) %>%
+    mutate(year = lubridate::year(.data$date),
+           month = lubridate::month(.data$date)) %>%
+    group_by(.data$site, .data$year) %>%
+    mutate(ann_mean = mean(.data$event_count),
+           ann_sd = sd(.data$event_count),
+           lower_lin = ann_mean - 2*ann_sd) %>%
+    filter(event_count < lower_lin) %>%
+    group_by(.data$site, .data$year, .data$month) %>%
+    tally() %>%
+    filter(.data$n < threshold) %>%
+    arrange(.data$site, .data$year, .data$month)
+  
+  # Rule #3
+  # Check for periods with anomalous contribution
+  # If any month has > 10 days anomalous
+  # Consider it erroneous
+  
+  # rule3 <- left_join(base_calendar, sum_events, by = c("site", "date")) %>%
+  #   mutate(event_count = if_else(is.na(.data$event_count), 0L, .data$event_count)) %>%
+  #   split(.$site) %>%
+  #   purrr::map(
+  #     ~ anomalize::time_decompose(.x, event_count, method = "stl", frequency = "auto", trend = "auto",
+  #                      message = FALSE) %>%
+  #       anomalize::anomalize(remainder, method = "gesd", alpha = 0.05, max_anoms = 0.2) %>%
+  #       anomalize::time_recompose()) %>%
+  #   purrr::imap( ~ as_tibble(.x) %>% mutate(site = .y)) %>%
+  #   bind_rows() %>%
+  #   filter(anomaly == "Yes") %>%
+  #   mutate(year = lubridate::year(.data$date),
+  #          month = lubridate::month(.data$date)) %>%
+  #   group_by(.data$site, .data$year, .data$month) %>%
+  #   tally() %>%
+  #   filter(.data$n < threshold) %>%
+  #   arrange(.data$site, .data$year, .data$month)
+  
+  coverage <- bind_rows(rule1, rule2) %>%
+    select(-.data$n) %>%
+    distinct() %>%
+    mutate(coverage = 1L)
+  
+  base_events %>%
+    mutate(year = lubridate::year(.data$date),
+           month = lubridate::month(.data$date)) %>%
+    left_join(coverage, by = c("site", "year", "month")) %>%
+    select(-date, -year, -month)
+  
 }
 
 

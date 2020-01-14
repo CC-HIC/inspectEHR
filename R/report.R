@@ -201,7 +201,8 @@ report <- function(database = NULL,
 
   # Write out this validation to the database
   episode_verification <- ve_episodes %>%
-    select(episode_id, veracity)
+    select(episode_id, veracity) %>%
+    add_column(datetime = Sys.time())
 
   copy_to(ctn, episode_verification, temporary = FALSE, overwrite = TRUE)
 
@@ -226,7 +227,7 @@ report <- function(database = NULL,
     df <- verify_events(df, ve_episodes)
 
     # Coverage verification
-    df_cov <- coverage(df, reference_tbl = reference)
+    df_cov <- verify_coverage(df, reference_tbl = reference)
 
     # Statistical verification
     ks_pos <- qref[qref$code_name == hic_codes[i], "dist_compare", drop = TRUE]

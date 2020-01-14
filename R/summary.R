@@ -62,13 +62,12 @@ summarise_verification <- function(verified, stats, coverage, reference) {
     gather("error_type", "n", -.data$site)
 
   dl[["stats"]] <- stats
+  dl[["coverage"]] <- coverage
 
   if (any(grepl("1d", class(verified)))) {
     dl[["completeness"]] <- verify_complete(verified, reference)
-    dl[["coverage"]] <- coverage(verified, reference)
   } else {
     dl[["completeness"]] <- NA
-    dl[["coverage"]] <- coverage(verified, reference)
   }
 
   return(dl)
