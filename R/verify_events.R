@@ -880,11 +880,15 @@ verify_periodicity.string_2d <- function(x, los_table) {
   return(x)
 }
 
-#' verify Event Plausibility - Coverage Checks (S3 Generic)
+#' Verify Event Plausibility - Coverage Checks (S3 Generic)
 #'
 #' Checks to ensure that long term data item contribution is consistent. This is
 #' because often back end changes occur in hospitals that silently disrupt the
-#' ETL process, and as such, some dataitems disappear without warning.
+#' ETL process, and as such, some dataitems disappear without warning. There are
+#' three main error prone patterns that this is trying to detect:
+#' - 1. Sudden stopping of data (transitions to zero)
+#' - 2. Sudden change in amount of data (transitions to new lower mean)
+#' - 3. High frequency of anomalous data in general
 #'
 #' @param x an extracted dataitem
 #' @param reference_tbl reference table from \code{\link{make_reference}}
