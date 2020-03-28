@@ -223,7 +223,13 @@ extract_timevarying <- function(connection,
 }
 
 
-process_all <- function(epi_id, events, metadata, cadance, coalesce_rows, time_boundaries) {
+process_all <- function(epi_id,
+                        events,
+                        metadata,
+                        cadance,
+                        coalesce_rows,
+                        time_boundaries) {
+
   pt <- events %>%
     filter(episode_id == epi_id) %>%
     mutate(datetime = as.POSIXct(datetime))
