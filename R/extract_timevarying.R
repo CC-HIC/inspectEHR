@@ -73,6 +73,7 @@
 #' @importFrom lubridate now
 #' @importFrom rlang inform
 #' @importFrom dplyr distinct_at first
+#' @importFrom tidyr read_csv
 #'
 #' @examples
 #' # DB Connection
@@ -87,73 +88,99 @@
 #' head(hr_custom)
 #' DBI::dbDisconnect(ctn)
 extract_timevarying <- function(connection,
-                                episode_ids = NULL,
-                                code_names,
+                                person_ids = NULL,
+                                concept_names = NULL,
                                 rename = as.character(NA),
                                 coalesce_rows = dplyr::first,
                                 chunk_size = 5000,
                                 cadance = 1,
                                 time_boundaries = c(-Inf, Inf)) {
+
   starting <- lubridate::now()
 
-  if (!is.null(episode_ids) && class(episode_ids) != "integer") {
-    rlang::abort("`episode_ids` must be given as NULL (the default) or an integer vector of episode ids")
+  if (!is.null(person_ids) && class(person_ids) != "integer") {
+    rlang::abort(
+      "`person_ids` must be given as NULL (the default)
+       or an integer vector")
   }
 
   cadance_pos_num <- class(cadance) == "numeric" && cadance >= 0
   cadance_timestamp <- cadance == "timestamp"
 
   if (!(cadance_pos_num || cadance_timestamp)) {
-    rlang::abort("`cadance` must be given as a numeric scalar >= 0 or the string 'timestamp'")
+    rlang::abort(
+      "`cadance` must be given as a numeric scalar >= 0
+       or the string 'timestamp'")
   }
 
-  if (!(any(code_names %in% "NIHR_HIC_ICU_0411"))) {
-    exons <- append(code_names, "NIHR_HIC_ICU_0411")
-  } else {
-    exons <- code_names
-  }
-
-  if (any(code_names %in% "NIHR_HIC_ICU_0187")) {
-    rlang::abort("NIHR_HIC_ICU_0187: Organism is not currently supported")
-  }
-  
   params <- tibble(
-    code_names = code_names,
+    concept_names = concept_names,
     short_names = rename,
     func = c(coalesce_rows)
   )
 
-  episode_groups <- dplyr::tbl(connection, "events") %>%
-    select(episode_id) %>%
-    distinct() %>%
-    collect()
-
-  if (!is.null(episode_ids)) {
-    episode_groups <- filter(episode_groups, episode_id %in% episode_ids)
+  if (is.null(person_ids)) {
+    person_groups <- dplyr::tbl(connection, "person") %>%
+      distinct(.data$person_id) %>%
+      collect()
+  } else {
+    person_groups <- dplyr::tbl(connection, "person") %>%
+      filter(.data$person_id %in% person_ids) %>%
+      distinct(.data$person_id) %>%
+      collect()
   }
 
-  mdata <- collect(dplyr::tbl(connection, "variables"))
+  mdata <- system.file(
+    "inst/extdata/omop_mapping_ref.csv",
+    package = "inspectEHR")
 
-  episode_groups <- episode_groups %>%
+  mdata <- read_csv(mdata)
+
+  person_groups <- person_groups %>%
     mutate(group = as.integer(seq(n()) / chunk_size)) %>%
     split(., .$group) %>%
-    map(function(epi_ids) {
-      collect_events <- dplyr::tbl(connection, "events") %>%
-        filter(code_name %in% exons,
-               episode_id %in% !!epi_ids$episode_id) %>%
-        collect()
+      map(function(per_ids) {
 
-      map(collect_events %>%
+        coll_observation <- dplyr::tbl(connection, "observation") %>%
+          filter(concept_id %in% concept_names,
+                 person_id %in% !!per_ids$person_id) %>%
+          collect()
+
+        coll_measure <- dplyr::tbl(connection, "measurement") %>%
+          filter(concept_id %in% concept_names,
+                 person_id %in% !!per_ids$person_id) %>%
+          collect()
+
+      processed_observations <- coll_observation %>%
+        distinct(person_id) %>%
+        pull() %>%
+        map(process_all,
+            events = collect_events,
+            metadata = mdata,
+            cadance = cadance,
+            coalesce_rows = params,
+            time_boundaries = time_boundaries
+            ) %>%
+        bind_rows()
+
+      processed_measure <- coll_measure %>%
         select(episode_id) %>%
         distinct() %>%
-        pull(), process_all,
-      events = collect_events,
-      metadata = mdata,
-      cadance = cadance,
-      coalesce_rows = params,
-      time_boundaries = time_boundaries
-      ) %>%
+        pull() %>%
+        map(process_all,
+            events = collect_events,
+            metadata = mdata,
+            cadance = cadance,
+            coalesce_rows = params,
+            time_boundaries = time_boundaries
+        ) %>%
         bind_rows()
+
+      full_join(
+        processed_observations,
+        processed_measure,
+        by = c("person_id", "time"))
+
     }) %>%
     bind_rows()
 
