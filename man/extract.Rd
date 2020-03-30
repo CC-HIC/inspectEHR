@@ -2,27 +2,113 @@
 % Please edit documentation in R/extract.R
 \name{extract}
 \alias{extract}
-\title{Extract NHIC Events}
+\title{Extract & Reshape Data from EMAP
+
+This is the workhorse function that transcribes data from EMAP OPS from OMOP 
+CDM 5.3.1 to a standard rectangular table with 1 column per dataitem and 1
+row per time per patient.
+
+The time unit is user definable, and set by the "cadance" argument. The
+default behaviour is to produce a table with 1 row per hour per patient. If
+there are duplicates/conflicts (e.g more than 1 event for a given hour), then
+the default behaviour is that only the first result for that hour is
+returned. One can override this behvaiour by supplying a vector of summary
+functions directly to the 'coalesce_rows' argument. This could also include
+any custom function written by the end user, so long as it takes a vector of
+length n, and returns a vector of length 1, of the original data type.
+
+Many events inside EMAP occur on a greater than hourly basis. Depending
+upon the chosen analysis, you may which to increase the cadance. 0.5 for
+example will produce a table with 1 row per 30 minutes per patient. Counter
+to this, 24 would produce 1 row per 24 hours.
+
+Choose what variables you want to pull out wisely. This function is quite
+efficient considering what it needs to do, but it can take a very long
+time if extracting lots of data, and doing so repeatedly. It is a strong 
+recomendation that you run your extraction on a small subset of patients
+first and check that you are happy with the result, before moving to a larger
+extraction.
+
+The current implementation is focussed on in-patients only. And as such, all
+dataitems are referenced to the visit_start_datetime of the visit_occurrence.
+Thus, observations and measurements recorded outside the boudaries of the
+visit_occurrence are automatically removed. This is - at this stage -
+intensional behaviour.}
 \usage{
-extract(core_table = NULL, input = NULL)
+extract(
+  connection,
+  target_schema,
+  visit_occurrence_ids = NULL,
+  concept_names = NULL,
+  rename = NULL,
+  coalesce_rows = dplyr::first,
+  chunk_size = 5000,
+  cadance = 1
+)
 }
 \arguments{
-\item{core_table}{core table from make_core}
+\item{connection}{a EMAP database connection}
 
-\item{input}{the input variable of choice}
+\item{target_schema}{the target database schema}
+
+\item{visit_occurrence_ids}{an integer vector of episode_ids or NULL. If NULL
+(the default) then all visits are extracted.}
+
+\item{concept_names}{a vector of OMOP concept_ids to be extracted}
+
+\item{rename}{a character vector of names you want to relabel OMOP codes
+as, or NULL (the default) if you do not want to relabel. Given in the same
+order as \code{concept_names}}
+
+\item{coalesce_rows}{a vector of summary functions that you want to summarise
+data that is contributed higher than your set cadance. Given in the same
+order as \code{concept_names}}
+
+\item{chunk_size}{a chunking parameter to help speed up the function and
+manage memory constaints. The defaults work well for most desktop
+computers.}
+
+\item{cadance}{a numerical scalar >= 0. Describes the base time unit to build
+each row, in divisions of an hour. For example: 1 = 1 hour, 0.5 = 30 mins,
+2 = 2 hourly. If cadance = 0, then the pricise datetime will be used to
+generate the time column. This is likely to generate a large table, so use
+cautiously.}
 }
 \value{
-A tibble with 1 row per event
+sparse tibble with hourly cadance as rows, and unique OMOP concepts
+  as columns.
 }
 \description{
-Extracts NHIC events and appends them with the correct class for
-further processing. This is essentially the creator method for
-the S3 classes associated with the inspectEHR package
-}
-\examples{
-db_pth <- system.file("testdata/synthetic_db.sqlite3", package = "inspectEHR")
-ctn <- connect(sqlite_file = db_pth)
-core <- make_core(ctn)
-extract(core, input = "NIHR_HIC_ICU_0073")
-DBI::dbDisconnect(ctn)
+Extract & Reshape Data from EMAP
+
+This is the workhorse function that transcribes data from EMAP OPS from OMOP 
+CDM 5.3.1 to a standard rectangular table with 1 column per dataitem and 1
+row per time per patient.
+
+The time unit is user definable, and set by the "cadance" argument. The
+default behaviour is to produce a table with 1 row per hour per patient. If
+there are duplicates/conflicts (e.g more than 1 event for a given hour), then
+the default behaviour is that only the first result for that hour is
+returned. One can override this behvaiour by supplying a vector of summary
+functions directly to the 'coalesce_rows' argument. This could also include
+any custom function written by the end user, so long as it takes a vector of
+length n, and returns a vector of length 1, of the original data type.
+
+Many events inside EMAP occur on a greater than hourly basis. Depending
+upon the chosen analysis, you may which to increase the cadance. 0.5 for
+example will produce a table with 1 row per 30 minutes per patient. Counter
+to this, 24 would produce 1 row per 24 hours.
+
+Choose what variables you want to pull out wisely. This function is quite
+efficient considering what it needs to do, but it can take a very long
+time if extracting lots of data, and doing so repeatedly. It is a strong 
+recomendation that you run your extraction on a small subset of patients
+first and check that you are happy with the result, before moving to a larger
+extraction.
+
+The current implementation is focussed on in-patients only. And as such, all
+dataitems are referenced to the visit_start_datetime of the visit_occurrence.
+Thus, observations and measurements recorded outside the boudaries of the
+visit_occurrence are automatically removed. This is - at this stage -
+intensional behaviour.
 }

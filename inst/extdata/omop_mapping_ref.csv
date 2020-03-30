@@ -1,56 +1,78 @@
-short_name,datatype,concept_id,domain
-Oxygen saturation,Numeric,3013502,Measurement
-FiO2,Numeric,3020716,Measurement
-Target SPO2,String,44809212,Observation
-Tidal volume,Numeric,4029625,Measurement
-Mechanical Ventilation - yes/no,Categorical,2000000008,Observation
-Natural airway patent - yes/no,Categorical,2000000009,Observation
-Ventilator Mode,String,2000000010,Observation
-Ideal Body Weight (calculated),Numeric,4062985,Observation
-Ideal Body weight (calculated),Numeric,4062985,Observation
-MAP (invasive),Numeric,4108290,Measurement
-MAP (invasive),Numeric,4108290,Measurement
-MAP (non-invasive),Numeric,4108289,Measurement
-MAP (non-invasive),Numeric,4108289,Measurement
-Target MAP,String,2000000001,Observation
-RASS,String,2000000038,Observation
-Target RASS,String,2000000002,Observation
-Oxycodone PCA Hourly Dose,Numeric,2000000031,Measurement
-Fentanyl PCA Hourly Dose,Numeric,2000000032,Measurement
-Morphine PCA Hourly Dose,Numeric,2000000033,Measurement
-Pain score -verbal at rest,Numeric,2000000004,Measurement
-Pain score - verbal on movement,Numeric,2000000005,Measurement
-Pain score - non-verbal,Numeric,2000000006,Measurement
-Epidural Infusion Rate,Numeric,2000000015,Measurement
-Bromage left leg,Categorical,2000000016,Measurement
-Bromage right leg,Categorical,2000000017,Measurement
-Level of Block - right side,String,2000000011,Observation
-Level of Block - left side,String,2000000011,Observation
-Level of block,String,2000000011,Observation
-Oxygen delivery device,String,2000000034,Observation
-GCS total,Numeric,3007194,Measurement
-Temperature,Numeric,3020891,Measurement
-Heart rate,Numeric,4239408,Measurement
-Blood pressure,String,2000000035,Observation
-Respiratory rate,Numeric,4313591,Measurement
-Oxygen therapy flow rate,Numeric,4141684,Measurement
-ACVPU,Categorical,2000000007,Measurement
-PEEP/CPAP,Numeric,4353713,Observation
-PEEP,Numeric,4353713,Observation
-Peak,Numeric,4101694,Measurement
-Plateau,Numeric,44782825,Measurement
-Contact with confirmed infection,Categorical,2000000042,Observation
-Current temperature >37.5 or history of fever in the last 24 hours,Categorical,2000000043,Observation
-Reported symptoms on admission,String,2000000044,Observation
-Travel in last 21 days,Categorical,2000000045,Observation
-Known contact with disease,String,2000000046,Observation
-Countries visited in last month (1),String,2000000047,Observation
-Countries visited in last month (2),String,2000000048,Observation
-Countries visited in last month (3),String,2000000049,Observation
-Countries visited in last month (4),String,2000000050,Observation
-Countried visited in last month (5),String,2000000051,Observation
-Travel in last 14 days,Categorical,2000000052,Observation
-Travel in last 7 days,Categorical,2000000053,Observation
-NEWS score ,Numeric,44808684,Observation
-NEWS2 score,Numeric,37208353,Observation
-Room air or oxygen,Categorical,40771869,Observation
+concept_id,target,short_name,long_name,comments
+3000285,value_as_number,sodium,Sodium [Moles/volume] in Blood,
+3000963,value_as_number,hb,Hemoglobin [Mass/volume] in Blood,
+3001110,value_as_number,alp,Alkaline phosphatase [Enzymatic activity/volume] in Blood,
+3001123,value_as_number,plt_vol,Platelet mean volume [Entitic volume] in Blood,
+3001604,value_as_number,mono,Monocytes [#/volume] in Blood,
+3002385,value_as_number,rcdw,Erythrocyte distribution width [Ratio],
+3003338,value_as_number,mchc,mean cell haem conc. MCHC [Mass/volume],
+3005162,value_as_number,calcium,Calcium [Moles/volume] in Blood,
+3005456,value_as_number,potassium,Potassium [Moles/volume] in Blood,
+3006315,value_as_number,baso,Basophils [#/volume] in Blood,
+3007194,value_as_number,gcs_tot,gcs total,
+3007220,value_as_number,ck,Creatine kinase [Enzymatic activity/volume] in Serum or Plasma,
+3007461,value_as_number,plts,Platelets [#/volume] in Blood,
+3009542,value_as_number,hct,Hematocrit [Volume Fraction] of Blood,
+3010813,value_as_number,wcc,white cell count (Leukocytes [#/volume] in Blood),
+3011961,value_as_number,ferritin,Ferritin [Mass/volume] in Blood,
+3013115,value_as_number,eosinophils,Eosinophils [#/volume] in Blood,
+3013466,value_as_number,aptt,aPTT in Blood by Coagulation assay,
+3013502,value_as_number,spo2,oxygen saturation,
+3013721,value_as_number,ast,Aspartate aminotransferase [Enzymatic activity/volume] in Serum or Plasma,
+3015183,value_as_number,esr,eryhtrocyte sedimentation rate,
+3017732,value_as_number,neutrophils,Neutrophils [#/volume] in Blood,
+3018913,value_as_number,phosphate,Phosphate [Moles/volume] in Blood,
+3019198,value_as_number,lymphocytes,Lymphocytes [#/volume] in Blood,
+3020059,value_as_number,calcium_corr,Calcium [Moles/volume] corrected for albumin in Serum or Plasma,
+3020460,value_as_number,crp,C reactive protein [Mass/volume] in Serum or Plasma,
+3020716,value_as_number,fio2,fio2,
+3020891,value_as_number,temp,temperature,
+3023520,value_as_number,reticulocyte_count,Reticulocytes [#/volume] in Blood,
+3024561,value_as_number,albumin,Albumin [Mass/volume] in Serum or Plasma,
+3024731,value_as_number,mcv,MCV [Entitic volume],
+3026361,value_as_number,rcc,Erythrocytes [#/volume] in Blood,
+3026493,value_as_number,urate,Urate [Moles/volume] in Serum or Plasma,
+3026910,value_as_number,ggt,Gamma glutamyl transferase [Enzymatic activity/volume] in Serum or Plasma,
+3027945,value_as_number,reticulocyte_percent,Reticulocytes/100 erythrocytes in Blood,
+3031042,value_as_number,reticulocyte_count,neucleated red blood cell counts (count),
+3032057,value_as_concept_id,c_diff_stool,Clostridioides difficile [Presence] in Stool,
+3032080,value_as_number,inr,INR in Blood by Coagulation assay,
+3033836,value_as_number,magnesium,Magnesium [Moles/volume] in Blood,
+3034426,value_as_number,pt,Prothrombin time (PT),
+3035941,value_as_number,mch,MCH [Entitic mass],
+3040168,value_as_number,igc,Immature granulocytes [#/volume] in Blood,
+3047181,value_as_number,lactate,Lactate [Moles/volume] in Blood,
+4029625,value_as_number,vol_tidal,tidal volume,
+4062985,value_as_number,idw,ideal body weight (calculated),
+4108289,value_as_number,map_inv,map (non-invasive),
+4108290,value_as_number,map_nibp,map (invasive),
+4141684,value_as_number,o2_flow,oxygen therapy flow rate,
+4239408,value_as_number,hr,heart rate,
+4313591,value_as_number,rr,respiratory rate,
+40757494,value_as_number,bilirubin,Bilirubin.total [Moles/volume] in Blood,
+40762887,value_as_number,creatinine,Creatinine [Moles/volume] in Blood,
+40771922,value_as_number,gfr,"Glomerular filtration rate/1.73 sq M.predicted [Volume Rate/Area] in Serum, Plasma or Blood",
+43534077,value_as_number,urea,Urea [Moles/volume] in Blood,
+44809212,value_as_string,target_spo2,target spo2,
+46235106,value_as_number,alt,Alanine aminotransferase [Enzymatic activity/volume] in Blood,
+46235169,value_as_number,amylase,Amylase [Enzymatic activity/volume] in Blood,
+46235370,value_as_number,ldh,Lactate dehydrogenase in body fluid/Lactate dehydrogenase in serum,
+2000000001,value_as_string,target_map,target map,
+2000000002,value_as_number,target_rass,target rass,
+2000000004,value_as_number,ps_verbal_rest,pain score -verbal at rest,
+2000000005,value_as_number,ps_verbal_move,pain score - verbal on movement,
+2000000006,value_as_number,ps_nonverbal,pain score - non-verbal,
+2000000007,value_as_concept_id,acvpu,acvpu,
+2000000008,value_as_concept_id,mech_ventilation,mechanical ventilation - yes/no,
+2000000009,value_as_concept_id,natural_airway,natural airway patent - yes/no,
+2000000010,value_as_string,vent_mode,ventilator mode,
+2000000011,value_as_string,block_level_r,level of block - right side,
+2000000011,value_as_string,block_level_l,level of block - left side,
+2000000011,value_as_string,block_level,level of block,
+2000000016,value_as_concept_id,bromage_left,bromage left leg,
+2000000017,value_as_concept_id,bromage_right,bromage right leg,
+2000000034,value_as_string,o2_device,oxygen delivery device,
+2000000035,value_as_string,bp,blood pressure,
+2000000038,value_as_number,rass,rass,
+2000000039,value_source_value,covid_test,covid-19 test,not mapped into value column
+2000000039,value_source_value,,,not mapped into value column
