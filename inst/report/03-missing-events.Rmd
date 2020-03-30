@@ -1,7 +1,0 @@
-## Missing Events
-
-The following plot details any events for which no data whatsoever has been contributed to the CC-HIC database. A red square is bad.
-
-```{r missing, echo = FALSE}
-knitr::include_graphics("./_bookdown_files/plots/missing_events.png")
-```
