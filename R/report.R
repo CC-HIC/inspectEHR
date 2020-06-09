@@ -222,7 +222,7 @@ report <- function(database = NULL,
       rlang::inform(glue("Skipping over {hic_codes[i]} as no data present"))
     } else {
 
-    # Basic Verification: range, boundary, duplcation, periodicity
+    # Basic Verification: range, boundary, duplication, periodicity
     df <- verify_events(df, ve_episodes)
 
     # Coverage verification

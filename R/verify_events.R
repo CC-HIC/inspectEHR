@@ -57,7 +57,7 @@ verify_events <- function(x, los_table = NULL) {
   # Captures the input code_name
   input_name <- attr(x, "code_name")
 
-  # Check availible methods for this class
+  # Check available methods for this class
   avail_methods <- methods(class = class(x)[1])
   event_class <- class(x)[1]
 

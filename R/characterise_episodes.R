@@ -136,8 +136,8 @@ unit_admissions <- function(events_table = NULL, reference_table = NULL) {
 #' There are several ways to potentially define an episode. Fundamentally, we
 #' need a start and an end datetime. The start is already required to onboard
 #' patients into the database and so is 100% complete. This function primary
-#' serves to identify the end of an epsiode, which is often much less clearly
-#' defined. Potential sources of information, in order of precidence include:
+#' serves to identify the end of an episode, which is often much less clearly
+#' defined. Potential sources of information, in order of precedence include:
 #' \itemize{
 #'   \item date and time of in unit death: 0042 and 0043
 #'   \item date and time of brainstem death: 0044 and 0045
@@ -150,13 +150,13 @@ unit_admissions <- function(events_table = NULL, reference_table = NULL) {
 #' Rather, the goal is to characterise the episode in a meaningful way. This
 #' means that episodes cannot have negative episode length, and you should not
 #' be able to record a vital sign after a death has occurred. If date and time
-#' of death preceed the discharge time we overwrite the episode end datetime
+#' of death preceded the discharge time we overwrite the episode end datetime
 #' with the date and time of death. The same is not true for brainstem death and
 #' body removal. This would result in a situation whereby a body is kept
 #' physiologically active on the ICU, but the episode is now listed as finished.
 #'
 #' Since a patient can only die once, checks are also performed to ensure that
-#' death events, can only be linked to a single episode. This is relevent for
+#' death events, can only be linked to a single episode. This is relevant for
 #' the following situations:
 #' \itemize{
 #'   \item More than one episode has become linked with the same death event. In
