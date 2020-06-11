@@ -113,21 +113,22 @@ event_occurrances <- function(extracted_event = NULL, by_site = "UCL") {
 #'
 #' @return a tibble with unique episodes and patients reported by ICU
 unit_admissions <- function(events_table = NULL, reference_table = NULL) {
-  unit_numbers <- events_table %>%
+  events_table %>%
     filter(.data$code_name == "NIHR_HIC_ICU_0002") %>%
     select(.data$episode_id, .data$string) %>%
     collect() %>%
     right_join(reference_table, by = "episode_id") %>%
-    select(.data$episode_id, .data$nhs_number,
+    select(.data$episode_id, .data$nhs_number, .data$start_date,
                   .data$string, .data$site) %>%
     group_by(.data$site, .data$string) %>%
     summarise(
+      earliest = min(.data$start_date),
+      latest = max(.data$start_date),
       patients = n_distinct(.data$nhs_number),
       episodes = n_distinct(.data$episode_id)
     ) %>%
+    mutate(span = as.integer(difftime(.data$latest, .data$earliest, units = "weeks")/4)) %>%
     rename(unit = .data$string)
-
-  return(unit_numbers)
 }
 
 

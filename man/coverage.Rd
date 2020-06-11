@@ -2,7 +2,7 @@
 % Please edit documentation in R/verify_events.R
 \name{coverage}
 \alias{coverage}
-\title{verify Event Plausibility - Coverage Checks (S3 Generic)}
+\title{Verify Event Plausibility - Coverage Checks (S3 Generic)}
 \usage{
 coverage(x, reference_tbl)
 }
@@ -17,5 +17,9 @@ a table describing the coverage over a defined time window
 \description{
 Checks to ensure that long term data item contribution is consistent. This is
 because often back end changes occur in hospitals that silently disrupt the
-ETL process, and as such, some dataitems disappear without warning.
+ETL process, and as such, some dataitems disappear without warning. There are
+three main error prone patterns that this is trying to detect:
+- 1. Sudden stopping of data (transitions to zero)
+- 2. Sudden change in amount of data (transitions to new lower mean)
+- 3. High frequency of anomalous data in general
 }

@@ -180,6 +180,35 @@ round_any <- function(x, accuracy = 1) {
 }
 
 
+#' Round to percentage
+#'
+#' @param x numerator
+#' @param n denominator
+#' @param digits rounding
+#'
+#' @return a vector of the same length as \code{x} rounded to the defined digit
+#'   length given as a percentage for display
+#' @export
+#'
+#' @examples
+round_perc <- function(x, n, digits = 0) {
+  round((x/n)*100, digits = digits)
+}
+
+
+check_columns <- function(x, name_x) {
+  row_count <- collect(tally(x))$n
+
+  x %>%
+    summarise_all(~ sum(is.na(.), na.rm = TRUE)) %>%
+    collect() %>%
+    pivot_longer(everything(), names_to = "column", values_to = "missing") %>%
+    add_column(table = name_x, .before = TRUE) %>%
+    mutate(percentage = round_perc(missing, row_count))
+}
+
+
+
 #' Inverse Logistic Function
 #'
 #' @param x a numeric vector on the logistic scale

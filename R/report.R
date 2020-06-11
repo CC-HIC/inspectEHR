@@ -17,15 +17,22 @@
 #'   takes place, which can be considerably quicker.
 #' @param generate_report triggers the build of the markdown report
 #'
+#' @import patchwork
 #' @importFrom dplyr select arrange pull left_join distinct collect tibble
-#'   anti_join mutate copy_to
+#'   anti_join mutate copy_to summarise_all bind_rows
 #' @importFrom ggplot2 ggplot aes geom_tile theme element_blank element_rect
-#'   ylab ggtitle ggsave dup_axis scale_x_discrete geom_point
+#'   ylab ggtitle ggsave dup_axis scale_x_discrete geom_point facet_wrap
+#'   geom_path
 #' @importFrom DBI dbWriteTable
-#' @importFrom rlang inform abort
 #' @importFrom glue glue
+#' @importFrom readr write_csv
+#' @importFrom rlang inform abort
 #' @importFrom scales viridis_pal
 #' @importFrom stringr str_sub
+#' @importFrom tidyr pivot_longer expand_grid
+#' @importFrom tidyselect everything
+#' @importFrom tibble add_column
+#'
 #'
 #' @export
 report <- function(database = NULL,
@@ -37,6 +44,8 @@ report <- function(database = NULL,
                    output_folder = NULL,
                    write_plots = TRUE,
                    generate_report = TRUE) {
+
+  inform("Performing Setup")
 
   stopifnot(
     all(!is.null(database), !is.null(username), !is.null(password)) ||
@@ -60,12 +69,7 @@ report <- function(database = NULL,
     dir.create(paste0(output_folder, "data"))
   }
 
-  inform("Starting episode evaluation")
-
-  hic_codes <- qref %>%
-    dplyr::select(code_name) %>%
-    dplyr::arrange(code_name) %>%
-    dplyr::pull()
+  hic_codes <- sort(qref$code_name)
 
   for (i in seq_along(hic_codes)) {
     if (!dir.exists(paste0(output_folder, "plots/", hic_codes[i]))) {
@@ -87,67 +91,71 @@ report <- function(database = NULL,
     sqlite_file = sqlite_file
   )
 
+  inform("Starting Evaluation")
+
   tbls <- retrieve_tables(ctn)
 
-  # Collect small tables
+  # Collect small tables to work in memory
   episodes <- collect(tbls[["episodes"]])
   provenance <- collect(tbls[["provenance"]])
   metadata <- collect(tbls[["variables"]])
 
-  ## Missing fields
-  # we want to identify fields that are not contributed by a site
-  # so we must retrive the unique events that each site contributes first
-  unique_events <- tbls[["events"]] %>%
-    left_join(tbls[["episodes"]], by = "episode_id") %>%
-    left_join(tbls[["provenance"]], by = c("provenance" = "file_id")) %>%
-    select(site, code_name) %>%
-    distinct() %>%
-    collect() %>%
-    mutate(contributed = "Yes")
+  inform("Starting Relational Conformity Checks")
+  # Validate VA_RC_01:
+  # Structural data missingness conforms to agreed schema
+  va_rc_01(tbls) %>%
+    write_csv(path = paste0(output_folder, "data/va_rc_01.csv"))
 
-  # Capture all the sites currently contributing to the project
-  all_sites <- provenance %>%
-    dplyr::select(site) %>%
-    dplyr::distinct() %>%
-    dplyr::pull()
+  # Verify VE_RC_01: Referential Integrity
+  ## All episodes have a provenance record
+  ve_rc_01(tbls) %>%
+    write_csv(path = paste0(output_folder, "data/ve_rc_01.csv"))
 
-  # Make a new data frame with codes replicated for each site
-  all_events <- dplyr::tibble(
-    site = rep(all_sites, each = nrow(qref)),
-    code_name = rep(hic_codes, length(all_sites))
-  )
+  # Verify VE_RC_02: Unique Keys
+  ve_rc_02(tbls) %>%
+    write_csv(path = paste0(output_folder, "data/ve_rc_02.csv"))
 
-  # use anti_join to find which sites aren't providing certain codes
-  missing_events <- full_join(
-    all_events, unique_events,
-    by = c(
-      "site" = "site",
-      "code_name" = "code_name"
-    )
-  ) %>%
-    left_join(qref %>%
-                select(code_name, short_name),
-              by = "code_name") %>%
-    dplyr::mutate(
-      new_name = paste0(
-        str_sub(code_name, -4, -1), ": ", str_trunc(short_name, 20)
-      )
-    ) %>%
-    mutate(contributed = if_else(is.na(contributed), "No", contributed)) %>%
-    filter(!is.na(site))
+  # Validate VA_CP_01: Missingness of a particular item from the requisite
+  # schema at site level
+  missing_events <- va_cp_01(tbls)
 
   # make a plot highlighting missing data
-  missing_events_plot <- missing_events %>%
-    ggplot(aes(x = site, y = new_name, fill = contributed)) +
-    geom_point(shape = 21, size = 4.5) +
+
+  duo <- c("#666666", "#0183c4")
+
+  missing_events_plot1 <- missing_events %>%
+    filter(code_name %in% hic_codes[1:128]) %>%
+    ggplot(aes(x = site, y = short_code, fill = contributed)) +
+    geom_tile() +
     theme_minimal() +
+    scale_fill_manual(values = duo) +
     theme(
       panel.grid.major.x = element_blank(),
       panel.grid.minor.x = element_blank(),
-      panel.background = element_blank()
+      panel.background = element_blank(),
+      axis.text.y = element_text(size = 6),
+      legend.position = "none"
+    ) +
+    ylab("CC-HIC data item code") +
+    xlab("Site")
+
+  missing_events_plot2 <- missing_events %>%
+    filter(code_name %in% hic_codes[129:255]) %>%
+    ggplot(aes(x = site, y = short_code, fill = contributed)) +
+    geom_tile() +
+    theme_minimal() +
+    scale_fill_manual(values = duo) +
+    theme(
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.background = element_blank(),
+      axis.text.y = element_text(size = 6),
+      axis.title.y = element_blank()
     ) +
     ylab("Code and Name of Data Item") +
     xlab("Site")
+
+  missing_events_plot <- missing_events_plot1 + missing_events_plot2
 
   ggsave(
     filename = paste0(
@@ -156,7 +164,7 @@ report <- function(database = NULL,
       "missing_events.svg"
     ),
     plot = missing_events_plot,
-    height = 60, width = 5, limitsize = FALSE
+    height = 29.7, width = 21, units = "cm"
   )
 
   # Useful Tables
@@ -164,13 +172,14 @@ report <- function(database = NULL,
   reference <- make_reference(connection = ctn)
 
   ## Capture colour profile for consistency
+  all_sites <- unique(reference$site)
   all_sites.col <- viridis_pal()(length(all_sites))
   names(all_sites.col) <- all_sites
 
   # Cases ----
   # Gives a tibble of admission numbers (patients/episodes) by week
   admissions_weekly <- reference %>%
-    dplyr::distinct() %>%
+    distinct() %>%
     weekly_admissions()
 
   # Gives overall admission numbers (totals) for patients/episodes
@@ -179,6 +188,8 @@ report <- function(database = NULL,
       events_table = tbls[["events"]],
       reference_table = reference
     )
+
+  write_csv(admissions_by_unit, "data/unit_admissions.csv")
 
   for (i in seq_along(all_sites)) {
     temp_heat <- make_heatcal(reference, site = all_sites[i])
@@ -191,8 +202,36 @@ report <- function(database = NULL,
     )
   }
 
+  admission_profile <- expand_grid(
+    site = all_sites,
+    date =
+      seq.Date(
+        min(as.Date(reference$start_date)),
+        max(as.Date(reference$start_date)),
+        by = "days")) %>%
+  left_join(
+    reference %>%
+    group_by(
+      site,
+      date = as.Date(start_date)) %>%
+    tally(),
+    by = c("site", "date")) %>%
+  mutate(n = if_else(is.na(n), 0L, n)) %>%
+    ggplot(aes(x = date, y = n)) +
+    geom_path(aes(group = site, colour = site)) +
+    scale_colour_manual(values = all_sites.col) +
+    theme_cchic() +
+    labs(y = "Daily Admission Number")
+
+  ggsave(
+    admission_profile,
+    filename = paste0(
+      output_folder, "plots/episodes/admission_profile.svg"
+    ), height = 8, width = 12.88
+  )
+
   # Length of Stay "Episode Length" ----
-  # Epsiode_length
+
   episode_length <- characterise_episodes(ctn)
   spell_length <- characterise_spells(episode_length)
 
